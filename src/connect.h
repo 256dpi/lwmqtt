@@ -80,7 +80,7 @@ typedef union {
   unsigned char all; /**< all connack flags */
 
   struct {
-    unsigned int : 7;                /**< unused */
+    unsigned int _: 7;                /**< unused */
     unsigned int sessionpresent : 1; /**< session present flag */
   } bits;
 } lwmqtt_connack_flags; /**< connack flags byte */
