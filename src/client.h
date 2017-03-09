@@ -19,7 +19,7 @@
 #define LWMQTT_CLIENT_H
 
 #include <stdio.h>
-#include "packet/packet.h"
+#include "packet.h"
 
 #if defined(MQTTCLIENT_PLATFORM_HEADER)
 /* The following sequence of macros converts the MQTTCLIENT_PLATFORM_HEADER value

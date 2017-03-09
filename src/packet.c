@@ -245,7 +245,7 @@ int MQTTPacket_read(unsigned char* buf, int buflen, int (*getfn)(unsigned char*,
   int len = 0;
   int rem_len = 0;
 
-  /* 1. read the header byte.  This has the packet type in it */
+  /* 1. read the header byte.  This has the src type in it */
   if ((*getfn)(buf, 1) != 1) goto exit;
 
   len = 1;
@@ -311,7 +311,7 @@ int MQTTPacket_readnb(unsigned char* buf, int buflen, MQTTTransport* trp) {
       trp->state = 0;
     /*FALLTHROUGH*/
     case 0:
-      /* read the header byte.  This has the packet type in it */
+      /* read the header byte.  This has the src type in it */
       if ((frc = (*trp->getfn)(trp->sck, buf, 1)) == -1) goto exit;
       if (frc == 0) return 0;
       trp->len = 0;
