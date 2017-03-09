@@ -130,7 +130,7 @@ exit:
 
 static int lwmqtt_cycle(lwmqtt_client_t *c, Timer *timer) {
   // read the socket, see what work is due
-  unsigned short packet_type = lwmqtt_read_packet(c, timer);
+  int packet_type = lwmqtt_read_packet(c, timer);
   if (packet_type == 0) return LWMQTT_FAILURE;  // no more data to read, unrecoverable
 
   int len = 0, rc = LWMQTT_SUCCESS;
