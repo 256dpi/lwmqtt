@@ -18,6 +18,8 @@
 #ifndef LWMQTT_SUBSCRIBE_H
 #define LWMQTT_SUBSCRIBE_H
 
+#include "string.h"
+
 int lwmqtt_serialize_subscribe(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid, int count,
                                lwmqtt_string_t *topicFilters, int *requestedQoSs);
 

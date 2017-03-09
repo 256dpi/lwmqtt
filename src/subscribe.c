@@ -16,8 +16,8 @@
 
 #include <string.h>
 
+#include "subscribe.h"
 #include "packet.h"
-#include "string.h"
 
 /**
   * Determines the length of the MQTT subscribe packet that would be produced using the supplied parameters

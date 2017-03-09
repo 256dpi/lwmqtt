@@ -18,6 +18,8 @@
 #ifndef LWMQTT_CONNECT_H
 #define LWMQTT_CONNECT_H
 
+#include "string.h"
+
 typedef union {
   unsigned char all; /**< all connect flags */
 

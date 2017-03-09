@@ -16,8 +16,8 @@
 
 #include <string.h>
 
+#include "publish.h"
 #include "packet.h"
-#include "string.h"
 
 /**
   * Deserializes the supplied (wire) buffer into publish data

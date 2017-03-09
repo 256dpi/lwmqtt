@@ -16,8 +16,8 @@
 
 #include <string.h>
 
+#include "connect.h"
 #include "packet.h"
-#include "string.h"
 
 /**
   * Determines the length of the MQTT connect packet that would be produced using the supplied connect options.

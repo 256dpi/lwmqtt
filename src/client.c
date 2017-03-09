@@ -15,7 +15,10 @@
  *******************************************************************************/
 
 #include "client.h"
-#include "string.h"
+#include "packet.h"
+#include "publish.h"
+#include "unsubscribe.h"
+#include "subscribe.h"
 
 static void NewMessageData(MessageData* md, lwmqtt_string_t* aTopicName, MQTTMessage* aMessage) {
   md->topicName = aTopicName;

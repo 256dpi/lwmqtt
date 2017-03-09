@@ -18,6 +18,8 @@
 #ifndef LWMQTT_PUBLISH_H
 #define LWMQTT_PUBLISH_H
 
+#include "string.h"
+
 int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, int qos, unsigned char retained,
                              unsigned short packetid, lwmqtt_string_t topicName, unsigned char *payload,
                              int payloadlen);

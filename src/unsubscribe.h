@@ -18,6 +18,8 @@
 #ifndef LWMQTT_UNSUBSCRIBE_H
 #define LWMQTT_UNSUBSCRIBE_H
 
+#include "string.h"
+
 int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid, int count,
                                  lwmqtt_string_t *topicFilters);
 

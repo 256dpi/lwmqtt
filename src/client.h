@@ -19,7 +19,9 @@
 #define LWMQTT_CLIENT_H
 
 #include <stdio.h>
-#include "packet.h"
+
+#include "string.h"
+#include "connect.h"
 
 #if defined(MQTTCLIENT_PLATFORM_HEADER)
 /* The following sequence of macros converts the MQTTCLIENT_PLATFORM_HEADER value
@@ -94,8 +96,7 @@ typedef struct MQTTClient {
 
 } MQTTClient;
 
-#define DefaultClient \
-  { 0, 0, 0, 0, NULL, NULL, 0, 0, 0 }
+#define DefaultClient { 0, 0, 0, 0, NULL, NULL, 0, 0, 0 }
 
 /**
  * Create an MQTT client object

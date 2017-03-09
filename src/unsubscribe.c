@@ -14,10 +14,8 @@
  *    Ian Craggs - initial API and implementation and/or initial documentation
  *******************************************************************************/
 
-#include <string.h>
-
+#include "unsubscribe.h"
 #include "packet.h"
-#include "string.h"
 
 /**
   * Determines the length of the MQTT unsubscribe packet that would be produced using the supplied parameters
