@@ -24,7 +24,10 @@ typedef struct {
   lwmqtt_lp_string_t lenstring;
 } lwmqtt_string_t;
 
-#define lwmqtt_default_string { NULL, { 0, NULL } }
+#define lwmqtt_default_string \
+  {                           \
+    NULL, { 0, NULL }         \
+  }
 
 /**
  * Return the length of the MQTTstring - C string if there is one, otherwise the length delimited string

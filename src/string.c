@@ -13,8 +13,8 @@
 
 #include <string.h>
 
-#include "string.h"
 #include "packet.h"
+#include "string.h"
 
 int lwmqtt_strlen(lwmqtt_string_t mqttstring) {
   int rc = 0;

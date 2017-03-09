@@ -42,15 +42,16 @@ int lwmqtt_packet_decode(int (*getcharfn)(unsigned char *, int), int *value) {
     int rc = MQTTPACKET_READ_ERROR;
 
     if (++len > MAX_NO_OF_REMAINING_LENGTH_BYTES) {
+      // TODO: rc and len seem to be mixed up here.
       rc = MQTTPACKET_READ_ERROR; /* bad data */
-      goto exit;
+      return len;
     }
     rc = (*getcharfn)(&c, 1);
-    if (rc != 1) goto exit;
+    if (rc != 1) return len;
     *value += (c & 127) * multiplier;
     multiplier *= 128;
   } while ((c & 128) != 0);
-exit:
+
   return len;
 }
 

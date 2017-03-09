@@ -16,8 +16,8 @@
 
 #include <string.h>
 
-#include "subscribe.h"
 #include "packet.h"
+#include "subscribe.h"
 
 static int lwmqtt_serialize_subscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int i;
@@ -37,7 +37,7 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buflen, unsigned char dup
 
   if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_subscribe_length(count, topicFilters)) > buflen) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;
-    goto exit;
+    return rc;
   }
 
   header.byte = 0;
@@ -56,9 +56,7 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buflen, unsigned char dup
     lwmqtt_write_char(&ptr, requestedQoSs[i]);
   }
 
-  rc = ptr - buf;
-exit:
-  return rc;
+  return ptr - buf;
 }
 
 int lwmqtt_deserialize_suback(unsigned short *packetid, int maxcount, int *count, int *grantedQoSs, unsigned char *buf,
@@ -70,24 +68,21 @@ int lwmqtt_deserialize_suback(unsigned short *packetid, int maxcount, int *count
   int mylen;
 
   header.byte = lwmqtt_read_char(&curdata);
-  if (header.bits.type != SUBACK) goto exit;
+  if (header.bits.type != SUBACK) return rc;
 
   curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen)); /* read remaining length */
   enddata = curdata + mylen;
-  if (enddata - curdata < 2) goto exit;
+  if (enddata - curdata < 2) return rc;
 
   *packetid = lwmqtt_read_int(&curdata);
 
   *count = 0;
   while (curdata < enddata) {
     if (*count > maxcount) {
-      rc = -1;
-      goto exit;
+      return -1;
     }
     grantedQoSs[(*count)++] = lwmqtt_read_char(&curdata);
   }
 
-  rc = 1;
-exit:
-  return rc;
+  return 1;
 }

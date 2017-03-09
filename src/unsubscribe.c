@@ -34,8 +34,7 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char d
   int i = 0;
 
   if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_unsubscribe_length(count, topicFilters)) > buflen) {
-    rc = MQTTPACKET_BUFFER_TOO_SHORT;
-    goto exit;
+    return MQTTPACKET_BUFFER_TOO_SHORT;
   }
 
   header.byte = 0;
@@ -51,9 +50,7 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char d
 
   for (i = 0; i < count; ++i) lwmqtt_write_string(&ptr, topicFilters[i]);
 
-  rc = ptr - buf;
-exit:
-  return rc;
+  return ptr - buf;
 }
 
 int lwmqtt_deserialize_unsuback(unsigned short *packetid, unsigned char *buf, int buflen) {

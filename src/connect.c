@@ -43,8 +43,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data
   int rc = -1;
 
   if (lwmqtt_packet_len(len = lwmqtt_serialize_connect_length(options)) > buflen) {
-    rc = MQTTPACKET_BUFFER_TOO_SHORT;
-    goto exit;
+    return MQTTPACKET_BUFFER_TOO_SHORT;
   }
 
   header.byte = 0;
@@ -82,10 +81,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data
   if (flags.bits.username) lwmqtt_write_string(&ptr, options->username);
   if (flags.bits.password) lwmqtt_write_string(&ptr, options->password);
 
-  rc = ptr - buf;
-
-exit:
-  return rc;
+  return ptr - buf;
 }
 
 int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf,
@@ -98,19 +94,17 @@ int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *con
   lwmqtt_connack_flags flags = {0};
 
   header.byte = lwmqtt_read_char(&curdata);
-  if (header.bits.type != CONNACK) goto exit;
+  if (header.bits.type != CONNACK) return rc;
 
   curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen)); /* read remaining length */
   enddata = curdata + mylen;
-  if (enddata - curdata < 2) goto exit;
+  if (enddata - curdata < 2) return rc;
 
   flags.all = lwmqtt_read_char(&curdata);
   *sessionPresent = flags.bits.sessionpresent;
   *connack_rc = lwmqtt_read_char(&curdata);
 
-  rc = 1;
-exit:
-  return rc;
+  return 1;
 }
 
 static int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char packettype) {
@@ -119,17 +113,15 @@ static int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char p
   unsigned char *ptr = buf;
 
   if (buflen < 2) {
-    rc = MQTTPACKET_BUFFER_TOO_SHORT;
-    goto exit;
+    return MQTTPACKET_BUFFER_TOO_SHORT;
   }
+
   header.byte = 0;
   header.bits.type = packettype;
   lwmqtt_write_char(&ptr, header.byte); /* write header */
 
   ptr += lwmqtt_packet_encode(ptr, 0); /* write remaining length */
-  rc = ptr - buf;
-exit:
-  return rc;
+  return ptr - buf;
 }
 
 int lwmqtt_serialize_disconnect(unsigned char *buf, int len) { return lwmqtt_serialize_zero(buf, len, DISCONNECT); }

@@ -20,8 +20,8 @@
 
 #include <stdio.h>
 
-#include "string.h"
 #include "connect.h"
+#include "string.h"
 
 #if defined(MQTTCLIENT_PLATFORM_HEADER)
 /* The following sequence of macros converts the MQTTCLIENT_PLATFORM_HEADER value
@@ -38,38 +38,39 @@ typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
 typedef enum { LWMQTT_FAILURE = -1, LWMQTT_SUCCESS = 0 } lwmqtt_err_t;
 
 #ifndef Timer
-typedef struct {} Timer;
+typedef struct {
+} Timer;
 #endif
 
 #ifndef Network
 typedef struct Network Network;
 
 struct Network {
-    int (*read)(Network*, unsigned char* read_buffer, int, int);
-    int (*write)(Network*, unsigned char* send_buffer, int, int);
+  int (*read)(Network *, unsigned char *read_buffer, int, int);
+  int (*write)(Network *, unsigned char *send_buffer, int, int);
 };
 #endif
 
 /* The Timer structure must be defined in the platform specific header,
  * and have the following functions to operate on it.  */
-extern void TimerInit(Timer*);
-extern char TimerIsExpired(Timer*);
-extern void TimerCountdownMS(Timer*, unsigned int);
-extern void TimerCountdown(Timer*, unsigned int);
-extern int TimerLeftMS(Timer*);
+extern void TimerInit(Timer *);
+extern char TimerIsExpired(Timer *);
+extern void TimerCountdownMS(Timer *, unsigned int);
+extern void TimerCountdown(Timer *, unsigned int);
+extern int TimerLeftMS(Timer *);
 
 typedef struct {
   lwmqtt_qos_t qos;
   unsigned char retained;
   unsigned char dup;
   unsigned short id;
-  void* payload;
+  void *payload;
   size_t payloadlen;
 } lwmqtt_message_t;
 
 typedef struct lwmqtt_client_t lwmqtt_client_t;
 
-typedef void (*lwmqtt_callback_t)(lwmqtt_client_t*, lwmqtt_string_t*, lwmqtt_message_t*);
+typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_message_t *);
 
 struct lwmqtt_client_t {
   unsigned int next_packetid, command_timeout_ms;
@@ -81,12 +82,12 @@ struct lwmqtt_client_t {
 
   lwmqtt_callback_t callback;
 
-  Network* ipstack;
+  Network *ipstack;
   Timer ping_timer;
-
 };
 
-#define lwmqtt_default_client { 0, 0, 0, 0, NULL, NULL, 0, 0, 0 }
+#define lwmqtt_default_client \
+  { 0, 0, 0, 0, NULL, NULL, 0, 0, 0 }
 
 /**
  * Create an MQTT client object
@@ -96,8 +97,7 @@ struct lwmqtt_client_t {
  * @param
  */
 void lwmqtt_client_init(lwmqtt_client_t *client, Network *network, unsigned int command_timeout_ms,
-                        unsigned char *sendbuf,
-                        size_t sendbuf_size, unsigned char *readbuf, size_t readbuf_size);
+                        unsigned char *sendbuf, size_t sendbuf_size, unsigned char *readbuf, size_t readbuf_size);
 
 /** MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
  *  The nework object must be connected to the network endpoint before calling this

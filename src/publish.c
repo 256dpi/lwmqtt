@@ -16,8 +16,8 @@
 
 #include <string.h>
 
-#include "publish.h"
 #include "packet.h"
+#include "publish.h"
 
 int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packetid,
                                lwmqtt_string_t *topicName, unsigned char **payload, int *payloadlen, unsigned char *buf,
@@ -29,7 +29,7 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
   int mylen = 0;
 
   header.byte = lwmqtt_read_char(&curdata);
-  if (header.bits.type != PUBLISH) goto exit;
+  if (header.bits.type != PUBLISH) return rc;
   *dup = header.bits.dup;
   *qos = header.bits.qos;
   *retained = header.bits.retain;
@@ -39,14 +39,13 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
 
   if (!lwmqtt_read_lp_string(topicName, &curdata, enddata) ||
       enddata - curdata < 0) /* do we have enough data to read the protocol version byte? */
-    goto exit;
+    return rc;
 
   if (*qos > 0) *packetid = lwmqtt_read_int(&curdata);
 
   *payloadlen = enddata - curdata;
   *payload = curdata;
   rc = 1;
-exit:
 
   return rc;
 }
@@ -66,12 +65,10 @@ int lwmqtt_deserialize_ack(unsigned char *packettype, unsigned char *dup, unsign
   curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen)); /* read remaining length */
   enddata = curdata + mylen;
 
-  if (enddata - curdata < 2) goto exit;
+  if (enddata - curdata < 2) return rc;
   *packetid = lwmqtt_read_int(&curdata);
 
-  rc = 1;
-exit:
-  return rc;
+  return 1;
 }
 
 static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, int payloadlen) {
@@ -91,8 +88,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, 
   int rc = 0;
 
   if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_publish_length(qos, topicName, payloadlen)) > buflen) {
-    rc = MQTTPACKET_BUFFER_TOO_SHORT;
-    goto exit;
+    return MQTTPACKET_BUFFER_TOO_SHORT;
   }
 
   header.bits.type = PUBLISH;
@@ -102,7 +98,6 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, 
   lwmqtt_write_char(&ptr, header.byte); /* write header */
 
   ptr += lwmqtt_packet_encode(ptr, rem_len); /* write remaining length */
-  ;
 
   lwmqtt_write_string(&ptr, topicName);
 
@@ -111,10 +106,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, 
   memcpy(ptr, payload, payloadlen);
   ptr += payloadlen;
 
-  rc = ptr - buf;
-
-exit:
-  return rc;
+  return ptr - buf;
 }
 
 int lwmqtt_serialize_ack(unsigned char *buf, int buflen, unsigned char packettype, unsigned char dup,
@@ -124,8 +116,7 @@ int lwmqtt_serialize_ack(unsigned char *buf, int buflen, unsigned char packettyp
   unsigned char *ptr = buf;
 
   if (buflen < 4) {
-    rc = MQTTPACKET_BUFFER_TOO_SHORT;
-    goto exit;
+    return MQTTPACKET_BUFFER_TOO_SHORT;
   }
   header.bits.type = packettype;
   header.bits.dup = dup;
@@ -134,10 +125,8 @@ int lwmqtt_serialize_ack(unsigned char *buf, int buflen, unsigned char packettyp
 
   ptr += lwmqtt_packet_encode(ptr, 2); /* write remaining length */
   lwmqtt_write_int(&ptr, packetid);
-  rc = ptr - buf;
-exit:
 
-  return rc;
+  return ptr - buf;
 }
 
 int lwmqtt_serialize_puback(unsigned char *buf, int buflen, unsigned short packetid) {
