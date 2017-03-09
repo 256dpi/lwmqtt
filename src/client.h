@@ -32,9 +32,7 @@
 #include xstr(MQTTCLIENT_PLATFORM_HEADER)
 #endif
 
-#define MAX_PACKET_ID 65535 /* according to the MQTT specification - do not change! */
-
-enum QoS { QOS0, QOS1, QOS2 };
+typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
 
 /* all failure return codes must be negative */
 enum returnCode { FAILURE = -1, SUCCESS = 0 };
@@ -60,18 +58,20 @@ extern void TimerCountdownMS(Timer*, unsigned int);
 extern void TimerCountdown(Timer*, unsigned int);
 extern int TimerLeftMS(Timer*);
 
-typedef struct MQTTMessage {
-  enum QoS qos;
+typedef struct {
+  lwmqtt_qos_t qos;
   unsigned char retained;
   unsigned char dup;
   unsigned short id;
   void* payload;
   size_t payloadlen;
-} MQTTMessage;
+} lwmqtt_message_t;
 
-typedef void (*lwmqtt_callback_t)(lwmqtt_string_t* aTopicName, MQTTMessage* aMessage);
+typedef struct lwmqtt_client_t lwmqtt_client_t;
 
-typedef struct MQTTClient {
+typedef void (*lwmqtt_callback_t)(lwmqtt_client_t*, lwmqtt_string_t*, lwmqtt_message_t*);
+
+struct lwmqtt_client_t {
   unsigned int next_packetid, command_timeout_ms;
   size_t buf_size, readbuf_size;
   unsigned char *buf, *readbuf;
@@ -84,9 +84,9 @@ typedef struct MQTTClient {
   Network* ipstack;
   Timer ping_timer;
 
-} MQTTClient;
+};
 
-#define DefaultClient { 0, 0, 0, 0, NULL, NULL, 0, 0, 0 }
+#define lwmqtt_default_client { 0, 0, 0, 0, NULL, NULL, 0, 0, 0 }
 
 /**
  * Create an MQTT client object
@@ -95,15 +95,16 @@ typedef struct MQTTClient {
  * @param command_timeout_ms
  * @param
  */
-void MQTTClientInit(MQTTClient* client, Network* network, unsigned int command_timeout_ms, unsigned char* sendbuf,
-                    size_t sendbuf_size, unsigned char* readbuf, size_t readbuf_size);
+void lwmqtt_client_init(lwmqtt_client_t *client, Network *network, unsigned int command_timeout_ms,
+                        unsigned char *sendbuf,
+                        size_t sendbuf_size, unsigned char *readbuf, size_t readbuf_size);
 
 /** MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
  *  The nework object must be connected to the network endpoint before calling this
  *  @param options - connect options
  *  @return success code
  */
-int MQTTConnect(MQTTClient* client, lwmqtt_connect_data* options);
+int lwmqtt_client_connect(lwmqtt_client_t *client, lwmqtt_connect_data *options);
 
 /** MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
  *  @param client - the client object to use
@@ -111,7 +112,7 @@ int MQTTConnect(MQTTClient* client, lwmqtt_connect_data* options);
  *  @param message - the message to send
  *  @return success code
  */
-int MQTTPublish(MQTTClient* client, const char*, MQTTMessage*);
+int lwmqtt_client_publish(lwmqtt_client_t *client, const char *, lwmqtt_message_t *);
 
 /** MQTT Subscribe - send an MQTT subscribe packet and wait for suback before returning.
  *  @param client - the client object to use
@@ -119,26 +120,26 @@ int MQTTPublish(MQTTClient* client, const char*, MQTTMessage*);
  *  @param message - the message to send
  *  @return success code
  */
-int MQTTSubscribe(MQTTClient* client, const char* topicFilter, enum QoS);
+int lwmqtt_client_subscribe(lwmqtt_client_t *client, const char *topicFilter, lwmqtt_qos_t);
 
 /** MQTT Subscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
  *  @param client - the client object to use
  *  @param topicFilter - the topic filter to unsubscribe from
  *  @return success code
  */
-int MQTTUnsubscribe(MQTTClient* client, const char* topicFilter);
+int lwmqtt_client_unsubscribe(lwmqtt_client_t *client, const char *topicFilter);
 
 /** MQTT Disconnect - send an MQTT disconnect packet and close the connection
  *  @param client - the client object to use
  *  @return success code
  */
-int MQTTDisconnect(MQTTClient* client);
+int lwmqtt_client_disconnect(lwmqtt_client_t *client);
 
 /** MQTT Yield - MQTT background
  *  @param client - the client object to use
  *  @param time - the time, in milliseconds, to yield for
  *  @return success code
  */
-int MQTTYield(MQTTClient* client, int time);
+int lwmqtt_client_yield(lwmqtt_client_t *client, int time);
 
 #endif  // LWMQTT_CLIENT_H
