@@ -22,7 +22,7 @@ typedef union {
   unsigned char all; /**< all connect flags */
 
   struct {
-    unsigned int : 1;              /**< unused */
+    unsigned int _: 1;              /**< unused */
     unsigned int cleansession : 1; /**< cleansession flag */
     unsigned int will : 1;         /**< will flag */
     unsigned int willQoS : 2;      /**< will QoS value */
@@ -30,7 +30,7 @@ typedef union {
     unsigned int password : 1;     /**< 3.1 password */
     unsigned int username : 1;     /**< 3.1 user name */
   } bits;
-} MQTTConnectFlags; /**< connect flags byte */
+} lwmqtt_connect_flags_t; /**< connect flags byte */
 
 /**
  * Defines the MQTT "Last Will and Testament" (LWT) settings for
@@ -42,9 +42,9 @@ typedef struct {
   /** The version number of this structure.  Must be 0 */
   int struct_version;
   /** The LWT topic to which the LWT message will be published. */
-  MQTTString topicName;
+  lwmqtt_string_t topicName;
   /** The LWT payload. */
-  MQTTString message;
+  lwmqtt_string_t message;
   /**
 * The retained flag for the LWT message (see MQTTAsync_message.retained).
 */
@@ -54,9 +54,9 @@ typedef struct {
 * MQTTAsync_message.qos and @ref qos).
 */
   char qos;
-} MQTTPacket_willOptions;
+} lwmqtt_will_options_t;
 
-#define MQTTPacket_willOptions_initializer \
+#define lwmqtt_default_will_options \
   { {'M', 'Q', 'T', 'W'}, 0, {NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, 0 }
 
 typedef struct {
@@ -67,14 +67,14 @@ typedef struct {
   /** Version of MQTT to be used.  3 = 3.1 4 = 3.1.1
     */
   unsigned char MQTTVersion;
-  MQTTString clientID;
+  lwmqtt_string_t clientID;
   unsigned short keepAliveInterval;
   unsigned char cleansession;
   unsigned char willFlag;
-  MQTTPacket_willOptions will;
-  MQTTString username;
-  MQTTString password;
-} MQTTPacket_connectData;
+  lwmqtt_will_options_t will;
+  lwmqtt_string_t username;
+  lwmqtt_string_t password;
+} lwmqtt_connect_data;
 
 typedef union {
   unsigned char all; /**< all connack flags */
@@ -83,20 +83,20 @@ typedef union {
     unsigned int : 7;                /**< unused */
     unsigned int sessionpresent : 1; /**< session present flag */
   } bits;
-} MQTTConnackFlags; /**< connack flags byte */
+} lwmqtt_connack_flags; /**< connack flags byte */
 
-#define MQTTPacket_connectData_initializer                                                                            \
+#define lwmqtt_default_connect_data                                                                            \
   {                                                                                                                   \
-    {'M', 'Q', 'T', 'C'}, 0, 4, {NULL, {0, NULL}}, 60, 1, 0, MQTTPacket_willOptions_initializer, {NULL, {0, NULL}}, { \
+    {'M', 'Q', 'T', 'C'}, 0, 4, {NULL, {0, NULL}}, 60, 1, 0, lwmqtt_default_will_options, {NULL, {0, NULL}}, { \
       NULL, { 0, NULL }                                                                                               \
     }                                                                                                                 \
   }
 
-int MQTTSerialize_connect(unsigned char* buf, int buflen, MQTTPacket_connectData* options);
+int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data *options);
 
-int MQTTDeserialize_connack(unsigned char* sessionPresent, unsigned char* connack_rc, unsigned char* buf, int buflen);
+int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf, int buflen);
 
-int MQTTSerialize_disconnect(unsigned char* buf, int len);
-int MQTTSerialize_pingreq(unsigned char* buf, int len);
+int lwmqtt_serialize_disconnect(unsigned char *buf, int len);
+int lwmqtt_serialize_pingreq(unsigned char *buf, int len);
 
 #endif  // LWMQTT_CONNECT_H

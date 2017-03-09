@@ -25,7 +25,7 @@
  * @param length the length to be encoded
  * @return the number of bytes written to buffer
  */
-int MQTTPacket_encode(unsigned char* buf, int length) {
+int lwmqtt_packet_encode(unsigned char *buf, int length) {
   int rc = 0;
 
   do {
@@ -45,7 +45,7 @@ int MQTTPacket_encode(unsigned char* buf, int length) {
  * @param value the decoded length returned
  * @return the number of bytes read from the socket
  */
-int MQTTPacket_decode(int (*getcharfn)(unsigned char*, int), int* value) {
+int lwmqtt_packet_decode(int (*getcharfn)(unsigned char *, int), int *value) {
   unsigned char c;
   int multiplier = 1;
   int len = 0;
@@ -68,7 +68,7 @@ exit:
   return len;
 }
 
-int MQTTPacket_len(int rem_len) {
+int lwmqtt_packet_len(int rem_len) {
   rem_len += 1; /* header byte */
 
   /* now remaining_length field */
@@ -92,9 +92,9 @@ int bufchar(unsigned char* c, int count) {
   return count;
 }
 
-int MQTTPacket_decodeBuf(unsigned char* buf, int* value) {
+int lwmqtt_packet_decode_buf(unsigned char *buf, int *value) {
   bufptr = buf;
-  return MQTTPacket_decode(bufchar, value);
+  return lwmqtt_packet_decode(bufchar, value);
 }
 
 /**
@@ -102,7 +102,7 @@ int MQTTPacket_decodeBuf(unsigned char* buf, int* value) {
  * @param pptr pointer to the input buffer - incremented by the number of bytes used & returned
  * @return the integer value calculated
  */
-int readInt(unsigned char** pptr) {
+int lwmqtt_read_int(unsigned char **pptr) {
   unsigned char* ptr = *pptr;
   int len = 256 * (*ptr) + (*(ptr + 1));
   *pptr += 2;
@@ -114,7 +114,7 @@ int readInt(unsigned char** pptr) {
  * @param pptr pointer to the input buffer - incremented by the number of bytes used & returned
  * @return the character read
  */
-char readChar(unsigned char** pptr) {
+char lwmqtt_read_char(unsigned char **pptr) {
   char c = **pptr;
   (*pptr)++;
   return c;
@@ -125,7 +125,7 @@ char readChar(unsigned char** pptr) {
  * @param pptr pointer to the output buffer - incremented by the number of bytes used & returned
  * @param c the character to write
  */
-void writeChar(unsigned char** pptr, char c) {
+void lwmqtt_write_char(unsigned char **pptr, char c) {
   **pptr = c;
   (*pptr)++;
 }
@@ -135,7 +135,7 @@ void writeChar(unsigned char** pptr, char c) {
  * @param pptr pointer to the output buffer - incremented by the number of bytes used & returned
  * @param anInt the integer to write
  */
-void writeInt(unsigned char** pptr, int anInt) {
+void lwmqtt_write_int(unsigned char **pptr, int anInt) {
   **pptr = (unsigned char)(anInt / 256);
   (*pptr)++;
   **pptr = (unsigned char)(anInt % 256);
@@ -147,9 +147,9 @@ void writeInt(unsigned char** pptr, int anInt) {
  * @param pptr pointer to the output buffer - incremented by the number of bytes used & returned
  * @param string the C string to write
  */
-void writeCString(unsigned char** pptr, const char* string) {
+void lwmqtt_write_c_string(unsigned char **pptr, const char *string) {
   int len = strlen(string);
-  writeInt(pptr, len);
+  lwmqtt_write_int(pptr, len);
   memcpy(*pptr, string, len);
   *pptr += len;
 }
@@ -159,15 +159,15 @@ int getLenStringLen(char* ptr) {
   return len;
 }
 
-void writeMQTTString(unsigned char** pptr, MQTTString mqttstring) {
+void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t mqttstring) {
   if (mqttstring.lenstring.len > 0) {
-    writeInt(pptr, mqttstring.lenstring.len);
+    lwmqtt_write_int(pptr, mqttstring.lenstring.len);
     memcpy(*pptr, mqttstring.lenstring.data, mqttstring.lenstring.len);
     *pptr += mqttstring.lenstring.len;
   } else if (mqttstring.cstring)
-    writeCString(pptr, mqttstring.cstring);
+    lwmqtt_write_c_string(pptr, mqttstring.cstring);
   else
-    writeInt(pptr, 0);
+    lwmqtt_write_int(pptr, 0);
 }
 
 /**
@@ -176,13 +176,13 @@ void writeMQTTString(unsigned char** pptr, MQTTString mqttstring) {
  * @param enddata pointer to the end of the data: do not read beyond
  * @return 1 if successful, 0 if not
  */
-int readMQTTLenString(MQTTString* mqttstring, unsigned char** pptr, unsigned char* enddata) {
+int lwmqtt_read_lp_string(lwmqtt_string_t *mqttstring, unsigned char **pptr, unsigned char *enddata) {
   int rc = 0;
 
   /* the first two bytes are the length of the string */
   if (enddata - (*pptr) > 1) /* enough length to read the integer? */
   {
-    mqttstring->lenstring.len = readInt(pptr); /* increments pptr to point past length */
+    mqttstring->lenstring.len = lwmqtt_read_int(pptr); /* increments pptr to point past length */
     if (&(*pptr)[mqttstring->lenstring.len] <= enddata) {
       mqttstring->lenstring.data = (char*)*pptr;
       *pptr += mqttstring->lenstring.len;
@@ -199,7 +199,7 @@ int readMQTTLenString(MQTTString* mqttstring, unsigned char** pptr, unsigned cha
  * @param mqttstring the string to return the length of
  * @return the length of the string
  */
-int MQTTstrlen(MQTTString mqttstring) {
+int lwmqtt_strlen(lwmqtt_string_t mqttstring) {
   int rc = 0;
 
   if (mqttstring.cstring)
@@ -215,7 +215,7 @@ int MQTTstrlen(MQTTString mqttstring) {
  * @param bptr the C string to compare
  * @return boolean - equal or not
  */
-int MQTTPacket_equals(MQTTString* a, char* bptr) {
+int lwmqtt_strcmp(lwmqtt_string_t *a, char *bptr) {
   int alen = 0, blen = 0;
   char* aptr;
 
@@ -241,7 +241,7 @@ int MQTTPacket_equals(MQTTString* a, char* bptr) {
  */
 int MQTTPacket_read(unsigned char* buf, int buflen, int (*getfn)(unsigned char*, int)) {
   int rc = -1;
-  MQTTHeader header = {0};
+  lwmqtt_header_t header = {0};
   int len = 0;
   int rem_len = 0;
 
@@ -250,8 +250,8 @@ int MQTTPacket_read(unsigned char* buf, int buflen, int (*getfn)(unsigned char*,
 
   len = 1;
   /* 2. read the remaining length.  This is variable in itself */
-  MQTTPacket_decode(getfn, &rem_len);
-  len += MQTTPacket_encode(buf + 1, rem_len); /* put the original remaining length back into the buffer */
+  lwmqtt_packet_decode(getfn, &rem_len);
+  len += lwmqtt_packet_encode(buf + 1, rem_len); /* put the original remaining length back into the buffer */
 
   /* 3. read the rest of the buffer using a callback to supply the rest of the data */
   if ((rem_len + len) > buflen) goto exit;
@@ -304,7 +304,7 @@ exit:
  */
 int MQTTPacket_readnb(unsigned char* buf, int buflen, MQTTTransport* trp) {
   int rc = -1, frc;
-  MQTTHeader header = {0};
+  lwmqtt_header_t header = {0};
 
   switch (trp->state) {
     default:
@@ -322,7 +322,7 @@ int MQTTPacket_readnb(unsigned char* buf, int buflen, MQTTTransport* trp) {
       if ((frc = MQTTPacket_decodenb(trp)) == MQTTPACKET_READ_ERROR) goto exit;
       if (frc == 0) return 0;
       trp->len =
-          1 + MQTTPacket_encode(buf + 1, trp->rem_len); /* put the original remaining length back into the buffer */
+          1 + lwmqtt_packet_encode(buf + 1, trp->rem_len); /* put the original remaining length back into the buffer */
       if ((trp->rem_len + trp->len) > buflen) goto exit;
       ++trp->state;
     /*FALLTHROUGH*/

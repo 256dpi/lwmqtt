@@ -69,7 +69,7 @@ typedef struct MQTTMessage {
 
 typedef struct MessageData {
   MQTTMessage* message;
-  MQTTString* topicName;
+  lwmqtt_string_t* topicName;
 } MessageData;
 
 typedef void (*messageHandler)(MessageData*);
@@ -112,7 +112,7 @@ void MQTTClientInit(MQTTClient* client, Network* network, unsigned int command_t
  *  @param options - connect options
  *  @return success code
  */
-int MQTTConnect(MQTTClient* client, MQTTPacket_connectData* options);
+int MQTTConnect(MQTTClient* client, lwmqtt_connect_data* options);
 
 /** MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
  *  @param client - the client object to use

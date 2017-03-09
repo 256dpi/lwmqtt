@@ -18,9 +18,9 @@
 #ifndef LWMQTT_UNSUBSCRIBE_H
 #define LWMQTT_UNSUBSCRIBE_H
 
-int MQTTSerialize_unsubscribe(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid, int count,
-                              MQTTString topicFilters[]);
+int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid, int count,
+                                 lwmqtt_string_t *topicFilters);
 
-int MQTTDeserialize_unsuback(unsigned short* packetid, unsigned char* buf, int len);
+int lwmqtt_deserialize_unsuback(unsigned short *packetid, unsigned char *buf, int len);
 
 #endif  // LWMQTT_UNSUBSCRIBE_H

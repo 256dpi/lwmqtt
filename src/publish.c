@@ -31,29 +31,29 @@
   * @param buflen the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success
   */
-int MQTTDeserialize_publish(unsigned char* dup, int* qos, unsigned char* retained, unsigned short* packetid,
-                            MQTTString* topicName, unsigned char** payload, int* payloadlen, unsigned char* buf,
-                            int buflen) {
-  MQTTHeader header = {0};
+int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packetid,
+                               lwmqtt_string_t *topicName, unsigned char **payload, int *payloadlen, unsigned char *buf,
+                               int buflen) {
+  lwmqtt_header_t header = {0};
   unsigned char* curdata = buf;
   unsigned char* enddata = NULL;
   int rc = 0;
   int mylen = 0;
 
-  header.byte = readChar(&curdata);
+  header.byte = lwmqtt_read_char(&curdata);
   if (header.bits.type != PUBLISH) goto exit;
   *dup = header.bits.dup;
   *qos = header.bits.qos;
   *retained = header.bits.retain;
 
-  curdata += (rc = MQTTPacket_decodeBuf(curdata, &mylen)); /* read remaining length */
+  curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen)); /* read remaining length */
   enddata = curdata + mylen;
 
-  if (!readMQTTLenString(topicName, &curdata, enddata) ||
+  if (!lwmqtt_read_lp_string(topicName, &curdata, enddata) ||
       enddata - curdata < 0) /* do we have enough data to read the protocol version byte? */
     goto exit;
 
-  if (*qos > 0) *packetid = readInt(&curdata);
+  if (*qos > 0) *packetid = lwmqtt_read_int(&curdata);
 
   *payloadlen = enddata - curdata;
   *payload = curdata;
@@ -72,23 +72,23 @@ exit:
   * @param buflen the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int MQTTDeserialize_ack(unsigned char* packettype, unsigned char* dup, unsigned short* packetid, unsigned char* buf,
-                        int buflen) {
-  MQTTHeader header = {0};
+int lwmqtt_deserialize_ack(unsigned char *packettype, unsigned char *dup, unsigned short *packetid, unsigned char *buf,
+                           int buflen) {
+  lwmqtt_header_t header = {0};
   unsigned char* curdata = buf;
   unsigned char* enddata = NULL;
   int rc = 0;
   int mylen;
 
-  header.byte = readChar(&curdata);
+  header.byte = lwmqtt_read_char(&curdata);
   *dup = header.bits.dup;
   *packettype = header.bits.type;
 
-  curdata += (rc = MQTTPacket_decodeBuf(curdata, &mylen)); /* read remaining length */
+  curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen)); /* read remaining length */
   enddata = curdata + mylen;
 
   if (enddata - curdata < 2) goto exit;
-  *packetid = readInt(&curdata);
+  *packetid = lwmqtt_read_int(&curdata);
 
   rc = 1;
 exit:
@@ -102,10 +102,10 @@ exit:
   * @param payloadlen the length of the payload to be sent
   * @return the length of buffer needed to contain the serialized version of the packet
   */
-int MQTTSerialize_publishLength(int qos, MQTTString topicName, int payloadlen) {
+int MQTTSerialize_publishLength(int qos, lwmqtt_string_t topicName, int payloadlen) {
   int len = 0;
 
-  len += 2 + MQTTstrlen(topicName) + payloadlen;
+  len += 2 + lwmqtt_strlen(topicName) + payloadlen;
   if (qos > 0) len += 2; /* packetid */
   return len;
 }
@@ -123,14 +123,14 @@ int MQTTSerialize_publishLength(int qos, MQTTString topicName, int payloadlen) {
   * @param payloadlen integer - the length of the MQTT payload
   * @return the length of the serialized data.  <= 0 indicates error
   */
-int MQTTSerialize_publish(unsigned char* buf, int buflen, unsigned char dup, int qos, unsigned char retained,
-                          unsigned short packetid, MQTTString topicName, unsigned char* payload, int payloadlen) {
+int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, int qos, unsigned char retained,
+                             unsigned short packetid, lwmqtt_string_t topicName, unsigned char *payload, int payloadlen) {
   unsigned char* ptr = buf;
-  MQTTHeader header = {0};
+  lwmqtt_header_t header = {0};
   int rem_len = 0;
   int rc = 0;
 
-  if (MQTTPacket_len(rem_len = MQTTSerialize_publishLength(qos, topicName, payloadlen)) > buflen) {
+  if (lwmqtt_packet_len(rem_len = MQTTSerialize_publishLength(qos, topicName, payloadlen)) > buflen) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;
     goto exit;
   }
@@ -139,14 +139,14 @@ int MQTTSerialize_publish(unsigned char* buf, int buflen, unsigned char dup, int
   header.bits.dup = dup;
   header.bits.qos = qos;
   header.bits.retain = retained;
-  writeChar(&ptr, header.byte); /* write header */
+  lwmqtt_write_char(&ptr, header.byte); /* write header */
 
-  ptr += MQTTPacket_encode(ptr, rem_len); /* write remaining length */
+  ptr += lwmqtt_packet_encode(ptr, rem_len); /* write remaining length */
   ;
 
-  writeMQTTString(&ptr, topicName);
+  lwmqtt_write_string(&ptr, topicName);
 
-  if (qos > 0) writeInt(&ptr, packetid);
+  if (qos > 0) lwmqtt_write_int(&ptr, packetid);
 
   memcpy(ptr, payload, payloadlen);
   ptr += payloadlen;
@@ -166,9 +166,9 @@ exit:
   * @param packetid the MQTT packet identifier
   * @return serialized length, or error if 0
   */
-int MQTTSerialize_ack(unsigned char* buf, int buflen, unsigned char packettype, unsigned char dup,
-                      unsigned short packetid) {
-  MQTTHeader header = {0};
+int lwmqtt_serialize_ack(unsigned char *buf, int buflen, unsigned char packettype, unsigned char dup,
+                         unsigned short packetid) {
+  lwmqtt_header_t header = {0};
   int rc = 0;
   unsigned char* ptr = buf;
 
@@ -179,10 +179,10 @@ int MQTTSerialize_ack(unsigned char* buf, int buflen, unsigned char packettype, 
   header.bits.type = packettype;
   header.bits.dup = dup;
   header.bits.qos = (packettype == PUBREL) ? 1 : 0;
-  writeChar(&ptr, header.byte); /* write header */
+  lwmqtt_write_char(&ptr, header.byte); /* write header */
 
-  ptr += MQTTPacket_encode(ptr, 2); /* write remaining length */
-  writeInt(&ptr, packetid);
+  ptr += lwmqtt_packet_encode(ptr, 2); /* write remaining length */
+  lwmqtt_write_int(&ptr, packetid);
   rc = ptr - buf;
 exit:
 
@@ -196,8 +196,8 @@ exit:
   * @param packetid integer - the MQTT packet identifier
   * @return serialized length, or error if 0
   */
-int MQTTSerialize_puback(unsigned char* buf, int buflen, unsigned short packetid) {
-  return MQTTSerialize_ack(buf, buflen, PUBACK, 0, packetid);
+int lwmqtt_serialize_puback(unsigned char *buf, int buflen, unsigned short packetid) {
+  return lwmqtt_serialize_ack(buf, buflen, PUBACK, 0, packetid);
 }
 
 /**
@@ -208,8 +208,8 @@ int MQTTSerialize_puback(unsigned char* buf, int buflen, unsigned short packetid
   * @param packetid integer - the MQTT packet identifier
   * @return serialized length, or error if 0
   */
-int MQTTSerialize_pubrel(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid) {
-  return MQTTSerialize_ack(buf, buflen, PUBREL, dup, packetid);
+int lwmqtt_serialize_pubrel(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid) {
+  return lwmqtt_serialize_ack(buf, buflen, PUBREL, dup, packetid);
 }
 
 /**
@@ -219,6 +219,6 @@ int MQTTSerialize_pubrel(unsigned char* buf, int buflen, unsigned char dup, unsi
   * @param packetid integer - the MQTT packet identifier
   * @return serialized length, or error if 0
   */
-int MQTTSerialize_pubcomp(unsigned char* buf, int buflen, unsigned short packetid) {
-  return MQTTSerialize_ack(buf, buflen, PUBCOMP, 0, packetid);
+int lwmqtt_serialize_pubcomp(unsigned char *buf, int buflen, unsigned short packetid) {
+  return lwmqtt_serialize_ack(buf, buflen, PUBCOMP, 0, packetid);
 }

@@ -16,7 +16,7 @@
 
 #include "client.h"
 
-static void NewMessageData(MessageData* md, MQTTString* aTopicName, MQTTMessage* aMessage) {
+static void NewMessageData(MessageData* md, lwmqtt_string_t* aTopicName, MQTTMessage* aMessage) {
   md->topicName = aTopicName;
   md->message = aMessage;
 }
@@ -84,7 +84,7 @@ exit:
 }
 
 static int readPacket(MQTTClient* c, Timer* timer) {
-  MQTTHeader header = {0};
+  lwmqtt_header_t header = {0};
   int len = 0;
   int rem_len = 0;
 
@@ -95,7 +95,7 @@ static int readPacket(MQTTClient* c, Timer* timer) {
   len = 1;
   /* 2. read the remaining length.  This is variable in itself */
   decodePacket(c, &rem_len, TimerLeftMS(timer));
-  len += MQTTPacket_encode(c->readbuf + 1, rem_len); /* put the original remaining length back into the buffer */
+  len += lwmqtt_packet_encode(c->readbuf + 1, rem_len); /* put the original remaining length back into the buffer */
 
   /* 3. read the rest of the buffer using a callback to supply the rest of the data */
   if (rem_len > 0 && (rc = c->ipstack->mqttread(c->ipstack, c->readbuf + len, rem_len, TimerLeftMS(timer)) != rem_len))
@@ -110,7 +110,7 @@ exit:
 // assume topic filter and name is in correct format
 // # can only be at end
 // + and # can only be next to separator
-static char isTopicMatched(char* topicFilter, MQTTString* topicName) {
+static char isTopicMatched(char* topicFilter, lwmqtt_string_t* topicName) {
   char* curf = topicFilter;
   char* curn = topicName->lenstring.data;
   char* curn_end = curn + topicName->lenstring.len;
@@ -130,14 +130,14 @@ static char isTopicMatched(char* topicFilter, MQTTString* topicName) {
   return (curn == curn_end) && (*curf == '\0');
 }
 
-int deliverMessage(MQTTClient* c, MQTTString* topicName, MQTTMessage* message) {
+int deliverMessage(MQTTClient* c, lwmqtt_string_t* topicName, MQTTMessage* message) {
   int i;
   int rc = FAILURE;
 
   // we have to find the right message handler - indexed by topic
   for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i) {
     if (c->messageHandlers[i].topicFilter != 0 &&
-        (MQTTPacket_equals(topicName, (char*)c->messageHandlers[i].topicFilter) ||
+        (lwmqtt_strcmp(topicName, (char *) c->messageHandlers[i].topicFilter) ||
          isTopicMatched((char*)c->messageHandlers[i].topicFilter, topicName))) {
       if (c->messageHandlers[i].fp != NULL) {
         MessageData md;
@@ -171,7 +171,7 @@ int keepalive(MQTTClient* c) {
       Timer timer;
       TimerInit(&timer);
       TimerCountdownMS(&timer, 1000);
-      int len = MQTTSerialize_pingreq(c->buf, c->buf_size);
+      int len = lwmqtt_serialize_pingreq(c->buf, c->buf_size);
       if (len > 0 && (rc = sendPacket(c, len, &timer)) == SUCCESS)  // send the ping src
         c->ping_outstanding = 1;
     }
@@ -194,19 +194,20 @@ int cycle(MQTTClient* c, Timer* timer) {
     case SUBACK:
       break;
     case PUBLISH: {
-      MQTTString topicName;
+      lwmqtt_string_t topicName;
       MQTTMessage msg;
       int intQoS;
-      if (MQTTDeserialize_publish(&msg.dup, &intQoS, &msg.retained, &msg.id, &topicName, (unsigned char**)&msg.payload,
-                                  (int*)&msg.payloadlen, c->readbuf, c->readbuf_size) != 1)
+      if (lwmqtt_deserialize_publish(&msg.dup, &intQoS, &msg.retained, &msg.id, &topicName,
+                                     (unsigned char **) &msg.payload,
+                                     (int *) &msg.payloadlen, c->readbuf, c->readbuf_size) != 1)
         goto exit;
       msg.qos = (enum QoS)intQoS;
       deliverMessage(c, &topicName, &msg);
       if (msg.qos != QOS0) {
         if (msg.qos == QOS1)
-          len = MQTTSerialize_ack(c->buf, c->buf_size, PUBACK, 0, msg.id);
+          len = lwmqtt_serialize_ack(c->buf, c->buf_size, PUBACK, 0, msg.id);
         else if (msg.qos == QOS2)
-          len = MQTTSerialize_ack(c->buf, c->buf_size, PUBREC, 0, msg.id);
+          len = lwmqtt_serialize_ack(c->buf, c->buf_size, PUBREC, 0, msg.id);
         if (len <= 0)
           rc = FAILURE;
         else
@@ -218,9 +219,9 @@ int cycle(MQTTClient* c, Timer* timer) {
     case PUBREC: {
       unsigned short mypacketid;
       unsigned char dup, type;
-      if (MQTTDeserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1)
+      if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1)
         rc = FAILURE;
-      else if ((len = MQTTSerialize_ack(c->buf, c->buf_size, PUBREL, 0, mypacketid)) <= 0)
+      else if ((len = lwmqtt_serialize_ack(c->buf, c->buf_size, PUBREL, 0, mypacketid)) <= 0)
         rc = FAILURE;
       else if ((rc = sendPacket(c, len, timer)) != SUCCESS)  // send the PUBREL src
         rc = FAILURE;                                        // there was a problem
@@ -278,10 +279,10 @@ int waitfor(MQTTClient* c, int packet_type, Timer* timer) {
   return rc;
 }
 
-int MQTTConnect(MQTTClient* c, MQTTPacket_connectData* options) {
+int MQTTConnect(MQTTClient* c, lwmqtt_connect_data* options) {
   Timer connect_timer;
   int rc = FAILURE;
-  MQTTPacket_connectData default_options = MQTTPacket_connectData_initializer;
+  lwmqtt_connect_data default_options = lwmqtt_default_connect_data;
   int len = 0;
 
   if (c->isconnected) /* don't send connect src again if we are already connected */
@@ -294,7 +295,7 @@ int MQTTConnect(MQTTClient* c, MQTTPacket_connectData* options) {
 
   c->keepAliveInterval = options->keepAliveInterval;
   TimerCountdown(&c->ping_timer, c->keepAliveInterval);
-  if ((len = MQTTSerialize_connect(c->buf, c->buf_size, options)) <= 0) goto exit;
+  if ((len = lwmqtt_serialize_connect(c->buf, c->buf_size, options)) <= 0) goto exit;
   if ((rc = sendPacket(c, len, &connect_timer)) != SUCCESS)  // send the connect src
     goto exit;                                               // there was a problem
 
@@ -302,7 +303,7 @@ int MQTTConnect(MQTTClient* c, MQTTPacket_connectData* options) {
   if (waitfor(c, CONNACK, &connect_timer) == CONNACK) {
     unsigned char connack_rc = 255;
     unsigned char sessionPresent = 0;
-    if (MQTTDeserialize_connack(&sessionPresent, &connack_rc, c->readbuf, c->readbuf_size) == 1)
+    if (lwmqtt_deserialize_connack(&sessionPresent, &connack_rc, c->readbuf, c->readbuf_size) == 1)
       rc = connack_rc;
     else
       rc = FAILURE;
@@ -319,7 +320,7 @@ int MQTTSubscribe(MQTTClient* c, const char* topicFilter, enum QoS qos, messageH
   int rc = FAILURE;
   Timer timer;
   int len = 0;
-  MQTTString topic = MQTTString_initializer;
+  lwmqtt_string_t topic = MQTTString_initializer;
   topic.cstring = (char*)topicFilter;
 
   if (!c->isconnected) goto exit;
@@ -327,7 +328,7 @@ int MQTTSubscribe(MQTTClient* c, const char* topicFilter, enum QoS qos, messageH
   TimerInit(&timer);
   TimerCountdownMS(&timer, c->command_timeout_ms);
 
-  len = MQTTSerialize_subscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic, (int*)&qos);
+  len = lwmqtt_serialize_subscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic, (int *) &qos);
   if (len <= 0) goto exit;
   if ((rc = sendPacket(c, len, &timer)) != SUCCESS)  // send the subscribe src
     goto exit;                                       // there was a problem
@@ -336,7 +337,7 @@ int MQTTSubscribe(MQTTClient* c, const char* topicFilter, enum QoS qos, messageH
   {
     int count = 0, grantedQoS = -1;
     unsigned short mypacketid;
-    if (MQTTDeserialize_suback(&mypacketid, 1, &count, &grantedQoS, c->readbuf, c->readbuf_size) == 1)
+    if (lwmqtt_deserialize_suback(&mypacketid, 1, &count, &grantedQoS, c->readbuf, c->readbuf_size) == 1)
       rc = grantedQoS;  // 0, 1, 2 or 0x80
     if (rc != 0x80) {
       int i;
@@ -359,7 +360,7 @@ exit:
 int MQTTUnsubscribe(MQTTClient* c, const char* topicFilter) {
   int rc = FAILURE;
   Timer timer;
-  MQTTString topic = MQTTString_initializer;
+  lwmqtt_string_t topic = MQTTString_initializer;
   topic.cstring = (char*)topicFilter;
   int len = 0;
 
@@ -368,13 +369,13 @@ int MQTTUnsubscribe(MQTTClient* c, const char* topicFilter) {
   TimerInit(&timer);
   TimerCountdownMS(&timer, c->command_timeout_ms);
 
-  if ((len = MQTTSerialize_unsubscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic)) <= 0) goto exit;
+  if ((len = lwmqtt_serialize_unsubscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic)) <= 0) goto exit;
   if ((rc = sendPacket(c, len, &timer)) != SUCCESS)  // send the subscribe src
     goto exit;                                       // there was a problem
 
   if (waitfor(c, UNSUBACK, &timer) == UNSUBACK) {
     unsigned short mypacketid;  // should be the same as the packetid above
-    if (MQTTDeserialize_unsuback(&mypacketid, c->readbuf, c->readbuf_size) == 1) rc = 0;
+    if (lwmqtt_deserialize_unsuback(&mypacketid, c->readbuf, c->readbuf_size) == 1) rc = 0;
   } else
     rc = FAILURE;
 
@@ -385,7 +386,7 @@ exit:
 int MQTTPublish(MQTTClient* c, const char* topicName, MQTTMessage* message) {
   int rc = FAILURE;
   Timer timer;
-  MQTTString topic = MQTTString_initializer;
+  lwmqtt_string_t topic = MQTTString_initializer;
   topic.cstring = (char*)topicName;
   int len = 0;
 
@@ -396,8 +397,8 @@ int MQTTPublish(MQTTClient* c, const char* topicName, MQTTMessage* message) {
 
   if (message->qos == QOS1 || message->qos == QOS2) message->id = getNextPacketId(c);
 
-  len = MQTTSerialize_publish(c->buf, c->buf_size, 0, message->qos, message->retained, message->id, topic,
-                              (unsigned char*)message->payload, message->payloadlen);
+  len = lwmqtt_serialize_publish(c->buf, c->buf_size, 0, message->qos, message->retained, message->id, topic,
+                                 (unsigned char *) message->payload, message->payloadlen);
   if (len <= 0) goto exit;
   if ((rc = sendPacket(c, len, &timer)) != SUCCESS)  // send the subscribe src
     goto exit;                                       // there was a problem
@@ -406,14 +407,14 @@ int MQTTPublish(MQTTClient* c, const char* topicName, MQTTMessage* message) {
     if (waitfor(c, PUBACK, &timer) == PUBACK) {
       unsigned short mypacketid;
       unsigned char dup, type;
-      if (MQTTDeserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1) rc = FAILURE;
+      if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1) rc = FAILURE;
     } else
       rc = FAILURE;
   } else if (message->qos == QOS2) {
     if (waitfor(c, PUBCOMP, &timer) == PUBCOMP) {
       unsigned short mypacketid;
       unsigned char dup, type;
-      if (MQTTDeserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1) rc = FAILURE;
+      if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1) rc = FAILURE;
     } else
       rc = FAILURE;
   }
@@ -430,7 +431,7 @@ int MQTTDisconnect(MQTTClient* c) {
   TimerInit(&timer);
   TimerCountdownMS(&timer, c->command_timeout_ms);
 
-  len = MQTTSerialize_disconnect(c->buf, c->buf_size);
+  len = lwmqtt_serialize_disconnect(c->buf, c->buf_size);
   if (len > 0) rc = sendPacket(c, len, &timer);  // send the disconnect src
 
   c->isconnected = 0;

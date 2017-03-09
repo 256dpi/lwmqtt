@@ -18,15 +18,15 @@
 #ifndef LWMQTT_PUBLISH_H
 #define LWMQTT_PUBLISH_H
 
-int MQTTSerialize_publish(unsigned char* buf, int buflen, unsigned char dup, int qos, unsigned char retained,
-                          unsigned short packetid, MQTTString topicName, unsigned char* payload, int payloadlen);
+int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, int qos, unsigned char retained,
+                             unsigned short packetid, lwmqtt_string_t topicName, unsigned char *payload, int payloadlen);
 
-int MQTTDeserialize_publish(unsigned char* dup, int* qos, unsigned char* retained, unsigned short* packetid,
-                            MQTTString* topicName, unsigned char** payload, int* payloadlen, unsigned char* buf,
-                            int len);
+int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packetid,
+                               lwmqtt_string_t *topicName, unsigned char **payload, int *payloadlen, unsigned char *buf,
+                               int len);
 
-int MQTTSerialize_puback(unsigned char* buf, int buflen, unsigned short packetid);
-int MQTTSerialize_pubrel(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid);
-int MQTTSerialize_pubcomp(unsigned char* buf, int buflen, unsigned short packetid);
+int lwmqtt_serialize_puback(unsigned char *buf, int buflen, unsigned short packetid);
+int lwmqtt_serialize_pubrel(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid);
+int lwmqtt_serialize_pubcomp(unsigned char *buf, int buflen, unsigned short packetid);
 
 #endif  // LWMQTT_PUBLISH_H

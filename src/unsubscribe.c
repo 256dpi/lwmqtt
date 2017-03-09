@@ -24,11 +24,11 @@
   * @param topicFilters the array of topic filter strings to be used in the publish
   * @return the length of buffer needed to contain the serialized version of the packet
   */
-int MQTTSerialize_unsubscribeLength(int count, MQTTString topicFilters[]) {
+int MQTTSerialize_unsubscribeLength(int count, lwmqtt_string_t topicFilters[]) {
   int i;
   int len = 2; /* packetid */
 
-  for (i = 0; i < count; ++i) len += 2 + MQTTstrlen(topicFilters[i]); /* length + topic*/
+  for (i = 0; i < count; ++i) len += 2 + lwmqtt_strlen(topicFilters[i]); /* length + topic*/
   return len;
 }
 
@@ -42,15 +42,15 @@ int MQTTSerialize_unsubscribeLength(int count, MQTTString topicFilters[]) {
   * @param topicFilters - array of topic filter names
   * @return the length of the serialized data.  <= 0 indicates error
   */
-int MQTTSerialize_unsubscribe(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid, int count,
-                              MQTTString topicFilters[]) {
+int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid, int count,
+                                 lwmqtt_string_t *topicFilters) {
   unsigned char* ptr = buf;
-  MQTTHeader header = {0};
+  lwmqtt_header_t header = {0};
   int rem_len = 0;
   int rc = -1;
   int i = 0;
 
-  if (MQTTPacket_len(rem_len = MQTTSerialize_unsubscribeLength(count, topicFilters)) > buflen) {
+  if (lwmqtt_packet_len(rem_len = MQTTSerialize_unsubscribeLength(count, topicFilters)) > buflen) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;
     goto exit;
   }
@@ -59,14 +59,14 @@ int MQTTSerialize_unsubscribe(unsigned char* buf, int buflen, unsigned char dup,
   header.bits.type = UNSUBSCRIBE;
   header.bits.dup = dup;
   header.bits.qos = 1;
-  writeChar(&ptr, header.byte); /* write header */
+  lwmqtt_write_char(&ptr, header.byte); /* write header */
 
-  ptr += MQTTPacket_encode(ptr, rem_len); /* write remaining length */
+  ptr += lwmqtt_packet_encode(ptr, rem_len); /* write remaining length */
   ;
 
-  writeInt(&ptr, packetid);
+  lwmqtt_write_int(&ptr, packetid);
 
-  for (i = 0; i < count; ++i) writeMQTTString(&ptr, topicFilters[i]);
+  for (i = 0; i < count; ++i) lwmqtt_write_string(&ptr, topicFilters[i]);
 
   rc = ptr - buf;
 exit:
@@ -80,12 +80,12 @@ exit:
   * @param buflen the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int MQTTDeserialize_unsuback(unsigned short* packetid, unsigned char* buf, int buflen) {
+int lwmqtt_deserialize_unsuback(unsigned short *packetid, unsigned char *buf, int buflen) {
   unsigned char type = 0;
   unsigned char dup = 0;
   int rc = 0;
 
-  rc = MQTTDeserialize_ack(&type, &dup, packetid, buf, buflen);
+  rc = lwmqtt_deserialize_ack(&type, &dup, packetid, buf, buflen);
   if (type == UNSUBACK) rc = 1;
 
   return rc;
