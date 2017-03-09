@@ -20,11 +20,6 @@
 #include "unsubscribe.h"
 #include "subscribe.h"
 
-static void NewMessageData(MessageData* md, lwmqtt_string_t* aTopicName, MQTTMessage* aMessage) {
-  md->topicName = aTopicName;
-  md->message = aMessage;
-}
-
 static int getNextPacketId(MQTTClient* c) {
   return c->next_packetid = (c->next_packetid == MAX_PACKET_ID) ? 1 : c->next_packetid + 1;
 }
@@ -58,7 +53,7 @@ void MQTTClientInit(MQTTClient* c, Network* network, unsigned int command_timeou
   c->readbuf_size = readbuf_size;
   c->isconnected = 0;
   c->ping_outstanding = 0;
-  c->defaultMessageHandler = NULL;
+  c->callback = NULL;
   c->next_packetid = 1;
   TimerInit(&c->ping_timer);
 }
@@ -113,10 +108,8 @@ exit:
 int deliverMessage(MQTTClient* c, lwmqtt_string_t* topicName, MQTTMessage* message) {
   int rc = FAILURE;
 
-  if (c->defaultMessageHandler != NULL) {
-    MessageData md;
-    NewMessageData(&md, topicName, message);
-    c->defaultMessageHandler(&md);
+  if (c->callback != NULL) {
+    c->callback(topicName, message);
     rc = SUCCESS;
   }
 

@@ -69,12 +69,7 @@ typedef struct MQTTMessage {
   size_t payloadlen;
 } MQTTMessage;
 
-typedef struct MessageData {
-  MQTTMessage* message;
-  lwmqtt_string_t* topicName;
-} MessageData;
-
-typedef void (*messageHandler)(MessageData*);
+typedef void (*lwmqtt_callback_t)(lwmqtt_string_t* aTopicName, MQTTMessage* aMessage);
 
 typedef struct MQTTClient {
   unsigned int next_packetid, command_timeout_ms;
@@ -84,7 +79,7 @@ typedef struct MQTTClient {
   char ping_outstanding;
   int isconnected;
 
-  void (*defaultMessageHandler)(MessageData*);
+  lwmqtt_callback_t callback;
 
   Network* ipstack;
   Timer ping_timer;
