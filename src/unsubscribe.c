@@ -17,13 +17,7 @@
 #include "unsubscribe.h"
 #include "packet.h"
 
-/**
-  * Determines the length of the MQTT unsubscribe packet that would be produced using the supplied parameters
-  * @param count the number of topic filter strings in topicFilters
-  * @param topicFilters the array of topic filter strings to be used in the publish
-  * @return the length of buffer needed to contain the serialized version of the packet
-  */
-int MQTTSerialize_unsubscribeLength(int count, lwmqtt_string_t topicFilters[]) {
+static int lwmqtt_serialize_unsubscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int i;
   int len = 2; /* packetid */
 
@@ -49,7 +43,7 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char d
   int rc = -1;
   int i = 0;
 
-  if (lwmqtt_packet_len(rem_len = MQTTSerialize_unsubscribeLength(count, topicFilters)) > buflen) {
+  if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_unsubscribe_length(count, topicFilters)) > buflen) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;
     goto exit;
   }

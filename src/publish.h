@@ -32,4 +32,7 @@ int lwmqtt_serialize_puback(unsigned char *buf, int buflen, unsigned short packe
 int lwmqtt_serialize_pubrel(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid);
 int lwmqtt_serialize_pubcomp(unsigned char *buf, int buflen, unsigned short packetid);
 
+int lwmqtt_deserialize_ack(unsigned char *packettype, unsigned char *dup, unsigned short *packetid, unsigned char *buf,
+                           int buflen);
+
 #endif  // LWMQTT_PUBLISH_H

@@ -83,18 +83,18 @@ int lwmqtt_packet_len(int rem_len) {
   return rem_len;
 }
 
-static unsigned char *bufptr;
+static unsigned char *lwmqtt_bufptr;
 
-int bufchar(unsigned char *c, int count) {
+static int lwmqtt_bufchar(unsigned char *c, int count) {
   int i;
 
-  for (i = 0; i < count; ++i) *c = *bufptr++;
+  for (i = 0; i < count; ++i) *c = *lwmqtt_bufptr++;
   return count;
 }
 
 int lwmqtt_packet_decode_buf(unsigned char *buf, int *value) {
-  bufptr = buf;
-  return lwmqtt_packet_decode(bufchar, value);
+  lwmqtt_bufptr = buf;
+  return lwmqtt_packet_decode(lwmqtt_bufchar, value);
 }
 
 /**

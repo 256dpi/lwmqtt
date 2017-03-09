@@ -19,13 +19,7 @@
 #include "subscribe.h"
 #include "packet.h"
 
-/**
-  * Determines the length of the MQTT subscribe packet that would be produced using the supplied parameters
-  * @param count the number of topic filter strings in topicFilters
-  * @param topicFilters the array of topic filter strings to be used in the publish
-  * @return the length of buffer needed to contain the serialized version of the packet
-  */
-int MQTTSerialize_subscribeLength(int count, lwmqtt_string_t topicFilters[]) {
+static int lwmqtt_serialize_subscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int i;
   int len = 2; /* packetid */
 
@@ -52,7 +46,7 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buflen, unsigned char dup
   int rc = 0;
   int i = 0;
 
-  if (lwmqtt_packet_len(rem_len = MQTTSerialize_subscribeLength(count, topicFilters)) > buflen) {
+  if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_subscribe_length(count, topicFilters)) > buflen) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;
     goto exit;
   }

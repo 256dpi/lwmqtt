@@ -11,10 +11,7 @@ typedef struct {
   lwmqtt_lp_string_t lenstring;
 } lwmqtt_string_t;
 
-#define MQTTString_initializer \
-  {                            \
-    NULL, { 0, NULL }          \
-  }
+#define lwmqtt_default_string { NULL, { 0, NULL } }
 
 int lwmqtt_strlen(lwmqtt_string_t mqttstring);
 

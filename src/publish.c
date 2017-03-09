@@ -96,14 +96,7 @@ exit:
   return rc;
 }
 
-/**
-  * Determines the length of the MQTT publish packet that would be produced using the supplied parameters
-  * @param qos the MQTT QoS of the publish (packetid is omitted for QoS 0)
-  * @param topicName the topic name to be used in the publish
-  * @param payloadlen the length of the payload to be sent
-  * @return the length of buffer needed to contain the serialized version of the packet
-  */
-int MQTTSerialize_publishLength(int qos, lwmqtt_string_t topicName, int payloadlen) {
+static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, int payloadlen) {
   int len = 0;
 
   len += 2 + lwmqtt_strlen(topicName) + payloadlen;
@@ -132,7 +125,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, 
   int rem_len = 0;
   int rc = 0;
 
-  if (lwmqtt_packet_len(rem_len = MQTTSerialize_publishLength(qos, topicName, payloadlen)) > buflen) {
+  if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_publish_length(qos, topicName, payloadlen)) > buflen) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;
     goto exit;
   }

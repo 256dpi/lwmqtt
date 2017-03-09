@@ -19,13 +19,7 @@
 #include "connect.h"
 #include "packet.h"
 
-/**
-  * Determines the length of the MQTT connect packet that would be produced using the supplied connect options.
-  *
-  * @param options the options to be used to build the connect packet
-  * @return the length of buffer needed to contain the serialized version of the packet
-  */
-int MQTTSerialize_connectLength(lwmqtt_connect_data *options) {
+static int lwmqtt_serialize_connect_length(lwmqtt_connect_data *options) {
   int len = 0;
 
   if (options->MQTTVersion == 3)
@@ -55,7 +49,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data
   int len = 0;
   int rc = -1;
 
-  if (lwmqtt_packet_len(len = MQTTSerialize_connectLength(options)) > buflen) {
+  if (lwmqtt_packet_len(len = lwmqtt_serialize_connect_length(options)) > buflen) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;
     goto exit;
   }
@@ -141,7 +135,7 @@ exit:
   * @param packettype the message type
   * @return serialized length, or error if 0
   */
-int MQTTSerialize_zero(unsigned char *buf, int buflen, unsigned char packettype) {
+int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char packettype) {
   lwmqtt_header_t header = {0};
   int rc = -1;
   unsigned char *ptr = buf;
@@ -167,7 +161,7 @@ exit:
   * @param len The length in bytes of the supplied buffer, to avoid overruns.
   * @return Serialized length, or error if 0.
   */
-int lwmqtt_serialize_disconnect(unsigned char *buf, int len) { return MQTTSerialize_zero(buf, len, DISCONNECT); }
+int lwmqtt_serialize_disconnect(unsigned char *buf, int len) { return lwmqtt_serialize_zero(buf, len, DISCONNECT); }
 
 /**
   * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
@@ -176,4 +170,4 @@ int lwmqtt_serialize_disconnect(unsigned char *buf, int len) { return MQTTSerial
   * @param len The length in bytes of the supplied buffer, to avoid overruns.
   * @return Serialized length, or error if 0.
   */
-int lwmqtt_serialize_pingreq(unsigned char *buf, int len) { return MQTTSerialize_zero(buf, len, PINGREQ); }
+int lwmqtt_serialize_pingreq(unsigned char *buf, int len) { return lwmqtt_serialize_zero(buf, len, PINGREQ); }
