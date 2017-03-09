@@ -15,12 +15,12 @@
  *    Xiang Rong - 442039 Add makefile to Embedded C client
  *******************************************************************************/
 
-#ifndef MQTTUNSUBSCRIBE_H_
-#define MQTTUNSUBSCRIBE_H_
+#ifndef LWMQTT_UNSUBSCRIBE_H
+#define LWMQTT_UNSUBSCRIBE_H
 
 int MQTTSerialize_unsubscribe(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid, int count,
                               MQTTString topicFilters[]);
 
 int MQTTDeserialize_unsuback(unsigned short* packetid, unsigned char* buf, int len);
 
-#endif /* MQTTUNSUBSCRIBE_H_ */
+#endif  // LWMQTT_UNSUBSCRIBE_H

@@ -15,8 +15,8 @@
  *    Xiang Rong - 442039 Add makefile to Embedded C client
  *******************************************************************************/
 
-#ifndef MQTTPUBLISH_H_
-#define MQTTPUBLISH_H_
+#ifndef LWMQTT_PUBLISH_H
+#define LWMQTT_PUBLISH_H
 
 int MQTTSerialize_publish(unsigned char* buf, int buflen, unsigned char dup, int qos, unsigned char retained,
                           unsigned short packetid, MQTTString topicName, unsigned char* payload, int payloadlen);
@@ -29,4 +29,4 @@ int MQTTSerialize_puback(unsigned char* buf, int buflen, unsigned short packetid
 int MQTTSerialize_pubrel(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid);
 int MQTTSerialize_pubcomp(unsigned char* buf, int buflen, unsigned short packetid);
 
-#endif /* MQTTPUBLISH_H_ */
+#endif  // LWMQTT_PUBLISH_H

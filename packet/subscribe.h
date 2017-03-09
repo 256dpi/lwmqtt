@@ -15,8 +15,8 @@
  *    Xiang Rong - 442039 Add makefile to Embedded C client
  *******************************************************************************/
 
-#ifndef MQTTSUBSCRIBE_H_
-#define MQTTSUBSCRIBE_H_
+#ifndef LWMQTT_SUBSCRIBE_H
+#define LWMQTT_SUBSCRIBE_H
 
 int MQTTSerialize_subscribe(unsigned char* buf, int buflen, unsigned char dup, unsigned short packetid, int count,
                             MQTTString topicFilters[], int requestedQoSs[]);
@@ -24,4 +24,4 @@ int MQTTSerialize_subscribe(unsigned char* buf, int buflen, unsigned char dup, u
 int MQTTDeserialize_suback(unsigned short* packetid, int maxcount, int* count, int grantedQoSs[], unsigned char* buf,
                            int len);
 
-#endif /* MQTTSUBSCRIBE_H_ */
+#endif  // LWMQTT_SUBSCRIBE_H

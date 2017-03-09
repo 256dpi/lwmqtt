@@ -15,8 +15,8 @@
  *    Ian Craggs - documentation and platform specific header
  *******************************************************************************/
 
-#if !defined(__MQTT_CLIENT_C_)
-#define __MQTT_CLIENT_C_
+#ifndef LWMQTT_CLIENT_H
+#define LWMQTT_CLIENT_H
 
 #include <stdio.h>
 #include "packet/packet.h"
@@ -150,4 +150,4 @@ int MQTTDisconnect(MQTTClient* client);
  */
 int MQTTYield(MQTTClient* client, int time);
 
-#endif
+#endif  // LWMQTT_CLIENT_H

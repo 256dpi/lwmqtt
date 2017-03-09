@@ -92,7 +92,6 @@ typedef union {
     }                                                                                                                 \
   }
 
-
 int MQTTSerialize_connect(unsigned char* buf, int buflen, MQTTPacket_connectData* options);
 
 int MQTTDeserialize_connack(unsigned char* sessionPresent, unsigned char* connack_rc, unsigned char* buf, int buflen);

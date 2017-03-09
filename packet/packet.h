@@ -15,8 +15,8 @@
  *    Xiang Rong - 442039 Add makefile to Embedded C client
  *******************************************************************************/
 
-#ifndef MQTTPACKET_H_
-#define MQTTPACKET_H_
+#ifndef LWMQTT_PACKET_H
+#define LWMQTT_PACKET_H
 
 enum errors { MQTTPACKET_BUFFER_TOO_SHORT = -2, MQTTPACKET_READ_ERROR = -1, MQTTPACKET_READ_COMPLETE };
 
@@ -105,4 +105,4 @@ typedef struct {
 
 int MQTTPacket_readnb(unsigned char* buf, int buflen, MQTTTransport* trp);
 
-#endif /* MQTTPACKET_H_ */
+#endif  // LWMQTT_PACKET_H
