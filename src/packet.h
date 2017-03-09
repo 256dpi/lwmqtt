@@ -50,35 +50,17 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-typedef struct {
-  int len;
-  char* data;
-} lwmqtt_lp_string_t;
-
-typedef struct {
-  char* cstring;
-  lwmqtt_lp_string_t lenstring;
-} lwmqtt_string_t;
-
-#define MQTTString_initializer \
-  {                            \
-    NULL, { 0, NULL }          \
-  }
-
-int lwmqtt_strlen(lwmqtt_string_t mqttstring);
-
 #include "connect.h"
 #include "publish.h"
 #include "subscribe.h"
 #include "unsubscribe.h"
 
-int lwmqtt_serialize_ack(unsigned char *buf, int buflen, unsigned char type, unsigned char dup, unsigned short packetid);
+int lwmqtt_serialize_ack(unsigned char *buf, int buflen, unsigned char type, unsigned char dup,
+                         unsigned short packetid);
 int lwmqtt_deserialize_ack(unsigned char *packettype, unsigned char *dup, unsigned short *packetid, unsigned char *buf,
                            int buflen);
 
 int lwmqtt_packet_len(int rem_len);
-int lwmqtt_strcmp(lwmqtt_string_t *a, char *b);
-
 int lwmqtt_packet_encode(unsigned char *buf, int length);
 int lwmqtt_packet_decode(int (*getcharfn)(unsigned char *, int), int *value);
 int lwmqtt_packet_decode_buf(unsigned char *buf, int *value);
@@ -87,8 +69,5 @@ int lwmqtt_read_int(unsigned char **pptr);
 char lwmqtt_read_char(unsigned char **pptr);
 void lwmqtt_write_char(unsigned char **pptr, char c);
 void lwmqtt_write_int(unsigned char **pptr, int anInt);
-int lwmqtt_read_lp_string(lwmqtt_string_t *mqttstring, unsigned char **pptr, unsigned char *enddata);
-void lwmqtt_write_c_string(unsigned char **pptr, const char *string);
-void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t mqttstring);
 
 #endif  // LWMQTT_PACKET_H

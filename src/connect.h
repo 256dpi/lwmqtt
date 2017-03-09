@@ -22,7 +22,7 @@ typedef union {
   unsigned char all; /**< all connect flags */
 
   struct {
-    unsigned int _: 1;              /**< unused */
+    unsigned int _ : 1;            /**< unused */
     unsigned int cleansession : 1; /**< cleansession flag */
     unsigned int will : 1;         /**< will flag */
     unsigned int willQoS : 2;      /**< will QoS value */
@@ -80,21 +80,22 @@ typedef union {
   unsigned char all; /**< all connack flags */
 
   struct {
-    unsigned int _: 7;                /**< unused */
+    unsigned int _ : 7;              /**< unused */
     unsigned int sessionpresent : 1; /**< session present flag */
   } bits;
 } lwmqtt_connack_flags; /**< connack flags byte */
 
 #define lwmqtt_default_connect_data                                                                            \
-  {                                                                                                                   \
+  {                                                                                                            \
     {'M', 'Q', 'T', 'C'}, 0, 4, {NULL, {0, NULL}}, 60, 1, 0, lwmqtt_default_will_options, {NULL, {0, NULL}}, { \
-      NULL, { 0, NULL }                                                                                               \
-    }                                                                                                                 \
+      NULL, { 0, NULL }                                                                                        \
+    }                                                                                                          \
   }
 
 int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data *options);
 
-int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf, int buflen);
+int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf,
+                               int buflen);
 
 int lwmqtt_serialize_disconnect(unsigned char *buf, int len);
 int lwmqtt_serialize_pingreq(unsigned char *buf, int len);

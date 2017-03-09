@@ -19,7 +19,8 @@
 #define LWMQTT_PUBLISH_H
 
 int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, int qos, unsigned char retained,
-                             unsigned short packetid, lwmqtt_string_t topicName, unsigned char *payload, int payloadlen);
+                             unsigned short packetid, lwmqtt_string_t topicName, unsigned char *payload,
+                             int payloadlen);
 
 int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packetid,
                                lwmqtt_string_t *topicName, unsigned char **payload, int *payloadlen, unsigned char *buf,

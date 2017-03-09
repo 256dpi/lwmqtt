@@ -15,6 +15,7 @@
  *******************************************************************************/
 
 #include "client.h"
+#include "string.h"
 
 static void NewMessageData(MessageData* md, lwmqtt_string_t* aTopicName, MQTTMessage* aMessage) {
   md->topicName = aTopicName;
@@ -137,7 +138,7 @@ int deliverMessage(MQTTClient* c, lwmqtt_string_t* topicName, MQTTMessage* messa
   // we have to find the right message handler - indexed by topic
   for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i) {
     if (c->messageHandlers[i].topicFilter != 0 &&
-        (lwmqtt_strcmp(topicName, (char *) c->messageHandlers[i].topicFilter) ||
+        (lwmqtt_strcmp(topicName, (char*)c->messageHandlers[i].topicFilter) ||
          isTopicMatched((char*)c->messageHandlers[i].topicFilter, topicName))) {
       if (c->messageHandlers[i].fp != NULL) {
         MessageData md;
@@ -198,8 +199,8 @@ int cycle(MQTTClient* c, Timer* timer) {
       MQTTMessage msg;
       int intQoS;
       if (lwmqtt_deserialize_publish(&msg.dup, &intQoS, &msg.retained, &msg.id, &topicName,
-                                     (unsigned char **) &msg.payload,
-                                     (int *) &msg.payloadlen, c->readbuf, c->readbuf_size) != 1)
+                                     (unsigned char**)&msg.payload, (int*)&msg.payloadlen, c->readbuf,
+                                     c->readbuf_size) != 1)
         goto exit;
       msg.qos = (enum QoS)intQoS;
       deliverMessage(c, &topicName, &msg);
@@ -328,7 +329,7 @@ int MQTTSubscribe(MQTTClient* c, const char* topicFilter, enum QoS qos, messageH
   TimerInit(&timer);
   TimerCountdownMS(&timer, c->command_timeout_ms);
 
-  len = lwmqtt_serialize_subscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic, (int *) &qos);
+  len = lwmqtt_serialize_subscribe(c->buf, c->buf_size, 0, getNextPacketId(c), 1, &topic, (int*)&qos);
   if (len <= 0) goto exit;
   if ((rc = sendPacket(c, len, &timer)) != SUCCESS)  // send the subscribe src
     goto exit;                                       // there was a problem
@@ -398,7 +399,7 @@ int MQTTPublish(MQTTClient* c, const char* topicName, MQTTMessage* message) {
   if (message->qos == QOS1 || message->qos == QOS2) message->id = getNextPacketId(c);
 
   len = lwmqtt_serialize_publish(c->buf, c->buf_size, 0, message->qos, message->retained, message->id, topic,
-                                 (unsigned char *) message->payload, message->payloadlen);
+                                 (unsigned char*)message->payload, message->payloadlen);
   if (len <= 0) goto exit;
   if ((rc = sendPacket(c, len, &timer)) != SUCCESS)  // send the subscribe src
     goto exit;                                       // there was a problem

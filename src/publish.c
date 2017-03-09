@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "packet.h"
+#include "string.h"
 
 /**
   * Deserializes the supplied (wire) buffer into publish data
@@ -35,8 +36,8 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
                                lwmqtt_string_t *topicName, unsigned char **payload, int *payloadlen, unsigned char *buf,
                                int buflen) {
   lwmqtt_header_t header = {0};
-  unsigned char* curdata = buf;
-  unsigned char* enddata = NULL;
+  unsigned char *curdata = buf;
+  unsigned char *enddata = NULL;
   int rc = 0;
   int mylen = 0;
 
@@ -75,8 +76,8 @@ exit:
 int lwmqtt_deserialize_ack(unsigned char *packettype, unsigned char *dup, unsigned short *packetid, unsigned char *buf,
                            int buflen) {
   lwmqtt_header_t header = {0};
-  unsigned char* curdata = buf;
-  unsigned char* enddata = NULL;
+  unsigned char *curdata = buf;
+  unsigned char *enddata = NULL;
   int rc = 0;
   int mylen;
 
@@ -124,8 +125,9 @@ int MQTTSerialize_publishLength(int qos, lwmqtt_string_t topicName, int payloadl
   * @return the length of the serialized data.  <= 0 indicates error
   */
 int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, int qos, unsigned char retained,
-                             unsigned short packetid, lwmqtt_string_t topicName, unsigned char *payload, int payloadlen) {
-  unsigned char* ptr = buf;
+                             unsigned short packetid, lwmqtt_string_t topicName, unsigned char *payload,
+                             int payloadlen) {
+  unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;
   int rc = 0;
@@ -170,7 +172,7 @@ int lwmqtt_serialize_ack(unsigned char *buf, int buflen, unsigned char packettyp
                          unsigned short packetid) {
   lwmqtt_header_t header = {0};
   int rc = 0;
-  unsigned char* ptr = buf;
+  unsigned char *ptr = buf;
 
   if (buflen < 4) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;

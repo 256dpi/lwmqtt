@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "packet.h"
+#include "string.h"
 
 /**
   * Determines the length of the MQTT unsubscribe packet that would be produced using the supplied parameters
@@ -44,7 +45,7 @@ int MQTTSerialize_unsubscribeLength(int count, lwmqtt_string_t topicFilters[]) {
   */
 int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid, int count,
                                  lwmqtt_string_t *topicFilters) {
-  unsigned char* ptr = buf;
+  unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;
   int rc = -1;

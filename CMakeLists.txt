@@ -12,6 +12,8 @@ set(SOURCE_FILES
         src/packet.h
         src/publish.c
         src/publish.h
+        src/string.c
+        src/string.h
         src/subscribe.c
         src/subscribe.h
         src/unsubscribe.c

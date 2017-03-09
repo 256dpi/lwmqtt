@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "packet.h"
+#include "string.h"
 
 /**
   * Determines the length of the MQTT connect packet that would be produced using the supplied connect options.
@@ -24,7 +25,7 @@
   * @param options the options to be used to build the connect packet
   * @return the length of buffer needed to contain the serialized version of the packet
   */
-int MQTTSerialize_connectLength(lwmqtt_connect_data* options) {
+int MQTTSerialize_connectLength(lwmqtt_connect_data *options) {
   int len = 0;
 
   if (options->MQTTVersion == 3)
@@ -48,7 +49,7 @@ int MQTTSerialize_connectLength(lwmqtt_connect_data* options) {
   * @return serialized length, or error if 0
   */
 int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data *options) {
-  unsigned char* ptr = buf;
+  unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   lwmqtt_connect_flags_t flags = {0};
   int len = 0;
@@ -67,10 +68,10 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data
 
   if (options->MQTTVersion == 4) {
     lwmqtt_write_c_string(&ptr, "MQTT");
-    lwmqtt_write_char(&ptr, (char) 4);
+    lwmqtt_write_char(&ptr, (char)4);
   } else {
     lwmqtt_write_c_string(&ptr, "MQIsdp");
-    lwmqtt_write_char(&ptr, (char) 3);
+    lwmqtt_write_char(&ptr, (char)3);
   }
 
   flags.all = 0;
@@ -108,10 +109,11 @@ exit:
   * @param len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf, int buflen) {
+int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf,
+                               int buflen) {
   lwmqtt_header_t header = {0};
-  unsigned char* curdata = buf;
-  unsigned char* enddata = NULL;
+  unsigned char *curdata = buf;
+  unsigned char *enddata = NULL;
   int rc = 0;
   int mylen;
   lwmqtt_connack_flags flags = {0};
@@ -139,10 +141,10 @@ exit:
   * @param packettype the message type
   * @return serialized length, or error if 0
   */
-int MQTTSerialize_zero(unsigned char* buf, int buflen, unsigned char packettype) {
+int MQTTSerialize_zero(unsigned char *buf, int buflen, unsigned char packettype) {
   lwmqtt_header_t header = {0};
   int rc = -1;
-  unsigned char* ptr = buf;
+  unsigned char *ptr = buf;
 
   if (buflen < 2) {
     rc = MQTTPACKET_BUFFER_TOO_SHORT;

@@ -17,6 +17,7 @@
 #include <string.h>
 
 #include "packet.h"
+#include "string.h"
 
 /**
   * Determines the length of the MQTT subscribe packet that would be produced using the supplied parameters
@@ -45,7 +46,7 @@ int MQTTSerialize_subscribeLength(int count, lwmqtt_string_t topicFilters[]) {
   */
 int lwmqtt_serialize_subscribe(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid, int count,
                                lwmqtt_string_t *topicFilters, int *requestedQoSs) {
-  unsigned char* ptr = buf;
+  unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;
   int rc = 0;
@@ -90,8 +91,8 @@ exit:
 int lwmqtt_deserialize_suback(unsigned short *packetid, int maxcount, int *count, int *grantedQoSs, unsigned char *buf,
                               int buflen) {
   lwmqtt_header_t header = {0};
-  unsigned char* curdata = buf;
-  unsigned char* enddata = NULL;
+  unsigned char *curdata = buf;
+  unsigned char *enddata = NULL;
   int rc = 0;
   int mylen;
 
