@@ -51,7 +51,6 @@ void MQTTClientInit(MQTTClient* c, Network* network, unsigned int command_timeou
   int i;
   c->ipstack = network;
 
-  for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i) c->messageHandlers[i].topicFilter = 0;
   c->command_timeout_ms = command_timeout_ms;
   c->buf = sendbuf;
   c->buf_size = sendbuf_size;
@@ -111,48 +110,10 @@ exit:
   return rc;
 }
 
-// assume topic filter and name is in correct format
-// # can only be at end
-// + and # can only be next to separator
-static char isTopicMatched(char* topicFilter, lwmqtt_string_t* topicName) {
-  char* curf = topicFilter;
-  char* curn = topicName->lenstring.data;
-  char* curn_end = curn + topicName->lenstring.len;
-
-  while (*curf && curn < curn_end) {
-    if (*curn == '/' && *curf != '/') break;
-    if (*curf != '+' && *curf != '#' && *curf != *curn) break;
-    if (*curf == '+') {  // skip until we meet the next separator, or end of string
-      char* nextpos = curn + 1;
-      while (nextpos < curn_end && *nextpos != '/') nextpos = ++curn + 1;
-    } else if (*curf == '#')
-      curn = curn_end - 1;  // skip until end of string
-    curf++;
-    curn++;
-  };
-
-  return (curn == curn_end) && (*curf == '\0');
-}
-
 int deliverMessage(MQTTClient* c, lwmqtt_string_t* topicName, MQTTMessage* message) {
-  int i;
   int rc = FAILURE;
 
-  // we have to find the right message handler - indexed by topic
-  for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i) {
-    if (c->messageHandlers[i].topicFilter != 0 &&
-        (lwmqtt_strcmp(topicName, (char*)c->messageHandlers[i].topicFilter) ||
-         isTopicMatched((char*)c->messageHandlers[i].topicFilter, topicName))) {
-      if (c->messageHandlers[i].fp != NULL) {
-        MessageData md;
-        NewMessageData(&md, topicName, message);
-        c->messageHandlers[i].fp(&md);
-        rc = SUCCESS;
-      }
-    }
-  }
-
-  if (rc == FAILURE && c->defaultMessageHandler != NULL) {
+  if (c->defaultMessageHandler != NULL) {
     MessageData md;
     NewMessageData(&md, topicName, message);
     c->defaultMessageHandler(&md);
@@ -320,7 +281,7 @@ exit:
   return rc;
 }
 
-int MQTTSubscribe(MQTTClient* c, const char* topicFilter, enum QoS qos, messageHandler messageHandler) {
+int MQTTSubscribe(MQTTClient* c, const char* topicFilter, enum QoS qos) {
   int rc = FAILURE;
   Timer timer;
   int len = 0;
@@ -344,15 +305,7 @@ int MQTTSubscribe(MQTTClient* c, const char* topicFilter, enum QoS qos, messageH
     if (lwmqtt_deserialize_suback(&mypacketid, 1, &count, &grantedQoS, c->readbuf, c->readbuf_size) == 1)
       rc = grantedQoS;  // 0, 1, 2 or 0x80
     if (rc != 0x80) {
-      int i;
-      for (i = 0; i < MAX_MESSAGE_HANDLERS; ++i) {
-        if (c->messageHandlers[i].topicFilter == 0) {
-          c->messageHandlers[i].topicFilter = topicFilter;
-          c->messageHandlers[i].fp = messageHandler;
-          rc = 0;
-          break;
-        }
-      }
+      rc = 0;
     }
   } else
     rc = FAILURE;

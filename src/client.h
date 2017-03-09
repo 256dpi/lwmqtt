@@ -34,10 +34,6 @@
 
 #define MAX_PACKET_ID 65535 /* according to the MQTT specification - do not change! */
 
-#if !defined(MAX_MESSAGE_HANDLERS)
-#define MAX_MESSAGE_HANDLERS 5 /* redefinable - how many subscriptions do you want? */
-#endif
-
 enum QoS { QOS0, QOS1, QOS2 };
 
 /* all failure return codes must be negative */
@@ -88,11 +84,6 @@ typedef struct MQTTClient {
   char ping_outstanding;
   int isconnected;
 
-  struct MessageHandlers {
-    const char* topicFilter;
-    void (*fp)(MessageData*);
-  } messageHandlers[MAX_MESSAGE_HANDLERS]; /* Message handlers are indexed by subscription topic */
-
   void (*defaultMessageHandler)(MessageData*);
 
   Network* ipstack;
@@ -133,7 +124,7 @@ int MQTTPublish(MQTTClient* client, const char*, MQTTMessage*);
  *  @param message - the message to send
  *  @return success code
  */
-int MQTTSubscribe(MQTTClient* client, const char* topicFilter, enum QoS, messageHandler);
+int MQTTSubscribe(MQTTClient* client, const char* topicFilter, enum QoS);
 
 /** MQTT Subscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
  *  @param client - the client object to use
