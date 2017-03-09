@@ -105,18 +105,7 @@ exit:
   return rc;
 }
 
-int lwmqtt_deliver_message(lwmqtt_client_t *c, lwmqtt_string_t *topic, lwmqtt_message_t *message) {
-  int rc = LWMQTT_FAILURE;
-
-  if (c->callback != NULL) {
-    c->callback(c, topic, message);
-    rc = LWMQTT_SUCCESS;
-  }
-
-  return rc;
-}
-
-int lwmqtt_keep_alive(lwmqtt_client_t *c) {
+static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
   int rc = LWMQTT_FAILURE;
 
   if (c->keepAliveInterval == 0) {
@@ -139,7 +128,7 @@ exit:
   return rc;
 }
 
-int lwmqtt_cycle(lwmqtt_client_t *c, Timer *timer) {
+static int lwmqtt_cycle(lwmqtt_client_t *c, Timer *timer) {
   // read the socket, see what work is due
   unsigned short packet_type = lwmqtt_read_packet(c, timer);
   if (packet_type == 0) return LWMQTT_FAILURE;  // no more data to read, unrecoverable
@@ -160,7 +149,11 @@ int lwmqtt_cycle(lwmqtt_client_t *c, Timer *timer) {
                                      c->readbuf_size) != 1)
         goto exit;
       msg.qos = (lwmqtt_qos_t)intQoS;
-      lwmqtt_deliver_message(c, &topicName, &msg);
+
+      if (c->callback != NULL) {
+        c->callback(c, &topicName, &msg);
+      }
+
       if (msg.qos != LWMQTT_QOS0) {
         if (msg.qos == LWMQTT_QOS1)
           len = lwmqtt_serialize_ack(c->buf, c->buf_size, PUBACK, 0, msg.id);
@@ -215,7 +208,7 @@ int lwmqtt_client_yield(lwmqtt_client_t *c, int timeout_ms) {
   return rc;
 }
 
-int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type, Timer *timer) {
+static int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type, Timer *timer) {
   int rc = LWMQTT_FAILURE;
 
   do {
