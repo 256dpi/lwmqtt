@@ -18,7 +18,7 @@
 #ifndef LWMQTT_PACKET_H
 #define LWMQTT_PACKET_H
 
-enum errors { MQTTPACKET_BUFFER_TOO_SHORT = -2, MQTTPACKET_READ_ERROR = -1, MQTTPACKET_READ_COMPLETE };
+enum errors { MQTTPACKET_BUFFER_TOO_SHORT = -2, MQTTPACKET_READ_ERROR = -1 };
 
 enum msgTypes {
   CONNECT = 1,
@@ -90,19 +90,5 @@ void lwmqtt_write_int(unsigned char **pptr, int anInt);
 int lwmqtt_read_lp_string(lwmqtt_string_t *mqttstring, unsigned char **pptr, unsigned char *enddata);
 void lwmqtt_write_c_string(unsigned char **pptr, const char *string);
 void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t mqttstring);
-
-int MQTTPacket_read(unsigned char* buf, int buflen, int (*getfn)(unsigned char*, int));
-
-typedef struct {
-  int (*getfn)(void*, unsigned char*,
-               int); /* must return -1 for error, 0 for call again, or the number of bytes read */
-  void* sck;         /* pointer to whatever the system may use to identify the transport */
-  int multiplier;
-  int rem_len;
-  int len;
-  char state;
-} MQTTTransport;
-
-int MQTTPacket_readnb(unsigned char* buf, int buflen, MQTTTransport* trp);
 
 #endif  // LWMQTT_PACKET_H
