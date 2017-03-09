@@ -43,14 +43,18 @@ enum QoS { QOS0, QOS1, QOS2 };
 /* all failure return codes must be negative */
 enum returnCode { BUFFER_OVERFLOW = -2, FAILURE = -1, SUCCESS = 0 };
 
-/* The Platform specific header must define the Network and Timer structures and functions
- * which operate on them.
- *
-typedef struct Network
-{
-        int (*mqttread)(Network*, unsigned char* read_buffer, int, int);
-        int (*mqttwrite)(Network*, unsigned char* send_buffer, int, int);
-} Network;*/
+#ifndef Timer
+typedef struct {} Timer;
+#endif
+
+#ifndef Network
+typedef struct Network Network;
+
+struct Network {
+    int (*mqttread)(Network*, unsigned char* read_buffer, int, int);
+    int (*mqttwrite)(Network*, unsigned char* send_buffer, int, int);
+};
+#endif
 
 /* The Timer structure must be defined in the platform specific header,
  * and have the following functions to operate on it.  */
