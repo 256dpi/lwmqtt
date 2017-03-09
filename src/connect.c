@@ -35,13 +35,6 @@ static int lwmqtt_serialize_connect_length(lwmqtt_connect_data *options) {
   return len;
 }
 
-/**
-  * Serializes the connect options into the buffer.
-  * @param buf the buffer into which the packet will be serialized
-  * @param len the length in bytes of the supplied buffer
-  * @param options the options to be used to build the connect packet
-  * @return serialized length, or error if 0
-  */
 int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data *options) {
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
@@ -95,14 +88,6 @@ exit:
   return rc;
 }
 
-/**
-  * Deserializes the supplied (wire) buffer into connack data - return code
-  * @param sessionPresent the session present flag returned (only for MQTT 3.1.1)
-  * @param connack_rc returned integer value of the connack return code
-  * @param buf the raw buffer data, of the correct length determined by the remaining length field
-  * @param len the length in bytes of the data in the supplied buffer
-  * @return error code.  1 is success, 0 is failure
-  */
 int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf,
                                int buflen) {
   lwmqtt_header_t header = {0};
@@ -128,14 +113,7 @@ exit:
   return rc;
 }
 
-/**
-  * Serializes a 0-length packet into the supplied buffer, ready for writing to a socket
-  * @param buf the buffer into which the packet will be serialized
-  * @param buflen the length in bytes of the supplied buffer, to avoid overruns
-  * @param packettype the message type
-  * @return serialized length, or error if 0
-  */
-int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char packettype) {
+static int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char packettype) {
   lwmqtt_header_t header = {0};
   int rc = -1;
   unsigned char *ptr = buf;
@@ -154,20 +132,6 @@ exit:
   return rc;
 }
 
-/**
-  * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
-  *
-  * @param buf The buffer into which the packet will be serialized.
-  * @param len The length in bytes of the supplied buffer, to avoid overruns.
-  * @return Serialized length, or error if 0.
-  */
 int lwmqtt_serialize_disconnect(unsigned char *buf, int len) { return lwmqtt_serialize_zero(buf, len, DISCONNECT); }
 
-/**
-  * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
-  *
-  * @param buf The buffer into which the packet will be serialized.
-  * @param len The length in bytes of the supplied buffer, to avoid overruns.
-  * @return Serialized length, or error if 0.
-  */
 int lwmqtt_serialize_pingreq(unsigned char *buf, int len) { return lwmqtt_serialize_zero(buf, len, PINGREQ); }

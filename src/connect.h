@@ -94,12 +94,42 @@ typedef union {
     }                                                                                                          \
   }
 
+/**
+  * Serializes the connect options into the buffer.
+  * @param buf the buffer into which the packet will be serialized
+  * @param len the length in bytes of the supplied buffer
+  * @param options the options to be used to build the connect packet
+  * @return serialized length, or error if 0
+  */
 int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data *options);
 
+/**
+  * Deserializes the supplied (wire) buffer into connack data - return code
+  * @param sessionPresent the session present flag returned (only for MQTT 3.1.1)
+  * @param connack_rc returned integer value of the connack return code
+  * @param buf the raw buffer data, of the correct length determined by the remaining length field
+  * @param len the length in bytes of the data in the supplied buffer
+  * @return error code.  1 is success, 0 is failure
+  */
 int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf,
                                int buflen);
 
+/**
+  * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
+  *
+  * @param buf The buffer into which the packet will be serialized.
+  * @param len The length in bytes of the supplied buffer, to avoid overruns.
+  * @return Serialized length, or error if 0.
+  */
 int lwmqtt_serialize_disconnect(unsigned char *buf, int len);
+
+/**
+  * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
+  *
+  * @param buf The buffer into which the packet will be serialized.
+  * @param len The length in bytes of the supplied buffer, to avoid overruns.
+  * @return Serialized length, or error if 0.
+  */
 int lwmqtt_serialize_pingreq(unsigned char *buf, int len);
 
 #endif  // LWMQTT_CONNECT_H

@@ -25,16 +25,6 @@ static int lwmqtt_serialize_unsubscribe_length(int count, lwmqtt_string_t *topic
   return len;
 }
 
-/**
-  * Serializes the supplied unsubscribe data into the supplied buffer, ready for sending
-  * @param buf the raw buffer data, of the correct length determined by the remaining length field
-  * @param buflen the length in bytes of the data in the supplied buffer
-  * @param dup integer - the MQTT dup flag
-  * @param packetid integer - the MQTT packet identifier
-  * @param count - number of members in the topicFilters array
-  * @param topicFilters - array of topic filter names
-  * @return the length of the serialized data.  <= 0 indicates error
-  */
 int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char dup, unsigned short packetid, int count,
                                  lwmqtt_string_t *topicFilters) {
   unsigned char *ptr = buf;
@@ -66,13 +56,6 @@ exit:
   return rc;
 }
 
-/**
-  * Deserializes the supplied (wire) buffer into unsuback data
-  * @param packetid returned integer - the MQTT packet identifier
-  * @param buf the raw buffer data, of the correct length determined by the remaining length field
-  * @param buflen the length in bytes of the data in the supplied buffer
-  * @return error code.  1 is success, 0 is failure
-  */
 int lwmqtt_deserialize_unsuback(unsigned short *packetid, unsigned char *buf, int buflen) {
   unsigned char type = 0;
   unsigned char dup = 0;

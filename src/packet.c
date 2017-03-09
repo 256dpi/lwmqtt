@@ -15,16 +15,8 @@
  *    Sergio R. Caprile - non-blocking packet read functions for stream transport
  *******************************************************************************/
 
-#include <string.h>
-
 #include "packet.h"
 
-/**
- * Encodes the message length according to the MQTT algorithm
- * @param buf the buffer into which the encoded data is written
- * @param length the length to be encoded
- * @return the number of bytes written to buffer
- */
 int lwmqtt_packet_encode(unsigned char *buf, int length) {
   int rc = 0;
 
@@ -39,12 +31,6 @@ int lwmqtt_packet_encode(unsigned char *buf, int length) {
   return rc;
 }
 
-/**
- * Decodes the message length according to the MQTT algorithm
- * @param getcharfn pointer to function to read the next character from the data source
- * @param value the decoded length returned
- * @return the number of bytes read from the socket
- */
 int lwmqtt_packet_decode(int (*getcharfn)(unsigned char *, int), int *value) {
   unsigned char c;
   int multiplier = 1;
@@ -97,11 +83,6 @@ int lwmqtt_packet_decode_buf(unsigned char *buf, int *value) {
   return lwmqtt_packet_decode(lwmqtt_bufchar, value);
 }
 
-/**
- * Calculates an integer from two bytes read from the input buffer
- * @param pptr pointer to the input buffer - incremented by the number of bytes used & returned
- * @return the integer value calculated
- */
 int lwmqtt_read_int(unsigned char **pptr) {
   unsigned char *ptr = *pptr;
   int len = 256 * (*ptr) + (*(ptr + 1));
@@ -109,32 +90,17 @@ int lwmqtt_read_int(unsigned char **pptr) {
   return len;
 }
 
-/**
- * Reads one character from the input buffer.
- * @param pptr pointer to the input buffer - incremented by the number of bytes used & returned
- * @return the character read
- */
 char lwmqtt_read_char(unsigned char **pptr) {
   char c = **pptr;
   (*pptr)++;
   return c;
 }
 
-/**
- * Writes one character to an output buffer.
- * @param pptr pointer to the output buffer - incremented by the number of bytes used & returned
- * @param c the character to write
- */
 void lwmqtt_write_char(unsigned char **pptr, char c) {
   **pptr = c;
   (*pptr)++;
 }
 
-/**
- * Writes an integer as 2 bytes to an output buffer.
- * @param pptr pointer to the output buffer - incremented by the number of bytes used & returned
- * @param anInt the integer to write
- */
 void lwmqtt_write_int(unsigned char **pptr, int anInt) {
   **pptr = (unsigned char)(anInt / 256);
   (*pptr)++;
