@@ -35,7 +35,7 @@
 typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
 
 /* all failure return codes must be negative */
-enum returnCode { FAILURE = -1, SUCCESS = 0 };
+typedef enum { LWMQTT_FAILURE = -1, LWMQTT_SUCCESS = 0 } lwmqtt_err_t;
 
 #ifndef Timer
 typedef struct {} Timer;
@@ -45,8 +45,8 @@ typedef struct {} Timer;
 typedef struct Network Network;
 
 struct Network {
-    int (*mqttread)(Network*, unsigned char* read_buffer, int, int);
-    int (*mqttwrite)(Network*, unsigned char* send_buffer, int, int);
+    int (*read)(Network*, unsigned char* read_buffer, int, int);
+    int (*write)(Network*, unsigned char* send_buffer, int, int);
 };
 #endif
 
