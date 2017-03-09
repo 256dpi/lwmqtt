@@ -40,7 +40,6 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data
   lwmqtt_header_t header = {0};
   lwmqtt_connect_flags_t flags = {0};
   int len = 0;
-  int rc = -1;
 
   if (lwmqtt_packet_len(len = lwmqtt_serialize_connect_length(options)) > buflen) {
     return MQTTPACKET_BUFFER_TOO_SHORT;
@@ -109,7 +108,6 @@ int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *con
 
 static int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char packettype) {
   lwmqtt_header_t header = {0};
-  int rc = -1;
   unsigned char *ptr = buf;
 
   if (buflen < 2) {

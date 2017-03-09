@@ -20,7 +20,7 @@ int lwmqtt_strlen(lwmqtt_string_t mqttstring) {
   int rc = 0;
 
   if (mqttstring.cstring)
-    rc = strlen(mqttstring.cstring);
+    rc = (int)strlen(mqttstring.cstring);
   else
     rc = mqttstring.lenstring.len;
   return rc;
@@ -32,18 +32,18 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, char *bptr) {
 
   if (a->cstring) {
     aptr = a->cstring;
-    alen = strlen(a->cstring);
+    alen = (int)strlen(a->cstring);
   } else {
     aptr = a->lenstring.data;
     alen = a->lenstring.len;
   }
-  blen = strlen(bptr);
+  blen = (int)strlen(bptr);
 
   return (alen == blen) && (strncmp(aptr, bptr, alen) == 0);
 }
 
 void lwmqtt_write_c_string(unsigned char **pptr, const char *string) {
-  int len = strlen(string);
+  int len = (int)strlen(string);
   lwmqtt_write_int(pptr, len);
   memcpy(*pptr, string, len);
   *pptr += len;

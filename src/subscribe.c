@@ -21,7 +21,7 @@
 
 static int lwmqtt_serialize_subscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int i;
-  int len = 2; /* packetid */
+  int len = 2; /* packet id */
 
   for (i = 0; i < count; ++i) len += 2 + lwmqtt_strlen(topicFilters[i]) + 1; /* length + topic + req_qos */
   return len;

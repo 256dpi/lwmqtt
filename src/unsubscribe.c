@@ -19,7 +19,7 @@
 
 static int lwmqtt_serialize_unsubscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int i;
-  int len = 2; /* packetid */
+  int len = 2; /* packet id */
 
   for (i = 0; i < count; ++i) len += 2 + lwmqtt_strlen(topicFilters[i]); /* length + topic*/
   return len;
@@ -30,7 +30,6 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buflen, unsigned char d
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;
-  int rc = -1;
   int i = 0;
 
   if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_unsubscribe_length(count, topicFilters)) > buflen) {

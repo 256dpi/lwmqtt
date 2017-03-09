@@ -85,7 +85,6 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, 
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;
-  int rc = 0;
 
   if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_publish_length(qos, topicName, payloadlen)) > buflen) {
     return MQTTPACKET_BUFFER_TOO_SHORT;
@@ -112,7 +111,6 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buflen, unsigned char dup, 
 int lwmqtt_serialize_ack(unsigned char *buf, int buflen, unsigned char packettype, unsigned char dup,
                          unsigned short packetid) {
   lwmqtt_header_t header = {0};
-  int rc = 0;
   unsigned char *ptr = buf;
 
   if (buflen < 4) {
