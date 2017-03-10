@@ -29,11 +29,10 @@ int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref);
 
 typedef struct { int socket; } lwmqtt_unix_network_t;
 
-int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
-int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
-
-void lwmqtt_unix_network_init(lwmqtt_unix_network_t *n);
 int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *host, int port);
 void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n);
+
+int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
+int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
 
 #endif  // LWMQTT_PORT_H

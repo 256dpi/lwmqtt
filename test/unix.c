@@ -46,9 +46,12 @@ int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref) {
   return (res.tv_sec < 0) ? 0 : res.tv_sec * 1000 + res.tv_usec / 1000;
 }
 
-void lwmqtt_unix_network_init(lwmqtt_unix_network_t *n) { n->socket = 0; }
-
 int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) {
+  if (n->socket) {
+    close(n->socket);
+    n->socket = 0;
+  }
+
   int type = SOCK_STREAM;
   struct sockaddr_in address;
   int rc = -1;
@@ -84,6 +87,13 @@ int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) 
   }
 
   return rc;
+}
+
+void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n) {
+  if (n->socket) {
+    close(n->socket);
+    n->socket = 0;
+  }
 }
 
 int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout) {
@@ -126,5 +136,3 @@ int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buff
   int rc = write(n->socket, buffer, len);
   return rc;
 }
-
-void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n) { close(n->socket); }

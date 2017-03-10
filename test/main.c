@@ -22,7 +22,7 @@
 
 volatile int toStop = 0;
 
-void cfinish(int sig) {
+void finish(int sig) {
   signal(SIGINT, NULL);
   toStop = 1;
 }
@@ -43,10 +43,9 @@ int main() {
 
   lwmqtt_client_t c = lwmqtt_default_client;
 
-  signal(SIGINT, cfinish);
-  signal(SIGTERM, cfinish);
+  signal(SIGINT, finish);
+  signal(SIGTERM, finish);
 
-  lwmqtt_unix_network_init(&n);
   lwmqtt_unix_network_connect(&n, "broker.shiftr.io", 1883);
   lwmqtt_client_init(&c, 1000, buf, 100, readbuf, 100);
 
