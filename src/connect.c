@@ -19,7 +19,7 @@
 #include "connect.h"
 #include "packet.h"
 
-static int lwmqtt_serialize_connect_length(lwmqtt_connect_data *options) {
+static int lwmqtt_serialize_connect_length(lwmqtt_connect_data_t *options) {
   int len = 0;
 
   if (options->MQTTVersion == 3)
@@ -35,7 +35,7 @@ static int lwmqtt_serialize_connect_length(lwmqtt_connect_data *options) {
   return len;
 }
 
-int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data *options) {
+int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data_t *options) {
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   lwmqtt_connect_flags_t flags = {0};

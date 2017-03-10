@@ -218,10 +218,10 @@ static int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type, Timer *timer)
   return rc;
 }
 
-int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data *options) {
+int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data_t *options) {
   Timer connect_timer;
   int rc = LWMQTT_FAILURE;
-  lwmqtt_connect_data default_options = lwmqtt_default_connect_data;
+  lwmqtt_connect_data_t default_options = lwmqtt_default_connect_data;
   int len = 0;
 
   if (c->isconnected) /* don't send connect src again if we are already connected */

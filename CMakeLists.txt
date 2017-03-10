@@ -17,6 +17,9 @@ set(SOURCE_FILES
         src/subscribe.c
         src/subscribe.h
         src/unsubscribe.c
-        src/unsubscribe.h)
+        src/unsubscribe.h
+        test/main.c
+        test/unix.c
+        test/unix.h)
 
 add_executable(lwmqtt ${SOURCE_FILES})

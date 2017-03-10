@@ -104,7 +104,7 @@ void lwmqtt_client_init(lwmqtt_client_t *client, Network *network, unsigned int 
  *  @param options - connect options
  *  @return success code
  */
-int lwmqtt_client_connect(lwmqtt_client_t *client, lwmqtt_connect_data *options);
+int lwmqtt_client_connect(lwmqtt_client_t *client, lwmqtt_connect_data_t *options);
 
 /** MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
  *  @param client - the client object to use
