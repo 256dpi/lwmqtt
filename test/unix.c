@@ -27,7 +27,7 @@
 void lwmqtt_unix_timer_set(lwmqtt_client_t *c, void *ref, unsigned int timeout) {
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
-  t->end_time = (struct timeval){0, 0};
+  t->end_time = {0, 0};
 
   struct timeval now;
   gettimeofday(&now, NULL);
