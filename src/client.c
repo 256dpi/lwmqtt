@@ -74,9 +74,7 @@ void lwmqtt_client_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *ne
   c->timer_set(c, c->timer_network_ref, 0);
 }
 
-void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb) {
-  c->callback = cb;
-}
+void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb) { c->callback = cb; }
 
 static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
   unsigned char i;

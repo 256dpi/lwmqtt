@@ -65,7 +65,7 @@ int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) 
 
   // prepare resolver data
   struct sockaddr_in address;
-  struct addrinfo* result = NULL;
+  struct addrinfo *result = NULL;
   struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM, IPPROTO_TCP, 0, NULL, NULL, NULL};
 
   // resolve address
@@ -75,8 +75,8 @@ int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) 
   }
 
   // prepare selected result
-  struct addrinfo* current = result;
-  struct addrinfo* selected = NULL;
+  struct addrinfo *current = result;
+  struct addrinfo *selected = NULL;
 
   // traverse list and select first found ipv4 address
   while (current) {
@@ -101,7 +101,7 @@ int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) 
   // populate address struct
   address.sin_port = htons(port);
   address.sin_family = AF_INET;
-  address.sin_addr = ((struct sockaddr_in*)(selected->ai_addr))->sin_addr;
+  address.sin_addr = ((struct sockaddr_in *)(selected->ai_addr))->sin_addr;
 
   // create new socket
   n->socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -110,7 +110,7 @@ int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) 
   }
 
   // connect socket
-  rc = connect(n->socket, (struct sockaddr*)&address, sizeof(address));
+  rc = connect(n->socket, (struct sockaddr *)&address, sizeof(address));
   if (rc >= 0) {
     return LWMQTT_SUCCESS;
   }
@@ -142,7 +142,7 @@ int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffe
   struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
 
   // set timeout
-  int rc = setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&t, sizeof(t));
+  int rc = setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&t, sizeof(t));
   if (rc < 0) {
     return -1;
   }
@@ -181,7 +181,7 @@ int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buff
   struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
 
   // set timeout
-  int rc = setsockopt(n->socket, SOL_SOCKET, SO_SNDTIMEO, (char*)&t, sizeof(t));
+  int rc = setsockopt(n->socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&t, sizeof(t));
   if (rc < 0) {
     return LWMQTT_FAILURE;
   }
