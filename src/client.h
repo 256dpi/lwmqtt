@@ -42,15 +42,6 @@ typedef struct {
 } Timer;
 #endif
 
-#ifndef Network
-typedef struct Network Network;
-
-struct Network {
-  int (*read)(Network *, unsigned char *read_buffer, int, int);
-  int (*write)(Network *, unsigned char *send_buffer, int, int);
-};
-#endif
-
 /* The Timer structure must be defined in the platform specific header,
  * and have the following functions to operate on it.  */
 extern void TimerInit(Timer *);
@@ -70,6 +61,9 @@ typedef struct {
 
 typedef struct lwmqtt_client_t lwmqtt_client_t;
 
+typedef int(*lwmqtt_network_read_t)(lwmqtt_client_t *, void * ref, unsigned char *buf, int len, int timeout);
+typedef int(*lwmqtt_network_write_t)(lwmqtt_client_t *, void * ref, unsigned char *buf, int len, int timeout);
+
 typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_message_t *);
 
 struct lwmqtt_client_t {
@@ -82,7 +76,10 @@ struct lwmqtt_client_t {
 
   lwmqtt_callback_t callback;
 
-  Network *ipstack;
+  void * network_ref;
+  lwmqtt_network_read_t network_read;
+  lwmqtt_network_write_t networked_write;
+
   Timer ping_timer;
 };
 
@@ -96,8 +93,10 @@ struct lwmqtt_client_t {
  * @param command_timeout_ms
  * @param
  */
-void lwmqtt_client_init(lwmqtt_client_t *client, Network *network, unsigned int command_timeout_ms,
+void lwmqtt_client_init(lwmqtt_client_t *client, unsigned int command_timeout_ms,
                         unsigned char *sendbuf, size_t sendbuf_size, unsigned char *readbuf, size_t readbuf_size);
+
+void lwmqtt_client_set_network(lwmqtt_client_t *c, void * ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
 /** MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
  *  The nework object must be connected to the network endpoint before calling this

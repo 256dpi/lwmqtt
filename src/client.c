@@ -28,7 +28,7 @@ static int lwmqtt_send_packet(lwmqtt_client_t *c, int length, Timer *timer) {
   int rc = LWMQTT_FAILURE, sent = 0;
 
   while (sent < length && !TimerIsExpired(timer)) {
-    rc = c->ipstack->write(c->ipstack, &c->buf[sent], length, TimerLeftMS(timer));
+    rc = c->networked_write(c, c->network_ref, &c->buf[sent], length, TimerLeftMS(timer));
     if (rc < 0)  // there was an error writing the data
       break;
     sent += rc;
@@ -41,11 +41,8 @@ static int lwmqtt_send_packet(lwmqtt_client_t *c, int length, Timer *timer) {
   return rc;
 }
 
-void lwmqtt_client_init(lwmqtt_client_t *c, Network *network, unsigned int command_timeout_ms, unsigned char *sendbuf,
+void lwmqtt_client_init(lwmqtt_client_t *c, unsigned int command_timeout_ms, unsigned char *sendbuf,
                         size_t sendbuf_size, unsigned char *readbuf, size_t readbuf_size) {
-  int i;
-  c->ipstack = network;
-
   c->command_timeout_ms = command_timeout_ms;
   c->buf = sendbuf;
   c->buf_size = sendbuf_size;
@@ -56,6 +53,12 @@ void lwmqtt_client_init(lwmqtt_client_t *c, Network *network, unsigned int comma
   c->callback = NULL;
   c->next_packetid = 1;
   TimerInit(&c->ping_timer);
+}
+
+void lwmqtt_client_set_network(lwmqtt_client_t *c, void * ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write) {
+  c->network_ref = ref;
+  c->network_read = read;
+  c->networked_write = write;
 }
 
 static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
@@ -73,7 +76,7 @@ static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
       rc = MQTTPACKET_READ_ERROR; /* bad data */
       return len;
     }
-    rc = c->ipstack->read(c->ipstack, &i, 1, timeout);
+    rc = c->network_read(c, c->network_ref, &i, 1, timeout);
     if (rc != 1) return len;
     *value += (i & 127) * multiplier;
     multiplier *= 128;
@@ -88,7 +91,7 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c, Timer *timer) {
   int rem_len = 0;
 
   /* 1. read the header byte.  This has the src type in it */
-  int rc = c->ipstack->read(c->ipstack, c->readbuf, 1, TimerLeftMS(timer));
+  int rc = c->network_read(c, c->network_ref, c->readbuf, 1, TimerLeftMS(timer));
   if (rc != 1) return rc;
 
   len = 1;
@@ -97,7 +100,7 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c, Timer *timer) {
   len += lwmqtt_packet_encode(c->readbuf + 1, rem_len); /* put the original remaining length back into the buffer */
 
   /* 3. read the rest of the buffer using a callback to supply the rest of the data */
-  if (rem_len > 0 && (rc = c->ipstack->read(c->ipstack, c->readbuf + len, rem_len, TimerLeftMS(timer)) != rem_len))
+  if (rem_len > 0 && (rc = c->network_read(c, c->network_ref, c->readbuf + len, rem_len, TimerLeftMS(timer)) != rem_len))
     return rc;
 
   header.byte = c->readbuf[0];

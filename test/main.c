@@ -37,15 +37,16 @@ int main() {
   unsigned char buf[100];
   unsigned char readbuf[100];
 
-  Network n;
-  lwmqtt_client_t c;
+  lwmqtt_unix_network_t n;
+  lwmqtt_client_t c = lwmqtt_default_client;
 
   signal(SIGINT, cfinish);
   signal(SIGTERM, cfinish);
 
-  NetworkInit(&n);
-  NetworkConnect(&n, "broker.shiftr.io", 1883);
-  lwmqtt_client_init(&c, &n, 1000, buf, 100, readbuf, 100);
+  lwmqtt_unix_network_init(&n);
+  lwmqtt_unix_network_connect(&n, "broker.shiftr.io", 1883);
+  lwmqtt_client_init(&c, 1000, buf, 100, readbuf, 100);
+  lwmqtt_client_set_network(&c, &n, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
 
   lwmqtt_connect_data_t data = lwmqtt_default_connect_data;
   data.willFlag = 0;
@@ -72,7 +73,7 @@ int main() {
   printf("Stopping\n");
 
   lwmqtt_client_disconnect(&c);
-  NetworkDisconnect(&n);
+  lwmqtt_unix_network_disconnect(&n);
 
   return 0;
 }
