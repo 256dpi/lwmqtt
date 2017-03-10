@@ -17,27 +17,22 @@
 #ifndef LWMQTT_UNIX_H
 #define LWMQTT_UNIX_H
 
-#include <sys/time.h>
 #include <signal.h>
+#include <sys/time.h>
 
 #include "../src/client.h"
 
-typedef struct Timer { struct timeval end_time; } Timer;
+typedef struct { struct timeval end_time; } lwmqtt_unix_timer_t;
 
-void TimerInit(Timer*);
-char TimerIsExpired(Timer*);
-void TimerCountdownMS(Timer*, unsigned int);
-void TimerCountdown(Timer*, unsigned int);
-int TimerLeftMS(Timer*);
+void lwmqtt_unix_timer_set(lwmqtt_client_t *c, void *ref, unsigned int);
+int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref);
 
-typedef struct {
-  int socket;
-} lwmqtt_unix_network_t;
+typedef struct { int socket; } lwmqtt_unix_network_t;
 
-int lwmqtt_unix_network_read(lwmqtt_client_t * c, void * ref, unsigned char * buf, int len, int timeout);
-int lwmqtt_unix_network_write(lwmqtt_client_t * c, void * ref, unsigned char * buf, int len, int timeout);
+int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
+int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
 
-void lwmqtt_unix_network_init(lwmqtt_unix_network_t * n);
+void lwmqtt_unix_network_init(lwmqtt_unix_network_t *n);
 int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *host, int port);
 void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n);
 

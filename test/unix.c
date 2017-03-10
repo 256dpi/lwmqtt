@@ -16,67 +16,48 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
 #include <stdio.h>
-#include <sys/param.h>
-#include <sys/select.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
+#include <unistd.h>
 
-#include "unix.h"
 #include "../src/client.h"
+#include "unix.h"
 
-void TimerInit(Timer* timer) { timer->end_time = (struct timeval){0, 0}; }
+void lwmqtt_unix_timer_set(lwmqtt_client_t *c, void *ref, unsigned int timeout) {
+  lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
-char TimerIsExpired(Timer* timer) {
-  struct timeval now, res;
-  gettimeofday(&now, NULL);
-  timersub(&timer->end_time, &now, &res);
-  return res.tv_sec < 0 || (res.tv_sec == 0 && res.tv_usec <= 0);
-}
+  t->end_time = (struct timeval){0, 0};
 
-void TimerCountdownMS(Timer* timer, unsigned int timeout) {
   struct timeval now;
   gettimeofday(&now, NULL);
   struct timeval interval = {timeout / 1000, (timeout % 1000) * 1000};
-  timeradd(&now, &interval, &timer->end_time);
+  timeradd(&now, &interval, &t->end_time);
 }
 
-void TimerCountdown(Timer* timer, unsigned int timeout) {
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  struct timeval interval = {timeout, 0};
-  timeradd(&now, &interval, &timer->end_time);
-}
+int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref) {
+  lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
-int TimerLeftMS(Timer* timer) {
   struct timeval now, res;
   gettimeofday(&now, NULL);
-  timersub(&timer->end_time, &now, &res);
+  timersub(&t->end_time, &now, &res);
+
   // printf("left %d ms\n", (res.tv_sec < 0) ? 0 : res.tv_sec * 1000 + res.tv_usec / 1000);
   return (res.tv_sec < 0) ? 0 : res.tv_sec * 1000 + res.tv_usec / 1000;
 }
 
-void lwmqtt_unix_network_init(lwmqtt_unix_network_t *n) {
-  n->socket = 0;
-}
+void lwmqtt_unix_network_init(lwmqtt_unix_network_t *n) { n->socket = 0; }
 
 int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) {
   int type = SOCK_STREAM;
   struct sockaddr_in address;
   int rc = -1;
   sa_family_t family = AF_INET;
-  struct addrinfo* result = NULL;
+  struct addrinfo *result = NULL;
   struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM, IPPROTO_TCP, 0, NULL, NULL, NULL};
 
   if ((rc = getaddrinfo(addr, NULL, &hints, &result)) == 0) {
-    struct addrinfo* res = result;
+    struct addrinfo *res = result;
 
     /* prefer ip4 addresses */
     while (res) {
@@ -90,7 +71,7 @@ int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) 
     if (result->ai_family == AF_INET) {
       address.sin_port = htons(port);
       address.sin_family = family = AF_INET;
-      address.sin_addr = ((struct sockaddr_in*)(result->ai_addr))->sin_addr;
+      address.sin_addr = ((struct sockaddr_in *)(result->ai_addr))->sin_addr;
     } else
       rc = -1;
 
@@ -99,14 +80,14 @@ int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) 
 
   if (rc == 0) {
     n->socket = socket(family, type, 0);
-    if (n->socket != -1) rc = connect(n->socket, (struct sockaddr*)&address, sizeof(address));
+    if (n->socket != -1) rc = connect(n->socket, (struct sockaddr *)&address, sizeof(address));
   }
 
   return rc;
 }
 
-int lwmqtt_unix_network_read(lwmqtt_client_t *c, void * ref, unsigned char* buffer, int len, int timeout) {
-  lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t*)ref;
+int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout) {
+  lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
   struct timeval interval = {timeout / 1000, (timeout % 1000) * 1000};
   if (interval.tv_sec < 0 || (interval.tv_sec == 0 && interval.tv_usec <= 0)) {
@@ -114,7 +95,7 @@ int lwmqtt_unix_network_read(lwmqtt_client_t *c, void * ref, unsigned char* buff
     interval.tv_usec = 100;
   }
 
-  setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&interval, sizeof(struct timeval));
+  setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval));
 
   int bytes = 0;
   while (bytes < len) {
@@ -133,15 +114,15 @@ int lwmqtt_unix_network_read(lwmqtt_client_t *c, void * ref, unsigned char* buff
   return bytes;
 }
 
-int lwmqtt_unix_network_write(lwmqtt_client_t *c, void * ref, unsigned char *buffer, int len, int timeout_ms) {
-  lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t*)ref;
+int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout_ms) {
+  lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
   struct timeval tv;
 
   tv.tv_sec = 0;                   /* 30 Secs Timeout */
   tv.tv_usec = timeout_ms * 1000;  // Not init'ing this can cause strange errors
 
-  setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&tv, sizeof(struct timeval));
+  setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
   int rc = write(n->socket, buffer, len);
   return rc;
 }

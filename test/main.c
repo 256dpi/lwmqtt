@@ -17,8 +17,8 @@
  *    Ian Craggs - update MQTTClient function names
  *******************************************************************************/
 
-#include "unix.h"
 #include "../src/client.h"
+#include "unix.h"
 
 volatile int toStop = 0;
 
@@ -27,9 +27,9 @@ void cfinish(int sig) {
   toStop = 1;
 }
 
-void messageArrived(lwmqtt_client_t *c, lwmqtt_string_t* topic, lwmqtt_message_t *msg) {
+void messageArrived(lwmqtt_client_t *c, lwmqtt_string_t *topic, lwmqtt_message_t *msg) {
   printf("%.*s\t", topic->lenstring.len, topic->lenstring.data);
-  printf("%.*s\n", (int)msg->payloadlen, (char*)msg->payload);
+  printf("%.*s\n", (int)msg->payloadlen, (char *)msg->payload);
 }
 
 int main() {
@@ -38,6 +38,9 @@ int main() {
   unsigned char readbuf[100];
 
   lwmqtt_unix_network_t n;
+  lwmqtt_unix_timer_t t1;
+  lwmqtt_unix_timer_t t2;
+
   lwmqtt_client_t c = lwmqtt_default_client;
 
   signal(SIGINT, cfinish);
@@ -46,7 +49,9 @@ int main() {
   lwmqtt_unix_network_init(&n);
   lwmqtt_unix_network_connect(&n, "broker.shiftr.io", 1883);
   lwmqtt_client_init(&c, 1000, buf, 100, readbuf, 100);
+
   lwmqtt_client_set_network(&c, &n, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
+  lwmqtt_client_set_timers(&c, &t1, &t2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
 
   lwmqtt_connect_data_t data = lwmqtt_default_connect_data;
   data.willFlag = 0;

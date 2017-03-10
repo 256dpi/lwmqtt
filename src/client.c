@@ -24,17 +24,19 @@ static int lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packetid = (c->next_packetid == 65535) ? 1 : c->next_packetid + 1;
 }
 
-static int lwmqtt_send_packet(lwmqtt_client_t *c, int length, Timer *timer) {
+static int lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
   int rc = LWMQTT_FAILURE, sent = 0;
 
-  while (sent < length && !TimerIsExpired(timer)) {
-    rc = c->networked_write(c, c->network_ref, &c->buf[sent], length, TimerLeftMS(timer));
+  while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
+    rc = c->networked_write(c, c->network_ref, &c->buf[sent], length, c->timer_get(c, c->timer_network_ref));
     if (rc < 0)  // there was an error writing the data
       break;
     sent += rc;
   }
   if (sent == length) {
-    TimerCountdown(&c->ping_timer, c->keepAliveInterval);  // record the fact that we have successfully sent the src
+    // reset keep alive timer
+    c->timer_set(c, c->timer_keep_alive_ref, c->keepAliveInterval * 1000);
+
     rc = LWMQTT_SUCCESS;
   } else
     rc = LWMQTT_FAILURE;
@@ -52,13 +54,24 @@ void lwmqtt_client_init(lwmqtt_client_t *c, unsigned int command_timeout_ms, uns
   c->ping_outstanding = 0;
   c->callback = NULL;
   c->next_packetid = 1;
-  TimerInit(&c->ping_timer);
 }
 
-void lwmqtt_client_set_network(lwmqtt_client_t *c, void * ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write) {
+void lwmqtt_client_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_read_t read,
+                               lwmqtt_network_write_t write) {
   c->network_ref = ref;
   c->network_read = read;
   c->networked_write = write;
+}
+
+void lwmqtt_client_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
+                              lwmqtt_timer_get_t get) {
+  c->timer_keep_alive_ref = keep_alive_ref;
+  c->timer_network_ref = network_ref;
+  c->timer_set = set;
+  c->timer_get = get;
+
+  c->timer_set(c, c->timer_keep_alive_ref, 0);
+  c->timer_set(c, c->timer_network_ref, 0);
 }
 
 static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
@@ -85,22 +98,23 @@ static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
   return len;
 }
 
-static int lwmqtt_read_packet(lwmqtt_client_t *c, Timer *timer) {
+static int lwmqtt_read_packet(lwmqtt_client_t *c) {
   lwmqtt_header_t header = {0};
   int len = 0;
   int rem_len = 0;
 
   /* 1. read the header byte.  This has the src type in it */
-  int rc = c->network_read(c, c->network_ref, c->readbuf, 1, TimerLeftMS(timer));
+  int rc = c->network_read(c, c->network_ref, c->readbuf, 1, c->timer_get(c, c->timer_network_ref));
   if (rc != 1) return rc;
 
   len = 1;
   /* 2. read the remaining length.  This is variable in itself */
-  lwmqtt_decode_packet(c, &rem_len, TimerLeftMS(timer));
+  lwmqtt_decode_packet(c, &rem_len, c->timer_get(c, c->timer_network_ref));
   len += lwmqtt_packet_encode(c->readbuf + 1, rem_len); /* put the original remaining length back into the buffer */
 
   /* 3. read the rest of the buffer using a callback to supply the rest of the data */
-  if (rem_len > 0 && (rc = c->network_read(c, c->network_ref, c->readbuf + len, rem_len, TimerLeftMS(timer)) != rem_len))
+  if (rem_len > 0 && (rc = c->network_read(c, c->network_ref, c->readbuf + len, rem_len,
+                                           c->timer_get(c, c->timer_network_ref)) != rem_len))
     return rc;
 
   header.byte = c->readbuf[0];
@@ -115,13 +129,17 @@ static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
     return LWMQTT_SUCCESS;
   }
 
-  if (TimerIsExpired(&c->ping_timer)) {
+  // TODO: Retain global network timer and use command timeout to send the message?
+
+  // check if keep alive timer is expired
+  if (c->timer_get(c, c->timer_keep_alive_ref) <= 0) {
     if (!c->ping_outstanding) {
-      Timer timer;
-      TimerInit(&timer);
-      TimerCountdownMS(&timer, 1000);
+      // reset network timer
+      // TODO: Should we pass in a timeout from cycle?
+      c->timer_set(c, c->timer_network_ref, 1000);
+
       int len = lwmqtt_serialize_pingreq(c->buf, c->buf_size);
-      if (len > 0 && (rc = lwmqtt_send_packet(c, len, &timer)) == LWMQTT_SUCCESS)  // send the ping src
+      if (len > 0 && (rc = lwmqtt_send_packet(c, len)) == LWMQTT_SUCCESS)  // send the ping src
         c->ping_outstanding = 1;
     }
   }
@@ -129,9 +147,9 @@ static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
   return rc;
 }
 
-static int lwmqtt_cycle(lwmqtt_client_t *c, Timer *timer) {
+static int lwmqtt_cycle(lwmqtt_client_t *c) {
   // read the socket, see what work is due
-  int packet_type = lwmqtt_read_packet(c, timer);
+  int packet_type = lwmqtt_read_packet(c);
   if (packet_type == 0) return LWMQTT_FAILURE;  // no more data to read, unrecoverable
 
   int len = 0, rc = LWMQTT_SUCCESS;
@@ -163,7 +181,7 @@ static int lwmqtt_cycle(lwmqtt_client_t *c, Timer *timer) {
         if (len <= 0)
           rc = LWMQTT_FAILURE;
         else
-          rc = lwmqtt_send_packet(c, len, timer);
+          rc = lwmqtt_send_packet(c, len);
         if (rc == LWMQTT_FAILURE) goto exit;  // there was a problem
       }
       break;
@@ -175,9 +193,9 @@ static int lwmqtt_cycle(lwmqtt_client_t *c, Timer *timer) {
         rc = LWMQTT_FAILURE;
       else if ((len = lwmqtt_serialize_ack(c->buf, c->buf_size, PUBREL, 0, mypacketid)) <= 0)
         rc = LWMQTT_FAILURE;
-      else if ((rc = lwmqtt_send_packet(c, len, timer)) != LWMQTT_SUCCESS)  // send the PUBREL src
-        rc = LWMQTT_FAILURE;                                                // there was a problem
-      if (rc == LWMQTT_FAILURE) goto exit;                                  // there was a problem
+      else if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the PUBREL src
+        rc = LWMQTT_FAILURE;                                         // there was a problem
+      if (rc == LWMQTT_FAILURE) goto exit;                           // there was a problem
       break;
     }
     case PUBCOMP:
@@ -196,33 +214,30 @@ exit:
 
 int lwmqtt_client_yield(lwmqtt_client_t *c, int timeout_ms) {
   int rc = LWMQTT_SUCCESS;
-  Timer timer;
 
-  TimerInit(&timer);
-  TimerCountdownMS(&timer, timeout_ms);
+  c->timer_set(c, c->timer_network_ref, timeout_ms);
 
   do {
-    if (lwmqtt_cycle(c, &timer) == LWMQTT_FAILURE) {
+    if (lwmqtt_cycle(c) == LWMQTT_FAILURE) {
       rc = LWMQTT_FAILURE;
       break;
     }
-  } while (!TimerIsExpired(&timer));
+  } while (c->timer_get(c, c->timer_network_ref) > 0);
 
   return rc;
 }
 
-static int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type, Timer *timer) {
+static int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type) {
   int rc = LWMQTT_FAILURE;
 
   do {
-    if (TimerIsExpired(timer)) break;  // we timed out
-  } while ((rc = lwmqtt_cycle(c, timer)) != packet_type);
+    if (c->timer_get(c, c->timer_network_ref) <= 0) break;  // we timed out
+  } while ((rc = lwmqtt_cycle(c)) != packet_type);
 
   return rc;
 }
 
 int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data_t *options) {
-  Timer connect_timer;
   int rc = LWMQTT_FAILURE;
   lwmqtt_connect_data_t default_options = lwmqtt_default_connect_data;
   int len = 0;
@@ -230,19 +245,20 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data_t *options) {
   if (c->isconnected) /* don't send connect src again if we are already connected */
     goto exit;
 
-  TimerInit(&connect_timer);
-  TimerCountdownMS(&connect_timer, c->command_timeout_ms);
+  c->timer_set(c, c->timer_network_ref, c->command_timeout_ms);
 
   if (options == 0) options = &default_options; /* set default options if none were supplied */
 
   c->keepAliveInterval = options->keepAliveInterval;
-  TimerCountdown(&c->ping_timer, c->keepAliveInterval);
+
+  c->timer_set(c, c->timer_keep_alive_ref, c->keepAliveInterval * 1000);
+
   if ((len = lwmqtt_serialize_connect(c->buf, c->buf_size, options)) <= 0) goto exit;
-  if ((rc = lwmqtt_send_packet(c, len, &connect_timer)) != LWMQTT_SUCCESS)  // send the connect src
-    goto exit;                                                              // there was a problem
+  if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the connect src
+    goto exit;                                              // there was a problem
 
   // this will be a blocking call, wait for the connack
-  if (lwmqtt_cycle_until(c, CONNACK, &connect_timer) == CONNACK) {
+  if (lwmqtt_cycle_until(c, CONNACK) == CONNACK) {
     unsigned char connack_rc = 255;
     unsigned char sessionPresent = 0;
     if (lwmqtt_deserialize_connack(&sessionPresent, &connack_rc, c->readbuf, c->readbuf_size) == 1)
@@ -261,22 +277,20 @@ exit:
 
 int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topicFilter, lwmqtt_qos_t qos) {
   int rc = LWMQTT_FAILURE;
-  Timer timer;
   int len = 0;
   lwmqtt_string_t topic = lwmqtt_default_string;
   topic.cstring = (char *)topicFilter;
 
   if (!c->isconnected) return rc;
 
-  TimerInit(&timer);
-  TimerCountdownMS(&timer, c->command_timeout_ms);
+  c->timer_set(c, c->timer_network_ref, c->command_timeout_ms);
 
   len = lwmqtt_serialize_subscribe(c->buf, c->buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic, (int *)&qos);
   if (len <= 0) return rc;
-  if ((rc = lwmqtt_send_packet(c, len, &timer)) != LWMQTT_SUCCESS)  // send the subscribe src
-    return rc;                                                      // there was a problem
+  if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the subscribe src
+    return rc;                                              // there was a problem
 
-  if (lwmqtt_cycle_until(c, SUBACK, &timer) == SUBACK)  // wait for suback
+  if (lwmqtt_cycle_until(c, SUBACK) == SUBACK)  // wait for suback
   {
     int count = 0, grantedQoS = -1;
     unsigned short mypacketid;
@@ -293,22 +307,20 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topicFilter, lwmqtt_
 
 int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topicFilter) {
   int rc = LWMQTT_FAILURE;
-  Timer timer;
   lwmqtt_string_t topic = lwmqtt_default_string;
   topic.cstring = (char *)topicFilter;
   int len = 0;
 
   if (!c->isconnected) return rc;
 
-  TimerInit(&timer);
-  TimerCountdownMS(&timer, c->command_timeout_ms);
+  c->timer_set(c, c->timer_network_ref, c->command_timeout_ms);
 
   if ((len = lwmqtt_serialize_unsubscribe(c->buf, c->buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic)) <= 0)
     return rc;
-  if ((rc = lwmqtt_send_packet(c, len, &timer)) != LWMQTT_SUCCESS)  // send the subscribe src
-    return rc;                                                      // there was a problem
+  if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the subscribe src
+    return rc;                                              // there was a problem
 
-  if (lwmqtt_cycle_until(c, UNSUBACK, &timer) == UNSUBACK) {
+  if (lwmqtt_cycle_until(c, UNSUBACK) == UNSUBACK) {
     unsigned short mypacketid;  // should be the same as the packetid above
     if (lwmqtt_deserialize_unsuback(&mypacketid, c->readbuf, c->readbuf_size) == 1) rc = 0;
   } else
@@ -319,33 +331,31 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topicFilter) {
 
 int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_message_t *message) {
   int rc = LWMQTT_FAILURE;
-  Timer timer;
   lwmqtt_string_t topic = lwmqtt_default_string;
   topic.cstring = (char *)topicName;
   int len = 0;
 
   if (!c->isconnected) return rc;
 
-  TimerInit(&timer);
-  TimerCountdownMS(&timer, c->command_timeout_ms);
+  c->timer_set(c, c->timer_network_ref, c->command_timeout_ms);
 
   if (message->qos == LWMQTT_QOS1 || message->qos == LWMQTT_QOS2) message->id = lwmqtt_get_next_packet_id(c);
 
   len = lwmqtt_serialize_publish(c->buf, c->buf_size, 0, message->qos, message->retained, message->id, topic,
                                  (unsigned char *)message->payload, message->payloadlen);
   if (len <= 0) return rc;
-  if ((rc = lwmqtt_send_packet(c, len, &timer)) != LWMQTT_SUCCESS)  // send the subscribe src
-    return rc;                                                      // there was a problem
+  if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the subscribe src
+    return rc;                                              // there was a problem
 
   if (message->qos == LWMQTT_QOS1) {
-    if (lwmqtt_cycle_until(c, PUBACK, &timer) == PUBACK) {
+    if (lwmqtt_cycle_until(c, PUBACK) == PUBACK) {
       unsigned short mypacketid;
       unsigned char dup, type;
       if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1) rc = LWMQTT_FAILURE;
     } else
       rc = LWMQTT_FAILURE;
   } else if (message->qos == LWMQTT_QOS2) {
-    if (lwmqtt_cycle_until(c, PUBCOMP, &timer) == PUBCOMP) {
+    if (lwmqtt_cycle_until(c, PUBCOMP) == PUBCOMP) {
       unsigned short mypacketid;
       unsigned char dup, type;
       if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->readbuf, c->readbuf_size) != 1) rc = LWMQTT_FAILURE;
@@ -358,14 +368,12 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
 
 int lwmqtt_client_disconnect(lwmqtt_client_t *c) {
   int rc = LWMQTT_FAILURE;
-  Timer timer;  // we might wait for incomplete incoming publishes to complete
   int len = 0;
 
-  TimerInit(&timer);
-  TimerCountdownMS(&timer, c->command_timeout_ms);
+  c->timer_set(c, c->timer_network_ref, c->command_timeout_ms);
 
   len = lwmqtt_serialize_disconnect(c->buf, c->buf_size);
-  if (len > 0) rc = lwmqtt_send_packet(c, len, &timer);  // send the disconnect src
+  if (len > 0) rc = lwmqtt_send_packet(c, len);  // send the disconnect src
 
   c->isconnected = 0;
 

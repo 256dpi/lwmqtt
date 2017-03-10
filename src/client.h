@@ -23,32 +23,10 @@
 #include "connect.h"
 #include "string.h"
 
-#if defined(MQTTCLIENT_PLATFORM_HEADER)
-/* The following sequence of macros converts the MQTTCLIENT_PLATFORM_HEADER value
- * into a string constant suitable for use with include.
- */
-#define xstr(s) str(s)
-#define str(s) #s
-#include xstr(MQTTCLIENT_PLATFORM_HEADER)
-#endif
-
 typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
 
 /* all failure return codes must be negative */
 typedef enum { LWMQTT_FAILURE = -1, LWMQTT_SUCCESS = 0 } lwmqtt_err_t;
-
-#ifndef Timer
-typedef struct {
-} Timer;
-#endif
-
-/* The Timer structure must be defined in the platform specific header,
- * and have the following functions to operate on it.  */
-extern void TimerInit(Timer *);
-extern char TimerIsExpired(Timer *);
-extern void TimerCountdownMS(Timer *, unsigned int);
-extern void TimerCountdown(Timer *, unsigned int);
-extern int TimerLeftMS(Timer *);
 
 typedef struct {
   lwmqtt_qos_t qos;
@@ -61,8 +39,11 @@ typedef struct {
 
 typedef struct lwmqtt_client_t lwmqtt_client_t;
 
-typedef int(*lwmqtt_network_read_t)(lwmqtt_client_t *, void * ref, unsigned char *buf, int len, int timeout);
-typedef int(*lwmqtt_network_write_t)(lwmqtt_client_t *, void * ref, unsigned char *buf, int len, int timeout);
+typedef int (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
+typedef int (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
+
+typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *c, void *ref, unsigned int timeout);
+typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
 
 typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_message_t *);
 
@@ -76,11 +57,14 @@ struct lwmqtt_client_t {
 
   lwmqtt_callback_t callback;
 
-  void * network_ref;
+  void *network_ref;
   lwmqtt_network_read_t network_read;
   lwmqtt_network_write_t networked_write;
 
-  Timer ping_timer;
+  void *timer_keep_alive_ref;
+  void *timer_network_ref;
+  lwmqtt_timer_set_t timer_set;
+  lwmqtt_timer_get_t timer_get;
 };
 
 #define lwmqtt_default_client \
@@ -93,10 +77,13 @@ struct lwmqtt_client_t {
  * @param command_timeout_ms
  * @param
  */
-void lwmqtt_client_init(lwmqtt_client_t *client, unsigned int command_timeout_ms,
-                        unsigned char *sendbuf, size_t sendbuf_size, unsigned char *readbuf, size_t readbuf_size);
+void lwmqtt_client_init(lwmqtt_client_t *client, unsigned int command_timeout_ms, unsigned char *sendbuf,
+                        size_t sendbuf_size, unsigned char *readbuf, size_t readbuf_size);
 
-void lwmqtt_client_set_network(lwmqtt_client_t *c, void * ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
+void lwmqtt_client_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
+
+void lwmqtt_client_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
+                              lwmqtt_timer_get_t get);
 
 /** MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
  *  The nework object must be connected to the network endpoint before calling this
