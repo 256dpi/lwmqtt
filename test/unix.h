@@ -22,7 +22,7 @@
 
 #include "../src/client.h"
 
-typedef struct { struct timeval end_time; } lwmqtt_unix_timer_t;
+typedef struct { struct timeval end; } lwmqtt_unix_timer_t;
 
 void lwmqtt_unix_timer_set(lwmqtt_client_t *c, void *ref, unsigned int);
 int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref);

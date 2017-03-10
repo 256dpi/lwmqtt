@@ -25,71 +25,109 @@
 #include "unix.h"
 
 void lwmqtt_unix_timer_set(lwmqtt_client_t *c, void *ref, unsigned int timeout) {
+  // cast timer reference
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
-  t->end_time = {0, 0};
+  // clear end time
+  timerclear(&t->end);
 
+  // get current time
   struct timeval now;
   gettimeofday(&now, NULL);
+
+  // set future end time
   struct timeval interval = {timeout / 1000, (timeout % 1000) * 1000};
-  timeradd(&now, &interval, &t->end_time);
+  timeradd(&now, &interval, &t->end);
 }
 
 int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref) {
+  // cast timer reference
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
-  struct timeval now, res;
+  // get current time
+  struct timeval now;
   gettimeofday(&now, NULL);
-  timersub(&t->end_time, &now, &res);
 
-  // printf("left %d ms\n", (res.tv_sec < 0) ? 0 : res.tv_sec * 1000 + res.tv_usec / 1000);
-  return (res.tv_sec < 0) ? 0 : res.tv_sec * 1000 + res.tv_usec / 1000;
+  // get difference to end time
+  struct timeval res;
+  timersub(&t->end, &now, &res);
+
+  // convert to ms
+  return res.tv_sec < 0 ? 0 : (int)(res.tv_sec * 1000 + res.tv_usec / 1000);
 }
 
 int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) {
+  // close any open socket
   if (n->socket) {
     close(n->socket);
     n->socket = 0;
   }
 
-  int type = SOCK_STREAM;
+  // prepare resolver data
   struct sockaddr_in address;
-  int rc = -1;
-  sa_family_t family = AF_INET;
-  struct addrinfo *result = NULL;
+  struct addrinfo* result = NULL;
   struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM, IPPROTO_TCP, 0, NULL, NULL, NULL};
 
-  if ((rc = getaddrinfo(addr, NULL, &hints, &result)) == 0) {
-    struct addrinfo *res = result;
+  // resolve address
+  int rc = getaddrinfo(addr, NULL, &hints, &result);
+  if (rc < 0) {
+    return LWMQTT_FAILURE;
+  }
 
-    /* prefer ip4 addresses */
-    while (res) {
-      if (res->ai_family == AF_INET) {
-        result = res;
-        break;
-      }
-      res = res->ai_next;
+  // prepare selected result
+  struct addrinfo* current = result;
+  struct addrinfo* selected = NULL;
+
+  // traverse list and select first found ipv4 address
+  while (current) {
+    // check if ipv4 address
+    if (current->ai_family == AF_INET) {
+      selected = current;
+      break;
     }
 
-    if (result->ai_family == AF_INET) {
-      address.sin_port = htons(port);
-      address.sin_family = family = AF_INET;
-      address.sin_addr = ((struct sockaddr_in *)(result->ai_addr))->sin_addr;
-    } else
-      rc = -1;
-
-    freeaddrinfo(result);
+    // move one to next
+    current = current->ai_next;
   }
 
-  if (rc == 0) {
-    n->socket = socket(family, type, 0);
-    if (n->socket != -1) rc = connect(n->socket, (struct sockaddr *)&address, sizeof(address));
+  // free result
+  freeaddrinfo(result);
+
+  // return error if none found
+  if (selected == NULL) {
+    return LWMQTT_FAILURE;
   }
 
-  return rc;
+  // populate address struct
+  address.sin_port = htons(port);
+  address.sin_family = AF_INET;
+  address.sin_addr = ((struct sockaddr_in*)(selected->ai_addr))->sin_addr;
+
+  // create new socket
+  n->socket = socket(AF_INET, SOCK_STREAM, 0);
+  if (n->socket < 0) {
+    return LWMQTT_FAILURE;
+  }
+
+  // connect socket
+  rc = connect(n->socket, (struct sockaddr*)&address, sizeof(address));
+  if (rc >= 0) {
+    return LWMQTT_SUCCESS;
+  }
+
+  // close obtained socket
+  rc = close(n->socket);
+  if (rc < 0) {
+    return LWMQTT_FAILURE;
+  }
+
+  printf("lwmqtt_unix_network_connect: %d\n", errno);
+
+  return LWMQTT_FAILURE;
 }
 
 void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n) {
+  // close socket if present
   if (n->socket) {
     close(n->socket);
     n->socket = 0;
@@ -97,42 +135,64 @@ void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n) {
 }
 
 int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout) {
+  // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
-  struct timeval interval = {timeout / 1000, (timeout % 1000) * 1000};
-  if (interval.tv_sec < 0 || (interval.tv_sec == 0 && interval.tv_usec <= 0)) {
-    interval.tv_sec = 0;
-    interval.tv_usec = 100;
+  // convert timeout
+  struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
+
+  // set timeout
+  int rc = setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char*)&t, sizeof(t));
+  if (rc < 0) {
+    return -1;
   }
 
-  setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&interval, sizeof(struct timeval));
-
+  // prepare counter
   int bytes = 0;
+
+  // loop until buffer is full
   while (bytes < len) {
-    int rc = recv(n->socket, &buffer[bytes], (size_t)(len - bytes), 0);
+    // read from socket
+    rc = (int)recv(n->socket, &buffer[bytes], (size_t)(len - bytes), 0);
     if (rc == -1) {
+      // immediately return if connection has been lost
       if (errno != ENOTCONN && errno != ECONNRESET) {
-        bytes = -1;
-        break;
+        return LWMQTT_FAILURE;
       }
+
+      // stop reading
+      break;
     } else if (rc == 0) {
-      bytes = 0;
+      // finish if no more data
       break;
     } else
+      // increment counter
       bytes += rc;
   }
+
   return bytes;
 }
 
-int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout_ms) {
+int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout) {
+  // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
-  struct timeval tv;
+  // convert timeout
+  struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
 
-  tv.tv_sec = 0;                   /* 30 Secs Timeout */
-  tv.tv_usec = timeout_ms * 1000;  // Not init'ing this can cause strange errors
+  // set timeout
+  int rc = setsockopt(n->socket, SOL_SOCKET, SO_SNDTIMEO, (char*)&t, sizeof(t));
+  if (rc < 0) {
+    return LWMQTT_FAILURE;
+  }
 
-  setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv, sizeof(struct timeval));
-  int rc = write(n->socket, buffer, len);
-  return rc;
+  // write to socket
+  int bytes = (int)send(n->socket, buffer, (size_t)len, 0);
+  if (bytes >= 0) {
+    return bytes;
+  }
+
+  printf("lwmqtt_unix_network_write: %d\n", errno);
+
+  return LWMQTT_FAILURE;
 }
