@@ -85,6 +85,8 @@ void lwmqtt_client_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_rea
 void lwmqtt_client_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
                               lwmqtt_timer_get_t get);
 
+void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
+
 /** MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
  *  The nework object must be connected to the network endpoint before calling this
  *  @param options - connect options

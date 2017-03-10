@@ -27,7 +27,7 @@ void finish(int sig) {
   toStop = 1;
 }
 
-void messageArrived(lwmqtt_client_t *c, lwmqtt_string_t *topic, lwmqtt_message_t *msg) {
+void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *topic, lwmqtt_message_t *msg) {
   printf("%.*s\t", topic->lenstring.len, topic->lenstring.data);
   printf("%.*s\n", (int)msg->payloadlen, (char *)msg->payload);
 }
@@ -51,6 +51,7 @@ int main() {
 
   lwmqtt_client_set_network(&c, &n, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_client_set_timers(&c, &t1, &t2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_client_set_callback(&c, message_arrived);
 
   lwmqtt_connect_data_t data = lwmqtt_default_connect_data;
   data.willFlag = 0;
@@ -71,6 +72,13 @@ int main() {
   printf("Subscribed %d\n", rc);
 
   while (!toStop) {
+    lwmqtt_message_t msg;
+    msg.qos = LWMQTT_QOS0;
+    msg.payload = "world";
+    msg.payloadlen = 5;
+
+    lwmqtt_client_publish(&c, "hello", &msg);
+
     lwmqtt_client_yield(&c, 1000);
   }
 
