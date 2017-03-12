@@ -17,7 +17,6 @@
 #ifndef LWMQTT_UNIX_H
 #define LWMQTT_UNIX_H
 
-#include <signal.h>
 #include <sys/time.h>
 
 #include "../src/client.h"
