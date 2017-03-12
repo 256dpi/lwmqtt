@@ -41,7 +41,7 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
   }
 
   // compare memory
-  return memcmp(a->lp_string.data, b, len);
+  return strncmp(a->lp_string.data, b, len);
 }
 
 void lwmqtt_write_c_string(unsigned char **pptr, const char *string) {

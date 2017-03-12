@@ -34,7 +34,7 @@ static void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *t, lwmqtt_messa
     exit(1);
   }
 
-  if (memcmp(payload, m->payload, m->payload_len) != 0) {
+  if (strncmp(payload, m->payload, m->payload_len) != 0) {
     printf("payload is not 'world'\n");
     exit(1);
   }
