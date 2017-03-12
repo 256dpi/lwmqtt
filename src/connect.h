@@ -25,10 +25,10 @@ typedef union {
 
   struct {
     unsigned int _ : 1;            /**< unused */
-    unsigned int cleansession : 1; /**< cleansession flag */
+    unsigned int clean_session : 1; /**< clean session flag */
     unsigned int will : 1;         /**< will flag */
-    unsigned int willQoS : 2;      /**< will QoS value */
-    unsigned int willRetain : 1;   /**< will retain setting */
+    unsigned int will_qos : 2;      /**< will QoS value */
+    unsigned int will_retain : 1;   /**< will retain setting */
     unsigned int password : 1;     /**< 3.1 password */
     unsigned int username : 1;     /**< 3.1 user name */
   } bits;
@@ -44,7 +44,7 @@ typedef struct {
   /** The version number of this structure.  Must be 0 */
   int struct_version;
   /** The LWT topic to which the LWT message will be published. */
-  lwmqtt_string_t topicName;
+  lwmqtt_string_t topic;
   /** The LWT payload. */
   lwmqtt_string_t message;
   /**
@@ -66,10 +66,10 @@ typedef struct {
   char struct_id[4];
   /** The version number of this structure.  Must be 0 */
   int struct_version;
-  lwmqtt_string_t clientID;
-  unsigned short keepAliveInterval;
-  unsigned char cleansession;
-  unsigned char willFlag;
+  lwmqtt_string_t client_id;
+  unsigned short keep_alive;
+  unsigned char clean_session;
+  unsigned char will_flag;
   lwmqtt_will_options_t will;
   lwmqtt_string_t username;
   lwmqtt_string_t password;
@@ -80,7 +80,7 @@ typedef union {
 
   struct {
     unsigned int _ : 7;              /**< unused */
-    unsigned int sessionpresent : 1; /**< session present flag */
+    unsigned int session_present : 1; /**< session present flag */
   } bits;
 } lwmqtt_connack_flags; /**< connack flags byte */
 
@@ -92,40 +92,42 @@ typedef union {
 
 /**
   * Serializes the connect options into the buffer.
+  *
   * @param buf the buffer into which the packet will be serialized
   * @param len the length in bytes of the supplied buffer
   * @param options the options to be used to build the connect packet
   * @return serialized length, or error if 0
   */
-int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data_t *options);
+int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_connect_data_t *options);
 
 /**
   * Deserializes the supplied (wire) buffer into connack data - return code
-  * @param sessionPresent the session present flag returned (only for MQTT 3.1.1)
+  *
+  * @param session_present the session present flag returned (only for MQTT 3.1.1)
   * @param connack_rc returned integer value of the connack return code
   * @param buf the raw buffer data, of the correct length determined by the remaining length field
   * @param len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int lwmqtt_deserialize_connack(unsigned char *sessionPresent, unsigned char *connack_rc, unsigned char *buf,
-                               int buflen);
+int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *connack_rc, unsigned char *buf,
+                               int buf_len);
 
 /**
   * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
   *
   * @param buf The buffer into which the packet will be serialized.
-  * @param len The length in bytes of the supplied buffer, to avoid overruns.
+  * @param buf_len The length in bytes of the supplied buffer, to avoid overruns.
   * @return Serialized length, or error if 0.
   */
-int lwmqtt_serialize_disconnect(unsigned char *buf, int len);
+int lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len);
 
 /**
   * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
   *
   * @param buf The buffer into which the packet will be serialized.
-  * @param len The length in bytes of the supplied buffer, to avoid overruns.
+  * @param buf_len The length in bytes of the supplied buffer, to avoid overruns.
   * @return Serialized length, or error if 0.
   */
-int lwmqtt_serialize_pingreq(unsigned char *buf, int len);
+int lwmqtt_serialize_pingreq(unsigned char *buf, int buf_len);
 
 #endif  // LWMQTT_CONNECT_H

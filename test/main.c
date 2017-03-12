@@ -63,10 +63,10 @@ static void test(lwmqtt_qos_t qos) {
   }
 
   lwmqtt_connect_data_t data = lwmqtt_default_connect_data;
-  data.willFlag = 0;
-  data.clientID.cstring = "lwmqtt";
-  data.keepAliveInterval = 10;
-  data.cleansession = 1;
+  data.will_flag = 0;
+  data.client_id.c_string = "lwmqtt";
+  data.keep_alive = 10;
+  data.clean_session = 1;
 
   rc = lwmqtt_client_connect(&c, &data);
   if (rc != LWMQTT_SUCCESS) {

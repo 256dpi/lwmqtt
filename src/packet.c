@@ -31,7 +31,7 @@ int lwmqtt_packet_encode(unsigned char *buf, int length) {
   return rc;
 }
 
-int lwmqtt_packet_decode(int (*getcharfn)(unsigned char *, int), int *value) {
+int lwmqtt_packet_decode(int (*get_char_fn)(unsigned char *, int), int *value) {
   unsigned char c;
   int multiplier = 1;
   int len = 0;
@@ -46,7 +46,7 @@ int lwmqtt_packet_decode(int (*getcharfn)(unsigned char *, int), int *value) {
       rc = MQTTPACKET_READ_ERROR; /* bad data */
       return len;
     }
-    rc = (*getcharfn)(&c, 1);
+    rc = (*get_char_fn)(&c, 1);
     if (rc != 1) return len;
     *value += (c & 127) * multiplier;
     multiplier *= 128;

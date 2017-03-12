@@ -16,32 +16,32 @@
 #include "packet.h"
 #include "string.h"
 
-int lwmqtt_strlen(lwmqtt_string_t mqttstring) {
+int lwmqtt_strlen(lwmqtt_string_t str) {
   int rc = 0;
 
-  if (mqttstring.cstring)
-    rc = (int)strlen(mqttstring.cstring);
+  if (str.c_string)
+    rc = (int)strlen(str.c_string);
   else
-    rc = mqttstring.lenstring.len;
+    rc = str.lp_string.len;
   return rc;
 }
 
 int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
   // check strings directly
-  if (a->cstring != NULL) {
-    return strcmp(a->cstring, b);
+  if (a->c_string != NULL) {
+    return strcmp(a->c_string, b);
   }
 
   // get length of b
   size_t len = strlen(b);
 
   // otherwise check if length matches
-  if (len != a->lenstring.len) {
+  if (len != a->lp_string.len) {
     return -1;
   }
 
   // compare memory
-  return memcmp(a->lenstring.data, b, len);
+  return memcmp(a->lp_string.data, b, len);
 }
 
 void lwmqtt_write_c_string(unsigned char **pptr, const char *string) {
@@ -51,31 +51,31 @@ void lwmqtt_write_c_string(unsigned char **pptr, const char *string) {
   *pptr += len;
 }
 
-void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t mqttstring) {
-  if (mqttstring.lenstring.len > 0) {
-    lwmqtt_write_int(pptr, mqttstring.lenstring.len);
-    memcpy(*pptr, mqttstring.lenstring.data, mqttstring.lenstring.len);
-    *pptr += mqttstring.lenstring.len;
-  } else if (mqttstring.cstring)
-    lwmqtt_write_c_string(pptr, mqttstring.cstring);
+void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
+  if (string.lp_string.len > 0) {
+    lwmqtt_write_int(pptr, string.lp_string.len);
+    memcpy(*pptr, string.lp_string.data, string.lp_string.len);
+    *pptr += string.lp_string.len;
+  } else if (string.c_string)
+    lwmqtt_write_c_string(pptr, string.c_string);
   else
     lwmqtt_write_int(pptr, 0);
 }
 
-int lwmqtt_read_lp_string(lwmqtt_string_t *mqttstring, unsigned char **pptr, unsigned char *enddata) {
+int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *enddata) {
   int rc = 0;
 
   /* the first two bytes are the length of the string */
   if (enddata - (*pptr) > 1) /* enough length to read the integer? */
   {
-    mqttstring->lenstring.len = lwmqtt_read_int(pptr); /* increments pptr to point past length */
-    if (&(*pptr)[mqttstring->lenstring.len] <= enddata) {
-      mqttstring->lenstring.data = (char *)*pptr;
-      *pptr += mqttstring->lenstring.len;
+    str->lp_string.len = lwmqtt_read_int(pptr); /* increments pptr to point past length */
+    if (&(*pptr)[str->lp_string.len] <= enddata) {
+      str->lp_string.data = (char *)*pptr;
+      *pptr += str->lp_string.len;
       rc = 1;
     }
   }
-  mqttstring->cstring = NULL;
+  str->c_string = NULL;
 
   return rc;
 }

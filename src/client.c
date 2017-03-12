@@ -251,7 +251,7 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data_t *options) {
 
   if (options == 0) options = &default_options; /* set default options if none were supplied */
 
-  c->keep_alive_interval = options->keepAliveInterval;
+  c->keep_alive_interval = options->keep_alive;
 
   c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
 
@@ -281,7 +281,7 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
   int rc = LWMQTT_FAILURE;
   int len = 0;
   lwmqtt_string_t topic = lwmqtt_default_string;
-  topic.cstring = (char *)topic_filter;
+  topic.c_string = (char *)topic_filter;
 
   if (!c->is_connected) return rc;
 
@@ -310,7 +310,7 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
 int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
   int rc = LWMQTT_FAILURE;
   lwmqtt_string_t topic = lwmqtt_default_string;
-  topic.cstring = (char *)topic_filter;
+  topic.c_string = (char *)topic_filter;
   int len = 0;
 
   if (!c->is_connected) return rc;
@@ -334,7 +334,7 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
 int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_message_t *message) {
   int rc = LWMQTT_FAILURE;
   lwmqtt_string_t topic = lwmqtt_default_string;
-  topic.cstring = (char *)topicName;
+  topic.c_string = (char *)topicName;
   int len = 0;
 
   if (!c->is_connected) return rc;
