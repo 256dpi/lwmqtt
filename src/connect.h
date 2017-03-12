@@ -75,6 +75,12 @@ typedef struct {
   lwmqtt_string_t password;
 } lwmqtt_connect_data_t;
 
+#define lwmqtt_default_connect_data                                                                               \
+  {                                                                                                               \
+    {'M', 'Q', 'T', 'C'}, 0, lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will_options, lwmqtt_default_string, \
+        lwmqtt_default_string                                                                                     \
+  }
+
 typedef union {
   unsigned char all; /**< all connack flags */
 
@@ -83,12 +89,6 @@ typedef union {
     unsigned int session_present : 1; /**< session present flag */
   } bits;
 } lwmqtt_connack_flags; /**< connack flags byte */
-
-#define lwmqtt_default_connect_data                                                                               \
-  {                                                                                                               \
-    {'M', 'Q', 'T', 'C'}, 0, lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will_options, lwmqtt_default_string, \
-        lwmqtt_default_string                                                                                     \
-  }
 
 /**
   * Serializes the connect options into the buffer.
