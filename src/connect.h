@@ -84,11 +84,10 @@ typedef union {
   } bits;
 } lwmqtt_connack_flags; /**< connack flags byte */
 
-#define lwmqtt_default_connect_data                                                                            \
-  {                                                                                                            \
-    {'M', 'Q', 'T', 'C'}, 0, {NULL, {0, NULL}}, 60, 1, 0, lwmqtt_default_will_options, {NULL, {0, NULL}}, { \
-      NULL, { 0, NULL }                                                                                        \
-    }                                                                                                          \
+#define lwmqtt_default_connect_data                                                                               \
+  {                                                                                                               \
+    {'M', 'Q', 'T', 'C'}, 0, lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will_options, lwmqtt_default_string, \
+        lwmqtt_default_string                                                                                     \
   }
 
 /**

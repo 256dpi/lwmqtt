@@ -17,24 +17,24 @@
  *    Ian Craggs - update MQTTClient function names
  *******************************************************************************/
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../src/client.h"
 #include "unix.h"
 
-const char * topic = "hello";
-const char * payload = "world";
+const char *topic = "hello";
+const char *payload = "world";
 
 volatile int counter;
 
 static void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *t, lwmqtt_message_t *m) {
-  if(lwmqtt_strcmp(t, (char*)topic) != 0) {
+  if (lwmqtt_strcmp(t, (char *)topic) != 0) {
     printf("topic is not 'hello'\n");
     exit(-1);
   }
 
-  if(memcmp(payload, m->payload, m->payloadlen) != 0) {
+  if (memcmp(payload, m->payload, m->payloadlen) != 0) {
     printf("payload is not 'world'\n");
     exit(-1);
   }
@@ -56,7 +56,7 @@ static void test(lwmqtt_qos_t qos) {
   lwmqtt_client_set_timers(&c, &t1, &t2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_client_set_callback(&c, message_arrived);
 
-  int rc = lwmqtt_unix_network_connect(&n, "0.0.0.0", 1883);
+  int rc = lwmqtt_unix_network_connect(&n, "127.0.0.1", 1883);
   if (rc != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_unix_network_connect\n");
     exit(-1);
@@ -65,8 +65,6 @@ static void test(lwmqtt_qos_t qos) {
   lwmqtt_connect_data_t data = lwmqtt_default_connect_data;
   data.willFlag = 0;
   data.clientID.cstring = "lwmqtt";
-  data.username.cstring = "";
-  data.password.cstring = "";
   data.keepAliveInterval = 10;
   data.cleansession = 1;
 

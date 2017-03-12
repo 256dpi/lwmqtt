@@ -28,7 +28,7 @@ int lwmqtt_strlen(lwmqtt_string_t mqttstring) {
 
 int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
   // check strings directly
-  if(a->cstring != NULL) {
+  if (a->cstring != NULL) {
     return strcmp(a->cstring, b);
   }
 
@@ -36,7 +36,7 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
   size_t len = strlen(b);
 
   // otherwise check if length matches
-  if(len != a->lenstring.len) {
+  if (len != a->lenstring.len) {
     return -1;
   }
 
