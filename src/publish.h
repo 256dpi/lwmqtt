@@ -35,8 +35,7 @@
   * @return the length of the serialized data.  <= 0 indicates error
   */
 int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup, int qos, unsigned char retained,
-                             unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload,
-                             int payload_len);
+                             unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload, int payload_len);
 
 /**
   * Deserializes the supplied (wire) buffer into publish data
@@ -97,7 +96,7 @@ int lwmqtt_serialize_pubcomp(unsigned char *buf, int buf_len, unsigned short pac
   * @param buf_len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id, unsigned char *buf,
-                           int buf_len);
+int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
+                           unsigned char *buf, int buf_len);
 
 #endif  // LWMQTT_PUBLISH_H

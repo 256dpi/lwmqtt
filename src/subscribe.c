@@ -59,8 +59,8 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buf_len, unsigned char du
   return ptr - buf;
 }
 
-int lwmqtt_deserialize_suback(unsigned short *packet_id, int max_count, int *count, int *granted_qos_levels, unsigned char *buf,
-                              int buf_len) {
+int lwmqtt_deserialize_suback(unsigned short *packet_id, int max_count, int *count, int *granted_qos_levels,
+                              unsigned char *buf, int buf_len) {
   lwmqtt_header_t header = {0};
   unsigned char *curdata = buf;
   unsigned char *enddata = NULL;

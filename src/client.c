@@ -287,7 +287,8 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  len = lwmqtt_serialize_subscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic, (int *)&qos);
+  len = lwmqtt_serialize_subscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic,
+                                   (int *)&qos);
   if (len <= 0) return rc;
   if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the subscribe src
     return rc;                                              // there was a problem
@@ -317,7 +318,8 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  if ((len = lwmqtt_serialize_unsubscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic)) <= 0)
+  if ((len = lwmqtt_serialize_unsubscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1,
+                                          &topic)) <= 0)
     return rc;
   if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the subscribe src
     return rc;                                              // there was a problem
@@ -343,8 +345,8 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
 
   if (message->qos == LWMQTT_QOS1 || message->qos == LWMQTT_QOS2) message->id = lwmqtt_get_next_packet_id(c);
 
-  len = lwmqtt_serialize_publish(c->write_buf, c->write_buf_size, 0, message->qos, message->retained, message->id, topic,
-                                 (unsigned char *)message->payload, message->payload_len);
+  len = lwmqtt_serialize_publish(c->write_buf, c->write_buf_size, 0, message->qos, message->retained, message->id,
+                                 topic, (unsigned char *)message->payload, message->payload_len);
   if (len <= 0) return rc;
   if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the subscribe src
     return rc;                                              // there was a problem

@@ -25,8 +25,8 @@ static int lwmqtt_serialize_unsubscribe_length(int count, lwmqtt_string_t *topic
   return len;
 }
 
-int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id, int count,
-                                 lwmqtt_string_t *topic_filters) {
+int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id,
+                                 int count, lwmqtt_string_t *topic_filters) {
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;

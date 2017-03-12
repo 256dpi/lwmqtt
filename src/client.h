@@ -106,7 +106,7 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data_t *options);
  *  @param message - the message to send
  *  @return success code
  */
-int lwmqtt_client_publish(lwmqtt_client_t *c, const char * topic, lwmqtt_message_t * msg);
+int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_message_t *msg);
 
 /**
  * MQTT Subscribe - send an MQTT subscribe packet and wait for suback before returning.

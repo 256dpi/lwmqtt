@@ -50,8 +50,8 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
   return rc;
 }
 
-int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id, unsigned char *buf,
-                           int buf_len) {
+int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
+                           unsigned char *buf, int buf_len) {
   lwmqtt_header_t header = {0};
   unsigned char *curdata = buf;
   unsigned char *enddata = NULL;
@@ -80,8 +80,7 @@ static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, i
 }
 
 int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup, int qos, unsigned char retained,
-                             unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload,
-                             int payload_len) {
+                             unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload, int payload_len) {
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;

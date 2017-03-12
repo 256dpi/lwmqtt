@@ -63,8 +63,8 @@ typedef union {
 int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char type, unsigned char dup,
                          unsigned short packet_id);
 
-int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id, unsigned char *buf,
-                           int buf_len);
+int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
+                           unsigned char *buf, int buf_len);
 
 int lwmqtt_packet_len(int rem_len);
 

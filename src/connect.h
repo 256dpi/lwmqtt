@@ -24,13 +24,13 @@ typedef union {
   unsigned char all; /**< all connect flags */
 
   struct {
-    unsigned int _ : 1;            /**< unused */
+    unsigned int _ : 1;             /**< unused */
     unsigned int clean_session : 1; /**< clean session flag */
-    unsigned int will : 1;         /**< will flag */
+    unsigned int will : 1;          /**< will flag */
     unsigned int will_qos : 2;      /**< will QoS value */
     unsigned int will_retain : 1;   /**< will retain setting */
-    unsigned int password : 1;     /**< 3.1 password */
-    unsigned int username : 1;     /**< 3.1 user name */
+    unsigned int password : 1;      /**< 3.1 password */
+    unsigned int username : 1;      /**< 3.1 user name */
   } bits;
 } lwmqtt_connect_flags_t; /**< connect flags byte */
 
@@ -55,13 +55,9 @@ typedef struct {
 } lwmqtt_will_options_t;
 
 #define lwmqtt_default_will_options \
-  {{NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, 0 }
+  { {NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, 0 }
 
 typedef struct {
-  /** The eyecatcher for this structure.  must be MQTC. */
-  char struct_id[4];
-  /** The version number of this structure.  Must be 0 */
-  int struct_version;
   lwmqtt_string_t client_id;
   unsigned short keep_alive;
   unsigned char clean_session;
@@ -71,17 +67,14 @@ typedef struct {
   lwmqtt_string_t password;
 } lwmqtt_connect_data_t;
 
-#define lwmqtt_default_connect_data                                                                               \
-  {                                                                                                               \
-    {'M', 'Q', 'T', 'C'}, 0, lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will_options, lwmqtt_default_string, \
-        lwmqtt_default_string                                                                                     \
-  }
+#define lwmqtt_default_connect_data \
+  { lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will_options, lwmqtt_default_string, lwmqtt_default_string }
 
 typedef union {
   unsigned char all; /**< all connack flags */
 
   struct {
-    unsigned int _ : 7;              /**< unused */
+    unsigned int _ : 7;               /**< unused */
     unsigned int session_present : 1; /**< session present flag */
   } bits;
 } lwmqtt_connack_flags; /**< connack flags byte */

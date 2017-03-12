@@ -112,6 +112,8 @@ static int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char p
   return ptr - buf;
 }
 
-int lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len) { return lwmqtt_serialize_zero(buf, buf_len, DISCONNECT); }
+int lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len) {
+  return lwmqtt_serialize_zero(buf, buf_len, DISCONNECT);
+}
 
 int lwmqtt_serialize_pingreq(unsigned char *buf, int buf_len) { return lwmqtt_serialize_zero(buf, buf_len, PINGREQ); }
