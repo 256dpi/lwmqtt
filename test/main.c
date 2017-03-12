@@ -34,7 +34,7 @@ static void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *t, lwmqtt_messa
     exit(-1);
   }
 
-  if (memcmp(payload, m->payload, m->payloadlen) != 0) {
+  if (memcmp(payload, m->payload, m->payload_len) != 0) {
     printf("payload is not 'world'\n");
     exit(-1);
   }
@@ -86,7 +86,7 @@ static void test(lwmqtt_qos_t qos) {
     lwmqtt_message_t msg;
     msg.qos = qos;
     msg.payload = "world";
-    msg.payloadlen = 5;
+    msg.payload_len = 5;
 
     rc = lwmqtt_client_publish(&c, "hello", &msg);
     if (rc != LWMQTT_SUCCESS) {
