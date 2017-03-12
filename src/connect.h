@@ -39,10 +39,6 @@ typedef union {
  * the connect packet.
  */
 typedef struct {
-  /** The eyecatcher for this structure.  must be MQTW. */
-  char struct_id[4];
-  /** The version number of this structure.  Must be 0 */
-  int struct_version;
   /** The LWT topic to which the LWT message will be published. */
   lwmqtt_string_t topic;
   /** The LWT payload. */
@@ -59,7 +55,7 @@ typedef struct {
 } lwmqtt_will_options_t;
 
 #define lwmqtt_default_will_options \
-  { {'M', 'Q', 'T', 'W'}, 0, {NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, 0 }
+  {{NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, 0 }
 
 typedef struct {
   /** The eyecatcher for this structure.  must be MQTC. */
