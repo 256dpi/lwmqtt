@@ -20,7 +20,7 @@
 #include "packet.h"
 
 static int lwmqtt_serialize_connect_length(lwmqtt_connect_data_t *options) {
-  int len = 4;
+  int len = 10;
 
   len += lwmqtt_strlen(options->client_id) + 2;
   if (options->will_flag) len += lwmqtt_strlen(options->will.topic) + 2 + lwmqtt_strlen(options->will.message) + 2;
