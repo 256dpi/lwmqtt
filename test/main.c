@@ -64,7 +64,6 @@ static void test(lwmqtt_qos_t qos) {
 
   lwmqtt_connect_data_t data = lwmqtt_default_connect_data;
   data.willFlag = 0;
-  data.MQTTVersion = 4;
   data.clientID.cstring = "lwmqtt";
   data.username.cstring = "";
   data.password.cstring = "";

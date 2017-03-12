@@ -66,9 +66,6 @@ typedef struct {
   char struct_id[4];
   /** The version number of this structure.  Must be 0 */
   int struct_version;
-  /** Version of MQTT to be used.  3 = 3.1 4 = 3.1.1
-    */
-  unsigned char MQTTVersion;
   lwmqtt_string_t clientID;
   unsigned short keepAliveInterval;
   unsigned char cleansession;
@@ -89,7 +86,7 @@ typedef union {
 
 #define lwmqtt_default_connect_data                                                                            \
   {                                                                                                            \
-    {'M', 'Q', 'T', 'C'}, 0, 4, {NULL, {0, NULL}}, 60, 1, 0, lwmqtt_default_will_options, {NULL, {0, NULL}}, { \
+    {'M', 'Q', 'T', 'C'}, 0, {NULL, {0, NULL}}, 60, 1, 0, lwmqtt_default_will_options, {NULL, {0, NULL}}, { \
       NULL, { 0, NULL }                                                                                        \
     }                                                                                                          \
   }

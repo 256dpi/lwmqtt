@@ -20,12 +20,7 @@
 #include "packet.h"
 
 static int lwmqtt_serialize_connect_length(lwmqtt_connect_data_t *options) {
-  int len = 0;
-
-  if (options->MQTTVersion == 3)
-    len = 12; /* variable depending on MQTT or MQIsdp */
-  else if (options->MQTTVersion == 4)
-    len = 10;
+  int len = 4;
 
   len += lwmqtt_strlen(options->clientID) + 2;
   if (options->willFlag) len += lwmqtt_strlen(options->will.topicName) + 2 + lwmqtt_strlen(options->will.message) + 2;
@@ -51,13 +46,8 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buflen, lwmqtt_connect_data
 
   ptr += lwmqtt_packet_encode(ptr, len); /* write remaining length */
 
-  if (options->MQTTVersion == 4) {
-    lwmqtt_write_c_string(&ptr, "MQTT");
-    lwmqtt_write_char(&ptr, (char)4);
-  } else {
-    lwmqtt_write_c_string(&ptr, "MQIsdp");
-    lwmqtt_write_char(&ptr, (char)3);
-  }
+  lwmqtt_write_c_string(&ptr, "MQTT");
+  lwmqtt_write_char(&ptr, (char)4);
 
   flags.all = 0;
   flags.bits.cleansession = options->cleansession;
