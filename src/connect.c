@@ -24,8 +24,8 @@ static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options) {
 
   len += lwmqtt_strlen(options->client_id) + 2;
 
-  if (options->will_flag) {
-    len += lwmqtt_strlen(options->will.topic) + 2 + lwmqtt_strlen(options->will.message) + 2;
+  if (options->will != NULL) {
+    len += lwmqtt_strlen(options->will->topic) + 2 + lwmqtt_strlen(options->will->message) + 2;
   }
 
   if (options->username.c_string || options->username.lp_string.data) {
@@ -60,10 +60,10 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
 
   flags.byte = 0;
   flags.bits.clean_session = options->clean_session;
-  flags.bits.will = (options->will_flag) ? 1 : 0;
+  flags.bits.will = (options->will != NULL) ? 1 : 0;
   if (flags.bits.will) {
-    flags.bits.will_qos = options->will.qos;
-    flags.bits.will_retain = options->will.retained;
+    flags.bits.will_qos = options->will->qos;
+    flags.bits.will_retain = options->will->retained;
   }
 
   if (options->username.c_string || options->username.lp_string.data) {
@@ -78,9 +78,9 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   lwmqtt_write_int(&ptr, options->keep_alive);
   lwmqtt_write_string(&ptr, options->client_id);
 
-  if (options->will_flag) {
-    lwmqtt_write_string(&ptr, options->will.topic);
-    lwmqtt_write_string(&ptr, options->will.message);
+  if (options->will != NULL) {
+    lwmqtt_write_string(&ptr, options->will->topic);
+    lwmqtt_write_string(&ptr, options->will->message);
   }
 
   if (flags.bits.username) {

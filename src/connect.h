@@ -52,14 +52,13 @@ typedef struct {
   lwmqtt_string_t client_id;
   unsigned short keep_alive;
   unsigned char clean_session;
-  unsigned char will_flag;
-  lwmqtt_will_t will;
+  lwmqtt_will_t *will;
   lwmqtt_string_t username;
   lwmqtt_string_t password;
 } lwmqtt_options_t;
 
 #define lwmqtt_default_options \
-  { lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will, lwmqtt_default_string, lwmqtt_default_string }
+  { lwmqtt_default_string, 60, 1, NULL, lwmqtt_default_string, lwmqtt_default_string }
 
 typedef union {
   unsigned char byte;
