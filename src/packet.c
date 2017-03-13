@@ -35,14 +35,16 @@ int lwmqtt_fixed_header_len(int rem_len) {
   rem_len += 1;  // header byte
 
   // now remaining_length field
-  if (rem_len < 128)
+  if (rem_len < 128) {
     rem_len += 1;
-  else if (rem_len < 16384)
+  } else if (rem_len < 16384) {
     rem_len += 2;
-  else if (rem_len < 2097151)
+  } else if (rem_len < 2097151) {
     rem_len += 3;
-  else
+  } else {
     rem_len += 4;
+  }
+
   return rem_len;
 }
 
@@ -53,13 +55,10 @@ int lwmqtt_fixed_header_decode(unsigned char *buf, int *value) {
 
   *value = 0;
   do {
-    int rc = MQTTPACKET_READ_ERROR;
-
     len++;
+
     if (len > 4) {
-      // TODO: rc and len seem to be mixed up here.
-      rc = MQTTPACKET_READ_ERROR;  // bad data
-      return len;
+      return MQTTPACKET_READ_ERROR;  // bad data
     }
 
     c = buf[len-1];

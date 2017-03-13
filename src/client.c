@@ -80,19 +80,16 @@ static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
   unsigned char i;
   int multiplier = 1;
   int len = 0;
-  const int MAX_NO_OF_REMAINING_LENGTH_BYTES = 4;
 
   *value = 0;
   do {
-    int rc = MQTTPACKET_READ_ERROR;
 
-    if (++len > MAX_NO_OF_REMAINING_LENGTH_BYTES) {
-      // TODO: rc and len seem to be mixed up here.
-      rc = MQTTPACKET_READ_ERROR;  // bad data
-      return len;
+    len++;
+    if (len > 4) {
+      return MQTTPACKET_READ_ERROR;  // bad data
     }
 
-    rc = c->network_read(c, c->network_ref, &i, 1, timeout);
+    int rc = c->network_read(c, c->network_ref, &i, 1, timeout);
     if (rc != 1) {
       return len;
     }
