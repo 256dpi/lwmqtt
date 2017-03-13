@@ -38,7 +38,8 @@ typedef struct {
   size_t payload_len;
 } lwmqtt_message_t;
 
-#define lwmqtt_default_message {LWMQTT_QOS0, 0, 0, 0, NULL, 0}
+#define lwmqtt_default_message \
+  { LWMQTT_QOS0, 0, 0, 0, NULL, 0 }
 
 typedef struct lwmqtt_client_t lwmqtt_client_t;
 

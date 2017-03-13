@@ -110,7 +110,7 @@ static void test(lwmqtt_qos_t qos) {
 }
 
 int main() {
-  for(int i=0; i < PAYLOAD_LEN; i++) {
+  for (int i = 0; i < PAYLOAD_LEN; i++) {
     payload[i] = 'x';
   }
 

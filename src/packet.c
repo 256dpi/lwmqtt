@@ -61,7 +61,7 @@ int lwmqtt_fixed_header_decode(unsigned char *buf, int *value) {
       return LWMQTT_READ_ERROR;  // bad data
     }
 
-    c = buf[len-1];
+    c = buf[len - 1];
 
     *value += (c & 127) * multiplier;
     multiplier *= 128;
