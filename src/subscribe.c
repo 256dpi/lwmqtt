@@ -20,10 +20,12 @@
 #include "subscribe.h"
 
 static int lwmqtt_serialize_subscribe_length(int count, lwmqtt_string_t *topicFilters) {
-  int i;
-  int len = 2; /* packet id */
+  int len = 2;  // packet id
 
-  for (i = 0; i < count; ++i) len += 2 + lwmqtt_strlen(topicFilters[i]) + 1; /* length + topic + req_qos */
+  for (int i = 0; i < count; ++i) {
+    len += 2 + lwmqtt_strlen(topicFilters[i]) + 1;  // length + topic + req_qos
+  }
+
   return len;
 }
 
@@ -32,26 +34,22 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buf_len, unsigned char du
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;
-  int rc = 0;
-  int i = 0;
 
   if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_subscribe_length(count, topic_filters)) > buf_len) {
-    rc = MQTTPACKET_BUFFER_TOO_SHORT;
-    return rc;
+    return MQTTPACKET_BUFFER_TOO_SHORT;
   }
 
   header.byte = 0;
   header.bits.type = SUBSCRIBE;
   header.bits.dup = dup;
   header.bits.qos = 1;
-  lwmqtt_write_char(&ptr, header.byte); /* write header */
+  lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_packet_encode(ptr, rem_len); /* write remaining length */
-  ;
+  ptr += lwmqtt_packet_encode(ptr, rem_len);  // write remaining length
 
   lwmqtt_write_int(&ptr, packet_id);
 
-  for (i = 0; i < count; ++i) {
+  for (int i = 0; i < count; ++i) {
     lwmqtt_write_string(&ptr, topic_filters[i]);
     lwmqtt_write_char(&ptr, qos_levels[i]);
   }
@@ -68,11 +66,15 @@ int lwmqtt_deserialize_suback(unsigned short *packet_id, int max_count, int *cou
   int mylen;
 
   header.byte = lwmqtt_read_char(&curdata);
-  if (header.bits.type != SUBACK) return rc;
+  if (header.bits.type != SUBACK) {
+    return rc;
+  }
 
-  curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen)); /* read remaining length */
+  curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
-  if (enddata - curdata < 2) return rc;
+  if (enddata - curdata < 2) {
+    return rc;
+  }
 
   *packet_id = lwmqtt_read_int(&curdata);
 
@@ -81,6 +83,7 @@ int lwmqtt_deserialize_suback(unsigned short *packet_id, int max_count, int *cou
     if (*count > max_count) {
       return -1;
     }
+
     granted_qos_levels[(*count)++] = lwmqtt_read_char(&curdata);
   }
 

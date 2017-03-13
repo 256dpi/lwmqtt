@@ -29,19 +29,25 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
   int mylen = 0;
 
   header.byte = lwmqtt_read_char(&curdata);
-  if (header.bits.type != PUBLISH) return rc;
+  if (header.bits.type != PUBLISH) {
+    return rc;
+  }
+
   *dup = header.bits.dup;
   *qos = header.bits.qos;
   *retained = header.bits.retain;
 
-  curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen)); /* read remaining length */
+  curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
 
-  if (!lwmqtt_read_lp_string(topic, &curdata, enddata) ||
-      enddata - curdata < 0) /* do we have enough data to read the protocol version byte? */
+  // do we have enough data to read the protocol version byte?
+  if (!lwmqtt_read_lp_string(topic, &curdata, enddata) || enddata - curdata < 0) {
     return rc;
+  }
 
-  if (*qos > 0) *packet_id = lwmqtt_read_int(&curdata);
+  if (*qos > 0) {
+    *packet_id = lwmqtt_read_int(&curdata);
+  }
 
   *payload_len = enddata - curdata;
   *payload = curdata;
@@ -62,10 +68,13 @@ int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsig
   *dup = header.bits.dup;
   *packet_type = header.bits.type;
 
-  curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen)); /* read remaining length */
+  curdata += (rc = lwmqtt_packet_decode_buf(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
 
-  if (enddata - curdata < 2) return rc;
+  if (enddata - curdata < 2) {
+    return rc;
+  }
+
   *packet_id = lwmqtt_read_int(&curdata);
 
   return 1;
@@ -75,7 +84,10 @@ static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, i
   int len = 0;
 
   len += 2 + lwmqtt_strlen(topicName) + payloadlen;
-  if (qos > 0) len += 2; /* packetid */
+  if (qos > 0) {
+    len += 2;
+  }  // packet id
+
   return len;
 }
 
@@ -93,13 +105,15 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
   header.bits.dup = dup;
   header.bits.qos = qos;
   header.bits.retain = retained;
-  lwmqtt_write_char(&ptr, header.byte); /* write header */
+  lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_packet_encode(ptr, rem_len); /* write remaining length */
+  ptr += lwmqtt_packet_encode(ptr, rem_len);  // write remaining length
 
   lwmqtt_write_string(&ptr, topic);
 
-  if (qos > 0) lwmqtt_write_int(&ptr, packet_id);
+  if (qos > 0) {
+    lwmqtt_write_int(&ptr, packet_id);
+  }
 
   memcpy(ptr, payload, payload_len);
   ptr += payload_len;
@@ -115,12 +129,13 @@ int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char packetty
   if (buf_len < 4) {
     return MQTTPACKET_BUFFER_TOO_SHORT;
   }
+
   header.bits.type = packettype;
   header.bits.dup = dup;
   header.bits.qos = (packettype == PUBREL) ? 1 : 0;
-  lwmqtt_write_char(&ptr, header.byte); /* write header */
+  lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_packet_encode(ptr, 2); /* write remaining length */
+  ptr += lwmqtt_packet_encode(ptr, 2);  // write remaining length
   lwmqtt_write_int(&ptr, packet_id);
 
   return ptr - buf;

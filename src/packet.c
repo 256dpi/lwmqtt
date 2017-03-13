@@ -23,7 +23,7 @@ int lwmqtt_packet_encode(unsigned char *buf, int length) {
   do {
     char d = length % 128;
     length /= 128;
-    /* if there are more digits to encode, set the top bit of this digit */
+    // if there are more digits to encode, set the top bit of this digit
     if (length > 0) d |= 0x80;
     buf[rc++] = d;
   } while (length > 0);
@@ -43,7 +43,7 @@ int lwmqtt_packet_decode(int (*get_char_fn)(unsigned char *, int), int *value) {
 
     if (++len > MAX_NO_OF_REMAINING_LENGTH_BYTES) {
       // TODO: rc and len seem to be mixed up here.
-      rc = MQTTPACKET_READ_ERROR; /* bad data */
+      rc = MQTTPACKET_READ_ERROR;  // bad data
       return len;
     }
     rc = (*get_char_fn)(&c, 1);
@@ -56,9 +56,9 @@ int lwmqtt_packet_decode(int (*get_char_fn)(unsigned char *, int), int *value) {
 }
 
 int lwmqtt_packet_len(int rem_len) {
-  rem_len += 1; /* header byte */
+  rem_len += 1;  // header byte
 
-  /* now remaining_length field */
+  // now remaining_length field
   if (rem_len < 128)
     rem_len += 1;
   else if (rem_len < 16384)

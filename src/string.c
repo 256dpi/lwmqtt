@@ -17,13 +17,11 @@
 #include "string.h"
 
 int lwmqtt_strlen(lwmqtt_string_t str) {
-  int rc = 0;
+  if (str.c_string) {
+    return (int)strlen(str.c_string);
+  }
 
-  if (str.c_string)
-    rc = (int)strlen(str.c_string);
-  else
-    rc = str.lp_string.len;
-  return rc;
+  return str.lp_string.len;
 }
 
 int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
@@ -56,25 +54,26 @@ void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
     lwmqtt_write_int(pptr, string.lp_string.len);
     memcpy(*pptr, string.lp_string.data, string.lp_string.len);
     *pptr += string.lp_string.len;
-  } else if (string.c_string)
+  } else if (string.c_string) {
     lwmqtt_write_c_string(pptr, string.c_string);
-  else
+  } else {
     lwmqtt_write_int(pptr, 0);
+  }
 }
 
 int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *enddata) {
   int rc = 0;
 
-  /* the first two bytes are the length of the string */
-  if (enddata - (*pptr) > 1) /* enough length to read the integer? */
-  {
-    str->lp_string.len = lwmqtt_read_int(pptr); /* increments pptr to point past length */
+  // the first two bytes are the length of the string
+  if (enddata - (*pptr) > 1) {                   // enough length to read the integer?
+    str->lp_string.len = lwmqtt_read_int(pptr);  // increments pptr to point past length
     if (&(*pptr)[str->lp_string.len] <= enddata) {
       str->lp_string.data = (char *)*pptr;
       *pptr += str->lp_string.len;
       rc = 1;
     }
   }
+
   str->c_string = NULL;
 
   return rc;

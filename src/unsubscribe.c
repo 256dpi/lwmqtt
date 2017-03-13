@@ -18,10 +18,12 @@
 #include "packet.h"
 
 static int lwmqtt_serialize_unsubscribe_length(int count, lwmqtt_string_t *topicFilters) {
-  int i;
-  int len = 2; /* packet id */
+  int len = 2;  // packet id
 
-  for (i = 0; i < count; ++i) len += 2 + lwmqtt_strlen(topicFilters[i]); /* length + topic*/
+  for (int i = 0; i < count; ++i) {
+    len += 2 + lwmqtt_strlen(topicFilters[i]);  // length + topic
+  }
+
   return len;
 }
 
@@ -30,7 +32,6 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char 
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   int rem_len = 0;
-  int i = 0;
 
   if (lwmqtt_packet_len(rem_len = lwmqtt_serialize_unsubscribe_length(count, topic_filters)) > buf_len) {
     return MQTTPACKET_BUFFER_TOO_SHORT;
@@ -40,14 +41,15 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char 
   header.bits.type = UNSUBSCRIBE;
   header.bits.dup = dup;
   header.bits.qos = 1;
-  lwmqtt_write_char(&ptr, header.byte); /* write header */
+  lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_packet_encode(ptr, rem_len); /* write remaining length */
-  ;
+  ptr += lwmqtt_packet_encode(ptr, rem_len);  // write remaining length
 
   lwmqtt_write_int(&ptr, packet_id);
 
-  for (i = 0; i < count; ++i) lwmqtt_write_string(&ptr, topic_filters[i]);
+  for (int i = 0; i < count; ++i) {
+    lwmqtt_write_string(&ptr, topic_filters[i]);
+  }
 
   return ptr - buf;
 }
@@ -55,10 +57,11 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char 
 int lwmqtt_deserialize_unsuback(unsigned short *packet_id, unsigned char *buf, int buf_len) {
   unsigned char type = 0;
   unsigned char dup = 0;
-  int rc = 0;
 
-  rc = lwmqtt_deserialize_ack(&type, &dup, packet_id, buf, buf_len);
-  if (type == UNSUBACK) rc = 1;
+  int rc = lwmqtt_deserialize_ack(&type, &dup, packet_id, buf, buf_len);
+  if (type == UNSUBACK) {
+    rc = 1;
+  }
 
   return rc;
 }
