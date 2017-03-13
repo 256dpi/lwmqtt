@@ -80,10 +80,10 @@ int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsig
   return 1;
 }
 
-static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, int payloadlen) {
+static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, int payload_len) {
   int len = 0;
 
-  len += 2 + lwmqtt_strlen(topicName) + payloadlen;
+  len += 2 + lwmqtt_strlen(topicName) + payload_len;
   if (qos > 0) {
     len += 2;
   }  // packet id
