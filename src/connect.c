@@ -108,7 +108,7 @@ int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *co
     return rc;
   }
 
-  curdata += (rc = lwmqtt_fixed_header_decode_buf(curdata, &mylen));  // read remaining length
+  curdata += (rc = lwmqtt_fixed_header_decode(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
   if (enddata - curdata < 2) {
     return rc;

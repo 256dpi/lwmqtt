@@ -31,30 +31,6 @@ int lwmqtt_fixed_header_encode(unsigned char *buf, int length) {
   return rc;
 }
 
-int lwmqtt_fixed_header_decode(int (*get_char_fn)(unsigned char *, int), int *value) {
-  unsigned char c;
-  int multiplier = 1;
-  int len = 0;
-#define MAX_NO_OF_REMAINING_LENGTH_BYTES 4
-
-  *value = 0;
-  do {
-    int rc = MQTTPACKET_READ_ERROR;
-
-    if (++len > MAX_NO_OF_REMAINING_LENGTH_BYTES) {
-      // TODO: rc and len seem to be mixed up here.
-      rc = MQTTPACKET_READ_ERROR;  // bad data
-      return len;
-    }
-    rc = (*get_char_fn)(&c, 1);
-    if (rc != 1) return len;
-    *value += (c & 127) * multiplier;
-    multiplier *= 128;
-  } while ((c & 128) != 0);
-
-  return len;
-}
-
 int lwmqtt_fixed_header_len(int rem_len) {
   rem_len += 1;  // header byte
 
@@ -70,18 +46,29 @@ int lwmqtt_fixed_header_len(int rem_len) {
   return rem_len;
 }
 
-static unsigned char *lwmqtt_bufptr;
+int lwmqtt_fixed_header_decode(unsigned char *buf, int *value) {
+  unsigned char c;
+  int multiplier = 1;
+  int len = 0;
 
-static int lwmqtt_bufchar(unsigned char *c, int count) {
-  int i;
+  *value = 0;
+  do {
+    int rc = MQTTPACKET_READ_ERROR;
 
-  for (i = 0; i < count; ++i) *c = *lwmqtt_bufptr++;
-  return count;
-}
+    len++;
+    if (len > 4) {
+      // TODO: rc and len seem to be mixed up here.
+      rc = MQTTPACKET_READ_ERROR;  // bad data
+      return len;
+    }
 
-int lwmqtt_fixed_header_decode_buf(unsigned char *buf, int *value) {
-  lwmqtt_bufptr = buf;
-  return lwmqtt_fixed_header_decode(lwmqtt_bufchar, value);
+    c = buf[len-1];
+
+    *value += (c & 127) * multiplier;
+    multiplier *= 128;
+  } while ((c & 128) != 0);
+
+  return len;
 }
 
 /* helpers */

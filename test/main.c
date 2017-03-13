@@ -23,19 +23,21 @@
 #include "../src/client.h"
 #include "unix.h"
 
-const char *topic = "hello";
-const char *payload = "world";
+char *topic = "hello";
+
+#define PAYLOAD_LEN 256
+char payload[PAYLOAD_LEN + 1];
 
 volatile int counter;
 
 static void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *t, lwmqtt_message_t *m) {
-  if (lwmqtt_strcmp(t, (char *)topic) != 0) {
-    printf("topic is not 'hello'\n");
+  if (lwmqtt_strcmp(t, topic) != 0) {
+    printf("topic does not match\n");
     exit(1);
   }
 
   if (strncmp(payload, m->payload, m->payload_len) != 0) {
-    printf("payload is not 'world'\n");
+    printf("payload does not match\n");
     exit(1);
   }
 
@@ -43,14 +45,14 @@ static void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *t, lwmqtt_messa
 }
 
 static void test(lwmqtt_qos_t qos) {
-  unsigned char buf1[100], buf2[100];
+  unsigned char buf1[512], buf2[512];
 
   lwmqtt_unix_network_t n;
   lwmqtt_unix_timer_t t1, t2;
 
   lwmqtt_client_t c = lwmqtt_default_client;
 
-  lwmqtt_client_init(&c, 1000, buf1, 100, buf2, 100);
+  lwmqtt_client_init(&c, 1000, buf1, 512, buf2, 512);
 
   lwmqtt_client_set_network(&c, &n, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_client_set_timers(&c, &t1, &t2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
@@ -80,10 +82,10 @@ static void test(lwmqtt_qos_t qos) {
   counter = 0;
 
   while (counter < 5) {
-    lwmqtt_message_t msg;
+    lwmqtt_message_t msg = lwmqtt_default_message;
     msg.qos = qos;
-    msg.payload = "world";
-    msg.payload_len = 5;
+    msg.payload = payload;
+    msg.payload_len = PAYLOAD_LEN;
 
     rc = lwmqtt_client_publish(&c, "hello", &msg);
     if (rc != LWMQTT_SUCCESS) {
@@ -108,6 +110,12 @@ static void test(lwmqtt_qos_t qos) {
 }
 
 int main() {
+  for(int i=0; i < PAYLOAD_LEN; i++) {
+    payload[i] = 'x';
+  }
+
+  payload[PAYLOAD_LEN] = 0;
+
   printf("Running QoS 0 tests...\n");
   test(LWMQTT_QOS0);
 

@@ -37,7 +37,7 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
   *qos = header.bits.qos;
   *retained = header.bits.retain;
 
-  curdata += (rc = lwmqtt_fixed_header_decode_buf(curdata, &mylen));  // read remaining length
+  curdata += (rc = lwmqtt_fixed_header_decode(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
 
   // do we have enough data to read the protocol version byte?
@@ -68,7 +68,7 @@ int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsig
   *dup = header.bits.dup;
   *packet_type = header.bits.type;
 
-  curdata += (rc = lwmqtt_fixed_header_decode_buf(curdata, &mylen));  // read remaining length
+  curdata += (rc = lwmqtt_fixed_header_decode(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
 
   if (enddata - curdata < 2) {

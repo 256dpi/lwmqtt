@@ -77,16 +77,7 @@ int lwmqtt_fixed_header_len(int rem_len);
  */
 int lwmqtt_fixed_header_encode(unsigned char *buf, int length);
 
-/**
- * Decodes the message length according to the MQTT algorithm
- *
- * @param get_char_fn pointer to function to read the next character from the data source
- * @param value the decoded length returned
- * @return the number of bytes read from the socket
- */
-int lwmqtt_fixed_header_decode(int (*get_char_fn)(unsigned char *, int), int *value);
-
-int lwmqtt_fixed_header_decode_buf(unsigned char *buf, int *value);
+int lwmqtt_fixed_header_decode(unsigned char *buf, int *value);
 
 /**
  * Calculates an integer from two bytes read from the input buffer
