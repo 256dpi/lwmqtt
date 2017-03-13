@@ -248,9 +248,9 @@ static int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type) {
   return rc;
 }
 
-int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data_t *options) {
+int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options) {
   int rc = LWMQTT_FAILURE;
-  lwmqtt_connect_data_t default_options = lwmqtt_default_connect_data;
+  lwmqtt_options_t default_options = lwmqtt_default_options;
   int len = 0;
 
   if (c->is_connected) {  // don't send connect src again if we are already connected
@@ -259,7 +259,7 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data_t *options) {
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  if (options == 0) {
+  if (options == NULL) {
     options = &default_options;  // set default options if none were supplied
   }
 

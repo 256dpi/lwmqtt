@@ -19,7 +19,7 @@
 #include "connect.h"
 #include "packet.h"
 
-static int lwmqtt_serialize_connect_length(lwmqtt_connect_data_t *options) {
+static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options) {
   int len = 10;
 
   len += lwmqtt_strlen(options->client_id) + 2;
@@ -39,7 +39,7 @@ static int lwmqtt_serialize_connect_length(lwmqtt_connect_data_t *options) {
   return len;
 }
 
-int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_connect_data_t *options) {
+int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options) {
   unsigned char *ptr = buf;
   lwmqtt_header_t header = {0};
   lwmqtt_connect_flags_t flags = {0};

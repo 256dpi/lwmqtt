@@ -43,9 +43,9 @@ typedef struct {
   lwmqtt_string_t message;
   unsigned char retained;
   char qos;
-} lwmqtt_will_options_t;
+} lwmqtt_will_t;
 
-#define lwmqtt_default_will_options \
+#define lwmqtt_default_will \
   { {NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, 0 }
 
 typedef struct {
@@ -53,13 +53,13 @@ typedef struct {
   unsigned short keep_alive;
   unsigned char clean_session;
   unsigned char will_flag;
-  lwmqtt_will_options_t will;
+  lwmqtt_will_t will;
   lwmqtt_string_t username;
   lwmqtt_string_t password;
-} lwmqtt_connect_data_t;
+} lwmqtt_options_t;
 
-#define lwmqtt_default_connect_data \
-  { lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will_options, lwmqtt_default_string, lwmqtt_default_string }
+#define lwmqtt_default_options \
+  { lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will, lwmqtt_default_string, lwmqtt_default_string }
 
 typedef union {
   unsigned char byte;
@@ -78,7 +78,7 @@ typedef union {
   * @param options the options to be used to build the connect packet
   * @return serialized length, or error if 0
   */
-int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_connect_data_t *options);
+int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options);
 
 /**
   * Deserializes the supplied (wire) buffer into connack data - return code

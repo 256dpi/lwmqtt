@@ -100,7 +100,7 @@ void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
  *  @param options - connect options
  *  @return success code
  */
-int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_connect_data_t *options);
+int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options);
 
 /**
  * MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs

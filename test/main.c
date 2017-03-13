@@ -64,7 +64,7 @@ static void test(lwmqtt_qos_t qos) {
     exit(1);
   }
 
-  lwmqtt_connect_data_t data = lwmqtt_default_connect_data;
+  lwmqtt_options_t data = lwmqtt_default_options;
   data.client_id.c_string = "lwmqtt";
 
   rc = lwmqtt_client_connect(&c, &data);
