@@ -34,7 +34,7 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char 
   int rem_len = 0;
 
   if (lwmqtt_fixed_header_len(rem_len = lwmqtt_serialize_unsubscribe_length(count, topic_filters)) > buf_len) {
-    return MQTTPACKET_BUFFER_TOO_SHORT;
+    return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   header.byte = 0;

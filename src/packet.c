@@ -58,7 +58,7 @@ int lwmqtt_fixed_header_decode(unsigned char *buf, int *value) {
     len++;
 
     if (len > 4) {
-      return MQTTPACKET_READ_ERROR;  // bad data
+      return LWMQTT_READ_ERROR;  // bad data
     }
 
     c = buf[len-1];
@@ -73,26 +73,46 @@ int lwmqtt_fixed_header_decode(unsigned char *buf, int *value) {
 /* helpers */
 
 int lwmqtt_read_int(unsigned char **pptr) {
+  // get pointer
   unsigned char *ptr = *pptr;
-  int len = 256 * (*ptr) + (*(ptr + 1));
+
+  // read two byte integer
+  int num = 256 * (*ptr) + (*(ptr + 1));
+
+  // adjust pointer
   *pptr += 2;
-  return len;
+
+  return num;
 }
 
 char lwmqtt_read_char(unsigned char **pptr) {
-  char c = **pptr;
+  // read single char
+  char chr = **pptr;
+
+  // adjust pointer
   (*pptr)++;
-  return c;
+
+  return chr;
 }
 
-void lwmqtt_write_char(unsigned char **pptr, char c) {
-  **pptr = c;
+void lwmqtt_write_char(unsigned char **pptr, unsigned char chr) {
+  // write single char
+  **pptr = chr;
+
+  // adjust pointer
   (*pptr)++;
 }
 
-void lwmqtt_write_int(unsigned char **pptr, int anInt) {
-  **pptr = (unsigned char)(anInt / 256);
+void lwmqtt_write_int(unsigned char **pptr, int num) {
+  // write first byte
+  **pptr = (unsigned char)(num / 256);
+
+  // adjust pointer
   (*pptr)++;
-  **pptr = (unsigned char)(anInt % 256);
+
+  // write second byte
+  **pptr = (unsigned char)(num % 256);
+
+  // adjust pointer
   (*pptr)++;
 }

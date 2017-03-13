@@ -18,9 +18,11 @@
 #ifndef LWMQTT_PACKET_H
 #define LWMQTT_PACKET_H
 
-enum errors { MQTTPACKET_BUFFER_TOO_SHORT = -2, MQTTPACKET_READ_ERROR = -1 };
+// TODO: What to do with those?
+enum errors { LWMQTT_BUFFER_TOO_SHORT = -2, LWMQTT_READ_ERROR = -1 };
 
-enum msgTypes {
+// TODO: Prefix those?
+typedef enum {
   CONNECT = 1,
   CONNACK,
   PUBLISH,
@@ -35,18 +37,18 @@ enum msgTypes {
   PINGREQ,
   PINGRESP,
   DISCONNECT
-};
+} lwmqtt_packet_type_t;
 
 /**
  * Bitfields for the MQTT header byte.
  */
 typedef union {
-  unsigned char byte; /**< the whole byte */
+  unsigned char byte;
   struct {
-    unsigned int retain : 1; /**< retained flag bit */
-    unsigned int qos : 2;    /**< QoS value, 0, 1 or 2 */
-    unsigned int dup : 1;    /**< DUP flag bit */
-    unsigned int type : 4;   /**< message type nibble */
+    unsigned int retain : 1;
+    unsigned int qos : 2;
+    unsigned int dup : 1;
+    unsigned int type : 4;
   } bits;
 } lwmqtt_header_t;
 
@@ -99,16 +101,16 @@ char lwmqtt_read_char(unsigned char **pptr);
  * Writes one character to an output buffer.
  *
  * @param pptr pointer to the output buffer - incremented by the number of bytes used & returned
- * @param c the character to write
+ * @param chr the character to write
  */
-void lwmqtt_write_char(unsigned char **pptr, char c);
+void lwmqtt_write_char(unsigned char **pptr, unsigned char chr);
 
 /**
  * Writes an integer as 2 bytes to an output buffer.
  *
  * @param pptr pointer to the output buffer - incremented by the number of bytes used & returned
- * @param anInt the integer to write
+ * @param num the integer to write
  */
-void lwmqtt_write_int(unsigned char **pptr, int anInt);
+void lwmqtt_write_int(unsigned char **pptr, int num);
 
 #endif  // LWMQTT_PACKET_H

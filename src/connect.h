@@ -21,36 +21,27 @@
 #include "string.h"
 
 typedef union {
-  unsigned char all; /**< all connect flags */
+  unsigned char byte;
 
   struct {
-    unsigned int _ : 1;             /**< unused */
-    unsigned int clean_session : 1; /**< clean session flag */
-    unsigned int will : 1;          /**< will flag */
-    unsigned int will_qos : 2;      /**< will QoS value */
-    unsigned int will_retain : 1;   /**< will retain setting */
-    unsigned int password : 1;      /**< 3.1 password */
-    unsigned int username : 1;      /**< 3.1 user name */
+    unsigned int _ : 1;
+    unsigned int clean_session : 1;
+    unsigned int will : 1;
+    unsigned int will_qos : 2;
+    unsigned int will_retain : 1;
+    unsigned int password : 1;
+    unsigned int username : 1;
   } bits;
-} lwmqtt_connect_flags_t; /**< connect flags byte */
+} lwmqtt_connect_flags_t;
 
 /**
  * Defines the MQTT "Last Will and Testament" (LWT) settings for
  * the connect packet.
  */
 typedef struct {
-  /** The LWT topic to which the LWT message will be published. */
   lwmqtt_string_t topic;
-  /** The LWT payload. */
   lwmqtt_string_t message;
-  /**
-* The retained flag for the LWT message (see MQTTAsync_message.retained).
-*/
   unsigned char retained;
-  /**
-* The quality of service setting for the LWT message (see
-* MQTTAsync_message.qos and @ref qos).
-*/
   char qos;
 } lwmqtt_will_options_t;
 
@@ -71,13 +62,13 @@ typedef struct {
   { lwmqtt_default_string, 60, 1, 0, lwmqtt_default_will_options, lwmqtt_default_string, lwmqtt_default_string }
 
 typedef union {
-  unsigned char all; /**< all connack flags */
+  unsigned char byte;
 
   struct {
-    unsigned int _ : 7;               /**< unused */
-    unsigned int session_present : 1; /**< session present flag */
+    unsigned int _ : 7;
+    unsigned int session_present : 1;
   } bits;
-} lwmqtt_connack_flags; /**< connack flags byte */
+} lwmqtt_connack_flags;
 
 /**
   * Serializes the connect options into the buffer.
