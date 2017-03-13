@@ -119,7 +119,7 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
 
   // 2. read the remaining length.  This is variable in itself
   lwmqtt_decode_packet(c, &rem_len, c->timer_get(c, c->timer_network_ref));
-  len += lwmqtt_packet_encode(c->read_buf + 1, rem_len);  // put the original remaining length back into the buffer
+  len += lwmqtt_fixed_header_encode(c->read_buf + 1, rem_len);  // put the original remaining length back into the buffer
 
   // 3. read the rest of the buffer using a callback to supply the rest of the data
   if (rem_len > 0 && (rc = c->network_read(c, c->network_ref, c->read_buf + len, rem_len,

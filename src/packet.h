@@ -66,7 +66,7 @@ int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char type, un
 int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
                            unsigned char *buf, int buf_len);
 
-int lwmqtt_packet_len(int rem_len);
+int lwmqtt_fixed_header_len(int rem_len);
 
 /**
  * Encodes the message length according to the MQTT algorithm
@@ -75,7 +75,7 @@ int lwmqtt_packet_len(int rem_len);
  * @param length the length to be encoded
  * @return the number of bytes written to buffer
  */
-int lwmqtt_packet_encode(unsigned char *buf, int length);
+int lwmqtt_fixed_header_encode(unsigned char *buf, int length);
 
 /**
  * Decodes the message length according to the MQTT algorithm
@@ -84,9 +84,9 @@ int lwmqtt_packet_encode(unsigned char *buf, int length);
  * @param value the decoded length returned
  * @return the number of bytes read from the socket
  */
-int lwmqtt_packet_decode(int (*get_char_fn)(unsigned char *, int), int *value);
+int lwmqtt_fixed_header_decode(int (*get_char_fn)(unsigned char *, int), int *value);
 
-int lwmqtt_packet_decode_buf(unsigned char *buf, int *value);
+int lwmqtt_fixed_header_decode_buf(unsigned char *buf, int *value);
 
 /**
  * Calculates an integer from two bytes read from the input buffer

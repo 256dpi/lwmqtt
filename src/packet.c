@@ -17,7 +17,7 @@
 
 #include "packet.h"
 
-int lwmqtt_packet_encode(unsigned char *buf, int length) {
+int lwmqtt_fixed_header_encode(unsigned char *buf, int length) {
   int rc = 0;
 
   do {
@@ -31,7 +31,7 @@ int lwmqtt_packet_encode(unsigned char *buf, int length) {
   return rc;
 }
 
-int lwmqtt_packet_decode(int (*get_char_fn)(unsigned char *, int), int *value) {
+int lwmqtt_fixed_header_decode(int (*get_char_fn)(unsigned char *, int), int *value) {
   unsigned char c;
   int multiplier = 1;
   int len = 0;
@@ -55,7 +55,7 @@ int lwmqtt_packet_decode(int (*get_char_fn)(unsigned char *, int), int *value) {
   return len;
 }
 
-int lwmqtt_packet_len(int rem_len) {
+int lwmqtt_fixed_header_len(int rem_len) {
   rem_len += 1;  // header byte
 
   // now remaining_length field
@@ -79,10 +79,12 @@ static int lwmqtt_bufchar(unsigned char *c, int count) {
   return count;
 }
 
-int lwmqtt_packet_decode_buf(unsigned char *buf, int *value) {
+int lwmqtt_fixed_header_decode_buf(unsigned char *buf, int *value) {
   lwmqtt_bufptr = buf;
-  return lwmqtt_packet_decode(lwmqtt_bufchar, value);
+  return lwmqtt_fixed_header_decode(lwmqtt_bufchar, value);
 }
+
+/* helpers */
 
 int lwmqtt_read_int(unsigned char **pptr) {
   unsigned char *ptr = *pptr;
