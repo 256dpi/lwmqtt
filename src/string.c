@@ -13,8 +13,8 @@
 
 #include <string.h>
 
-#include "string.h"
 #include "helpers.h"
+#include "string.h"
 
 int lwmqtt_strlen(lwmqtt_string_t str) {
   if (str.c_string) {

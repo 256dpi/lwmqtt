@@ -16,9 +16,9 @@
 
 #include <string.h>
 
+#include "helpers.h"
 #include "packet.h"
 #include "subscribe.h"
-#include "helpers.h"
 
 static int lwmqtt_serialize_subscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int len = 2;  // packet id

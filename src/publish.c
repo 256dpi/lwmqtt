@@ -16,9 +16,9 @@
 
 #include <string.h>
 
+#include "helpers.h"
 #include "packet.h"
 #include "publish.h"
-#include "helpers.h"
 
 int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packet_id,
                                lwmqtt_string_t *topic, unsigned char **payload, int *payload_len, unsigned char *buf,
