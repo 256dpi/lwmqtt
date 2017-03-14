@@ -8,6 +8,8 @@ set(SOURCE_FILES
         src/client.h
         src/connect.c
         src/connect.h
+        src/helpers.c
+        src/helpers.h
         src/packet.c
         src/packet.h
         src/publish.c

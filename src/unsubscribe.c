@@ -16,6 +16,7 @@
 
 #include "unsubscribe.h"
 #include "packet.h"
+#include "helpers.h"
 
 static int lwmqtt_serialize_unsubscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int len = 2;  // packet id

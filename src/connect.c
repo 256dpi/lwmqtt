@@ -18,6 +18,7 @@
 
 #include "connect.h"
 #include "packet.h"
+#include "helpers.h"
 
 static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options) {
   int len = 10;
