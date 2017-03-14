@@ -27,22 +27,18 @@ int lwmqtt_header_encode(unsigned char *buf, int rem_len) {
   return rc;
 }
 
-// TODO: This actually returns the whole packet length.
 int lwmqtt_header_len(int rem_len) {
-  rem_len += 1;  // header byte
+  int len = 1; // header byte
 
-  // now remaining_length field
   if (rem_len < 128) {
-    rem_len += 1;
+    return len + 1;
   } else if (rem_len < 16384) {
-    rem_len += 2;
+    return len + 2;
   } else if (rem_len < 2097151) {
-    rem_len += 3;
+    return len + 3;
   } else {
-    rem_len += 4;
+    return len + 4;
   }
-
-  return rem_len;
 }
 
 int lwmqtt_header_decode(unsigned char *buf, int *rem_len) {

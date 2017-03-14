@@ -42,7 +42,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
 
   int rem_len = lwmqtt_serialize_connect_length(options);
 
-  if (lwmqtt_header_len(rem_len) > buf_len) {
+  if (lwmqtt_header_len(rem_len) + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 

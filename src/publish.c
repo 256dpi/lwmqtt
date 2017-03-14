@@ -71,7 +71,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
 
   int rem_len = lwmqtt_serialize_publish_length(qos, topic, payload_len);
 
-  if (lwmqtt_header_len(rem_len) > buf_len) {
+  if (lwmqtt_header_len(rem_len) + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
