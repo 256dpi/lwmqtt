@@ -156,6 +156,8 @@ static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
   return rc;
 }
 
+// TODO: Send Pubcomp after receiving a Pubrel?
+
 static int lwmqtt_cycle(lwmqtt_client_t *c) {
   // read the socket, see what work is due
   int packet_type = lwmqtt_read_packet(c);
