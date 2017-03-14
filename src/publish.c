@@ -68,13 +68,14 @@ static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, i
 int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup, int qos, unsigned char retained,
                              unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload, int payload_len) {
   unsigned char *ptr = buf;
-  lwmqtt_header_t header = {0};
-  int rem_len = 0;
 
-  if (lwmqtt_header_len(rem_len = lwmqtt_serialize_publish_length(qos, topic, payload_len)) > buf_len) {
+  int rem_len = lwmqtt_serialize_publish_length(qos, topic, payload_len);
+
+  if (lwmqtt_header_len(rem_len) > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
+  lwmqtt_header_t header = {0};
   header.bits.type = LWMQTT_PUBLISH_PACKET;
   header.bits.dup = dup;
   header.bits.qos = (unsigned int)qos;

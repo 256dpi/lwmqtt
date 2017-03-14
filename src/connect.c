@@ -39,15 +39,14 @@ static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options) {
 
 int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options) {
   unsigned char *ptr = buf;
-  lwmqtt_header_t header = {0};
-  lwmqtt_connect_flags_t flags = {0};
-  int rem_len = 0;
 
-  if (lwmqtt_header_len(rem_len = lwmqtt_serialize_connect_length(options)) > buf_len) {
+  int rem_len = lwmqtt_serialize_connect_length(options);
+
+  if (lwmqtt_header_len(rem_len) > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
-  header.byte = 0;
+  lwmqtt_header_t header = {0};
   header.bits.type = LWMQTT_CONNECT_PACKET;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
@@ -56,7 +55,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   lwmqtt_write_c_string(&ptr, "MQTT");
   lwmqtt_write_char(&ptr, 4);
 
-  flags.byte = 0;
+  lwmqtt_connect_flags_t flags = {0};
   flags.bits.clean_session = options->clean_session;
   flags.bits.will = (options->will != NULL) ? 1 : 0;
   if (flags.bits.will) {

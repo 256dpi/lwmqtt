@@ -27,6 +27,7 @@ int lwmqtt_header_encode(unsigned char *buf, int rem_len) {
   return rc;
 }
 
+// TODO: This actually returns the whole packet length.
 int lwmqtt_header_len(int rem_len) {
   rem_len += 1;  // header byte
 

@@ -29,14 +29,14 @@ static int lwmqtt_serialize_unsubscribe_length(int count, lwmqtt_string_t *topic
 int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id,
                                  int count, lwmqtt_string_t *topic_filters) {
   unsigned char *ptr = buf;
-  lwmqtt_header_t header = {0};
-  int rem_len = 0;
 
-  if (lwmqtt_header_len(rem_len = lwmqtt_serialize_unsubscribe_length(count, topic_filters)) > buf_len) {
+  int rem_len = lwmqtt_serialize_unsubscribe_length(count, topic_filters);
+
+  if (lwmqtt_header_len(rem_len) > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
-  header.byte = 0;
+  lwmqtt_header_t header = {0};
   header.bits.type = LWMQTT_UNSUBSCRIBE_PACKET;
   header.bits.dup = dup;
   header.bits.qos = 1;
