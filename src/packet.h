@@ -54,7 +54,7 @@ typedef union {
 int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
                            unsigned char *buf, int buf_len);
 
-int lwmqtt_fixed_header_len(int rem_len);
+int lwmqtt_header_len(int rem_len);
 
 /**
  * Encodes the message length according to the MQTT algorithm
@@ -63,9 +63,9 @@ int lwmqtt_fixed_header_len(int rem_len);
  * @param length the length to be encoded
  * @return the number of bytes written to buffer
  */
-int lwmqtt_fixed_header_encode(unsigned char *buf, int length);
+int lwmqtt_header_encode(unsigned char *buf, int length);
 
-int lwmqtt_fixed_header_decode(unsigned char *buf, int *value);
+int lwmqtt_header_decode(unsigned char *buf, int *value);
 
 /**
  * Calculates an integer from two bytes read from the input buffer

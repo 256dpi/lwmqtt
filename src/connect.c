@@ -45,7 +45,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   lwmqtt_connect_flags_t flags = {0};
   int len = 0;
 
-  if (lwmqtt_fixed_header_len(len = lwmqtt_serialize_connect_length(options)) > buf_len) {
+  if (lwmqtt_header_len(len = lwmqtt_serialize_connect_length(options)) > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
@@ -53,7 +53,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   header.bits.type = LWMQTT_CONNECT_PACKET;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_fixed_header_encode(ptr, len);  // write remaining length
+  ptr += lwmqtt_header_encode(ptr, len);  // write remaining length
 
   lwmqtt_write_c_string(&ptr, "MQTT");
   lwmqtt_write_char(&ptr, 4);
@@ -108,7 +108,7 @@ int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *co
     return rc;
   }
 
-  curdata += (rc = lwmqtt_fixed_header_decode(curdata, &mylen));  // read remaining length
+  curdata += (rc = lwmqtt_header_decode(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
   if (enddata - curdata < 2) {
     return rc;
@@ -133,7 +133,7 @@ static int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char p
   header.bits.type = packettype;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_fixed_header_encode(ptr, 0);  // write remaining length
+  ptr += lwmqtt_header_encode(ptr, 0);  // write remaining length
 
   return ptr - buf;
 }

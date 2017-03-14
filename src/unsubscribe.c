@@ -33,7 +33,7 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char 
   lwmqtt_header_t header = {0};
   int rem_len = 0;
 
-  if (lwmqtt_fixed_header_len(rem_len = lwmqtt_serialize_unsubscribe_length(count, topic_filters)) > buf_len) {
+  if (lwmqtt_header_len(rem_len = lwmqtt_serialize_unsubscribe_length(count, topic_filters)) > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
@@ -43,7 +43,7 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char 
   header.bits.qos = 1;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_fixed_header_encode(ptr, rem_len);  // write remaining length
+  ptr += lwmqtt_header_encode(ptr, rem_len);  // write remaining length
 
   lwmqtt_write_int(&ptr, packet_id);
 

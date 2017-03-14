@@ -17,7 +17,7 @@
 
 #include "packet.h"
 
-int lwmqtt_fixed_header_encode(unsigned char *buf, int length) {
+int lwmqtt_header_encode(unsigned char *buf, int length) {
   int rc = 0;
 
   do {
@@ -31,7 +31,7 @@ int lwmqtt_fixed_header_encode(unsigned char *buf, int length) {
   return rc;
 }
 
-int lwmqtt_fixed_header_len(int rem_len) {
+int lwmqtt_header_len(int rem_len) {
   rem_len += 1;  // header byte
 
   // now remaining_length field
@@ -48,7 +48,7 @@ int lwmqtt_fixed_header_len(int rem_len) {
   return rem_len;
 }
 
-int lwmqtt_fixed_header_decode(unsigned char *buf, int *value) {
+int lwmqtt_header_decode(unsigned char *buf, int *value) {
   unsigned char c;
   int multiplier = 1;
   int len = 0;

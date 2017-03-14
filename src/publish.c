@@ -37,7 +37,7 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
   *qos = header.bits.qos;
   *retained = header.bits.retain;
 
-  curdata += (rc = lwmqtt_fixed_header_decode(curdata, &mylen));  // read remaining length
+  curdata += (rc = lwmqtt_header_decode(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
 
   // do we have enough data to read the protocol version byte?
@@ -68,7 +68,7 @@ int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsig
   *dup = header.bits.dup;
   *packet_type = header.bits.type;
 
-  curdata += (rc = lwmqtt_fixed_header_decode(curdata, &mylen));  // read remaining length
+  curdata += (rc = lwmqtt_header_decode(curdata, &mylen));  // read remaining length
   enddata = curdata + mylen;
 
   if (enddata - curdata < 2) {
@@ -97,7 +97,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
   lwmqtt_header_t header = {0};
   int rem_len = 0;
 
-  if (lwmqtt_fixed_header_len(rem_len = lwmqtt_serialize_publish_length(qos, topic, payload_len)) > buf_len) {
+  if (lwmqtt_header_len(rem_len = lwmqtt_serialize_publish_length(qos, topic, payload_len)) > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
@@ -107,7 +107,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
   header.bits.retain = retained;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_fixed_header_encode(ptr, rem_len);  // write remaining length
+  ptr += lwmqtt_header_encode(ptr, rem_len);  // write remaining length
 
   lwmqtt_write_string(&ptr, topic);
 
@@ -135,7 +135,7 @@ static int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char p
   header.bits.qos = (packettype == LWMQTT_PUBREL_PACKET) ? 1 : 0;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_fixed_header_encode(ptr, 2);  // write remaining length
+  ptr += lwmqtt_header_encode(ptr, 2);  // write remaining length
   lwmqtt_write_int(&ptr, packet_id);
 
   return ptr - buf;
