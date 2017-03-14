@@ -9,9 +9,7 @@
  *    http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  *   http://www.eclipse.org/org/documents/edl-v10.php.
- *
- * Contributors:
- *    Allan Stockdill-Mander/Ian Craggs - initial API and implementation and/or initial documentation
+
  *******************************************************************************/
 
 #include "client.h"
@@ -26,7 +24,7 @@ static int lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
 }
 
 static int lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
-  int rc = LWMQTT_FAILURE, sent = 0;
+  int rc, sent = 0;
 
   while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
     rc = c->networked_write(c, c->network_ref, &c->write_buf[sent], length, c->timer_get(c, c->timer_network_ref));
@@ -124,7 +122,7 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
   // 2. read the remaining length.  This is variable in itself
   len += lwmqtt_decode_packet(c, &rem_len, c->timer_get(c, c->timer_network_ref));
 
-  // TODO: Can we remove this unecessary call?
+  // TODO: Can we remove this unnecessary call?
   lwmqtt_header_encode(c->read_buf + 1, rem_len);  // put the original remaining length back into the buffer
 
   // 3. read the rest of the buffer using a callback to supply the rest of the data

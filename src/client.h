@@ -9,10 +9,6 @@
  *    http://www.eclipse.org/legal/epl-v10.html
  * and the Eclipse Distribution License is available at
  *   http://www.eclipse.org/org/documents/edl-v10.php.
- *
- * Contributors:
- *    Allan Stockdill-Mander/Ian Craggs - initial API and implementation and/or initial documentation
- *    Ian Craggs - documentation and platform specific header
  *******************************************************************************/
 
 #ifndef LWMQTT_CLIENT_H
