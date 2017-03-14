@@ -247,9 +247,9 @@ exit:
   return rc;
 }
 
-int lwmqtt_client_yield(lwmqtt_client_t *c, int timeout_ms) {
   int rc = LWMQTT_SUCCESS;
 
+int lwmqtt_client_yield(lwmqtt_client_t *c, unsigned int timeout_ms) {
   c->timer_set(c, c->timer_network_ref, timeout_ms);
 
   do {

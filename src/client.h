@@ -142,6 +142,6 @@ int lwmqtt_client_disconnect(lwmqtt_client_t *c);
  *  @param time - the time, in milliseconds, to yield for
  *  @return success code
  */
-int lwmqtt_client_yield(lwmqtt_client_t *c, int timeout);
+int lwmqtt_client_yield(lwmqtt_client_t *c, unsigned int timeout);
 
 #endif  // LWMQTT_CLIENT_H
