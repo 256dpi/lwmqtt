@@ -16,6 +16,7 @@
 
 #include "unsubscribe.h"
 #include "helpers.h"
+#include "identified.h"
 #include "packet.h"
 
 static int lwmqtt_serialize_unsubscribe_length(int count, lwmqtt_string_t *topicFilters) {
@@ -59,7 +60,7 @@ int lwmqtt_deserialize_unsuback(unsigned short *packet_id, unsigned char *buf, i
   unsigned char type = 0;
   unsigned char dup = 0;
 
-  int rc = lwmqtt_deserialize_ack(&type, &dup, packet_id, buf, buf_len);
+  int rc = lwmqtt_deserialize_identified(&type, &dup, packet_id, buf, buf_len);
   if (type == LWMQTT_UNSUBACK_PACKET) {
     rc = 1;
   }

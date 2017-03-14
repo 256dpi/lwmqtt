@@ -51,9 +51,6 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
-                           unsigned char *buf, int buf_len);
-
 int lwmqtt_header_len(int rem_len);
 
 /**
