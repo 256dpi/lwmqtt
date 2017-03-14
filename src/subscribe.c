@@ -11,11 +11,9 @@
  *   http://www.eclipse.org/org/documents/edl-v10.php.
  *******************************************************************************/
 
-#include <string.h>
-
+#include "subscribe.h"
 #include "helpers.h"
 #include "packet.h"
-#include "subscribe.h"
 
 static int lwmqtt_serialize_subscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int len = 2;  // packet id
@@ -52,37 +50,36 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buf_len, unsigned char du
     lwmqtt_write_char(&ptr, (unsigned char)qos_levels[i]);
   }
 
-  return ptr - buf;
+  return (int)(ptr - buf);
 }
 
 int lwmqtt_deserialize_suback(unsigned short *packet_id, int max_count, int *count, int *granted_qos_levels,
                               unsigned char *buf, int buf_len) {
   lwmqtt_header_t header = {0};
-  unsigned char *curdata = buf;
-  unsigned char *enddata = NULL;
+  unsigned char *cur_ptr = buf;
   int rc = 0;
-  int mylen;
+  int len;
 
-  header.byte = lwmqtt_read_char(&curdata);
+  header.byte = lwmqtt_read_char(&cur_ptr);
   if (header.bits.type != LWMQTT_SUBACK_PACKET) {
     return rc;
   }
 
-  curdata += (rc = lwmqtt_header_decode(curdata, &mylen));  // read remaining length
-  enddata = curdata + mylen;
-  if (enddata - curdata < 2) {
+  cur_ptr += (rc = lwmqtt_header_decode(cur_ptr, &len));  // read remaining length
+  unsigned char *end_ptr = cur_ptr + len;
+  if (end_ptr - cur_ptr < 2) {
     return rc;
   }
 
-  *packet_id = lwmqtt_read_int(&curdata);
+  *packet_id = (unsigned short)lwmqtt_read_int(&cur_ptr);
 
   *count = 0;
-  while (curdata < enddata) {
+  while (cur_ptr < end_ptr) {
     if (*count > max_count) {
       return -1;
     }
 
-    granted_qos_levels[(*count)++] = lwmqtt_read_char(&curdata);
+    granted_qos_levels[(*count)++] = lwmqtt_read_char(&cur_ptr);
   }
 
   return 1;

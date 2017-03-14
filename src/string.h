@@ -30,7 +30,7 @@ typedef struct {
   }
 
 /**
- * Return the length of the MQTTstring - C string if there is one, otherwise the length delimited string
+ * Return the length of the length prefixed string or C string if there is one, otherwise the length delimited string
  *
  * @param str the string to return the length of
  * @return the length of the string
@@ -49,12 +49,12 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, char *b);
 /**
  * ???
  *
- * @param str the MQTTString structure into which the data is to be read
+ * @param str the length prefixed string structure into which the data is to be read
  * @param pptr pointer to the output buffer - incremented by the number of bytes used & returned
- * @param enddata pointer to the end of the data: do not read beyond
+ * @param end_ptr pointer to the end of the data: do not read beyond
  * @return 1 if successful, 0 if not
  */
-int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *enddata);
+int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr);
 
 /**
  * Writes a "UTF" string to an output buffer.  Converts C string to length-delimited.

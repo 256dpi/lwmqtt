@@ -20,7 +20,7 @@
   * Serializes the supplied subscribe data into the supplied buffer, ready for sending
   *
   * @param buf the buffer into which the packet will be serialized
-  * @param buf_len the length in bytes of the supplied bufferr
+  * @param buf_len the length in bytes of the supplied buffer
   * @param dup integer - the MQTT dup flag
   * @param packet_id integer - the MQTT packet identifier
   * @param count - number of members in the topicFilters and reqQos arrays

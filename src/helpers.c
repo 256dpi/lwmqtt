@@ -24,9 +24,9 @@ int lwmqtt_read_int(unsigned char **pptr) {
   return num;
 }
 
-char lwmqtt_read_char(unsigned char **pptr) {
+unsigned char lwmqtt_read_char(unsigned char **pptr) {
   // read single char
-  char chr = **pptr;
+  unsigned char chr = **pptr;
 
   // adjust pointer
   (*pptr)++;

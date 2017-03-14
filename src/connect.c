@@ -60,7 +60,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   flags.bits.clean_session = options->clean_session;
   flags.bits.will = (options->will != NULL) ? 1 : 0;
   if (flags.bits.will) {
-    flags.bits.will_qos = options->will->qos;
+    flags.bits.will_qos = (unsigned int)options->will->qos;
     flags.bits.will_retain = options->will->retained;
   }
 
@@ -89,32 +89,31 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
     lwmqtt_write_string(&ptr, options->password);
   }
 
-  return ptr - buf;
+  return (int)(ptr - buf);
 }
 
 int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *connack_rc, unsigned char *buf,
                                int buf_len) {
   lwmqtt_header_t header = {0};
-  unsigned char *curdata = buf;
-  unsigned char *enddata = NULL;
+  unsigned char *cur_ptr = buf;
   int rc = 0;
-  int mylen;
+  int len;
   lwmqtt_connack_flags flags = {0};
 
-  header.byte = lwmqtt_read_char(&curdata);
+  header.byte = lwmqtt_read_char(&cur_ptr);
   if (header.bits.type != LWMQTT_CONNACK_PACKET) {
     return rc;
   }
 
-  curdata += (rc = lwmqtt_header_decode(curdata, &mylen));  // read remaining length
-  enddata = curdata + mylen;
-  if (enddata - curdata < 2) {
+  cur_ptr += (rc = lwmqtt_header_decode(cur_ptr, &len));  // read remaining length
+  unsigned char *end_ptr = cur_ptr + len;
+  if (end_ptr - cur_ptr < 2) {
     return rc;
   }
 
-  flags.byte = lwmqtt_read_char(&curdata);
-  *session_present = flags.bits.session_present;
-  *connack_rc = lwmqtt_read_char(&curdata);
+  flags.byte = lwmqtt_read_char(&cur_ptr);
+  *session_present = (unsigned char)flags.bits.session_present;
+  *connack_rc = lwmqtt_read_char(&cur_ptr);
 
   return 1;
 }
@@ -133,7 +132,7 @@ static int lwmqtt_serialize_zero(unsigned char *buf, int buf_len, unsigned char 
 
   ptr += lwmqtt_header_encode(ptr, 0);  // write remaining length
 
-  return ptr - buf;
+  return (int)(ptr - buf);
 }
 
 int lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len) {

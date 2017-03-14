@@ -28,7 +28,7 @@ int lwmqtt_read_int(unsigned char **pptr);
  * @param pptr pointer to the input buffer - incremented by the number of bytes used & returned
  * @return the character read
  */
-char lwmqtt_read_char(unsigned char **pptr);
+unsigned char lwmqtt_read_char(unsigned char **pptr);
 
 /**
  * Writes one character to an output buffer.

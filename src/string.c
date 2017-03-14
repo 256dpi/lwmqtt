@@ -61,13 +61,13 @@ void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
   }
 }
 
-int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *enddata) {
+int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr) {
   int rc = 0;
 
   // the first two bytes are the length of the string
-  if (enddata - (*pptr) > 1) {                   // enough length to read the integer?
+  if (end_ptr - (*pptr) > 1) {                   // enough length to read the integer?
     str->lp_string.len = lwmqtt_read_int(pptr);  // increments pptr to point past length
-    if (&(*pptr)[str->lp_string.len] <= enddata) {
+    if (&(*pptr)[str->lp_string.len] <= end_ptr) {
       str->lp_string.data = (char *)*pptr;
       *pptr += str->lp_string.len;
       rc = 1;

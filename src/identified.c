@@ -17,22 +17,22 @@
 int lwmqtt_deserialize_identified(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
                                   unsigned char *buf, int buf_len) {
   lwmqtt_header_t header = {0};
-  unsigned char *curdata = buf;
+  unsigned char *cur_ptr = buf;
   int rc = 0;
-  int mylen;
+  int len;
 
-  header.byte = lwmqtt_read_char(&curdata);
-  *dup = header.bits.dup;
-  *packet_type = header.bits.type;
+  header.byte = lwmqtt_read_char(&cur_ptr);
+  *dup = (unsigned char)header.bits.dup;
+  *packet_type = (unsigned char)header.bits.type;
 
-  curdata += (rc = lwmqtt_header_decode(curdata, &mylen));  // read remaining length
-  unsigned char *enddata = curdata + mylen;
+  cur_ptr += (rc = lwmqtt_header_decode(cur_ptr, &len));  // read remaining length
+  unsigned char *end_ptr = cur_ptr + len;
 
-  if (enddata - curdata < 2) {
+  if (end_ptr - cur_ptr < 2) {
     return rc;
   }
 
-  *packet_id = lwmqtt_read_int(&curdata);
+  *packet_id = (unsigned short)lwmqtt_read_int(&cur_ptr);
 
   return 1;
 }
@@ -54,5 +54,5 @@ int lwmqtt_serialize_identified(unsigned char *buf, int buf_len, unsigned char p
   ptr += lwmqtt_header_encode(ptr, 2);  // write remaining length
   lwmqtt_write_int(&ptr, packet_id);
 
-  return ptr - buf;
+  return (int)(ptr - buf);
 }

@@ -22,34 +22,33 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
                                lwmqtt_string_t *topic, unsigned char **payload, int *payload_len, unsigned char *buf,
                                int buf_len) {
   lwmqtt_header_t header = {0};
-  unsigned char *curdata = buf;
-  unsigned char *enddata = NULL;
+  unsigned char *cur_ptr = buf;
   int rc = 0;
-  int mylen = 0;
+  int len = 0;
 
-  header.byte = lwmqtt_read_char(&curdata);
+  header.byte = lwmqtt_read_char(&cur_ptr);
   if (header.bits.type != LWMQTT_PUBLISH_PACKET) {
     return rc;
   }
 
-  *dup = header.bits.dup;
+  *dup = (unsigned char)header.bits.dup;
   *qos = header.bits.qos;
-  *retained = header.bits.retain;
+  *retained = (unsigned char)header.bits.retain;
 
-  curdata += (rc = lwmqtt_header_decode(curdata, &mylen));  // read remaining length
-  enddata = curdata + mylen;
+  cur_ptr += (rc = lwmqtt_header_decode(cur_ptr, &len));  // read remaining length
+  unsigned char *end_ptr = cur_ptr + len;
 
   // do we have enough data to read the protocol version byte?
-  if (!lwmqtt_read_lp_string(topic, &curdata, enddata) || enddata - curdata < 0) {
+  if (!lwmqtt_read_lp_string(topic, &cur_ptr, end_ptr) || end_ptr - cur_ptr < 0) {
     return rc;
   }
 
   if (*qos > 0) {
-    *packet_id = lwmqtt_read_int(&curdata);
+    *packet_id = (unsigned short)lwmqtt_read_int(&cur_ptr);
   }
 
-  *payload_len = enddata - curdata;
-  *payload = curdata;
+  *payload_len = (int)(end_ptr - cur_ptr);
+  *payload = cur_ptr;
   rc = 1;
 
   return rc;
@@ -78,7 +77,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
 
   header.bits.type = LWMQTT_PUBLISH_PACKET;
   header.bits.dup = dup;
-  header.bits.qos = qos;
+  header.bits.qos = (unsigned int)qos;
   header.bits.retain = retained;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
@@ -93,7 +92,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
   memcpy(ptr, payload, payload_len);
   ptr += payload_len;
 
-  return ptr - buf;
+  return (int)(ptr - buf);
 }
 
 int lwmqtt_serialize_puback(unsigned char *buf, int buf_len, unsigned short packet_id) {

@@ -50,7 +50,7 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char 
     lwmqtt_write_string(&ptr, topic_filters[i]);
   }
 
-  return ptr - buf;
+  return (int)(ptr - buf);
 }
 
 int lwmqtt_deserialize_unsuback(unsigned short *packet_id, unsigned char *buf, int buf_len) {
