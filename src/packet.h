@@ -53,11 +53,11 @@ int lwmqtt_header_len(int rem_len);
  * Encodes the message length according to the MQTT algorithm
  *
  * @param buf the buffer into which the encoded data is written
- * @param length the length to be encoded
+ * @param rem_len the length to be encoded
  * @return the number of bytes written to buffer
  */
-int lwmqtt_header_encode(unsigned char *buf, int length);
+int lwmqtt_header_encode(unsigned char *buf, int rem_len);
 
-int lwmqtt_header_decode(unsigned char *buf, int *value);
+int lwmqtt_header_decode(unsigned char *buf, int *rem_len);
 
 #endif  // LWMQTT_PACKET_H

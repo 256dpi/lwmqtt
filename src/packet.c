@@ -13,16 +13,16 @@
 
 #include "packet.h"
 
-int lwmqtt_header_encode(unsigned char *buf, int length) {
+int lwmqtt_header_encode(unsigned char *buf, int rem_len) {
   int rc = 0;
 
   do {
-    char d = length % 128;
-    length /= 128;
+    char d = rem_len % 128;
+    rem_len /= 128;
     // if there are more digits to encode, set the top bit of this digit
-    if (length > 0) d |= 0x80;
+    if (rem_len > 0) d |= 0x80;
     buf[rc++] = d;
-  } while (length > 0);
+  } while (rem_len > 0);
 
   return rc;
 }
@@ -44,12 +44,12 @@ int lwmqtt_header_len(int rem_len) {
   return rem_len;
 }
 
-int lwmqtt_header_decode(unsigned char *buf, int *value) {
+int lwmqtt_header_decode(unsigned char *buf, int *rem_len) {
   unsigned char c;
   int multiplier = 1;
   int len = 0;
 
-  *value = 0;
+  *rem_len = 0;
   do {
     len++;
 
@@ -59,7 +59,7 @@ int lwmqtt_header_decode(unsigned char *buf, int *value) {
 
     c = buf[len - 1];
 
-    *value += (c & 127) * multiplier;
+    *rem_len += (c & 127) * multiplier;
     multiplier *= 128;
   } while ((c & 128) != 0);
 
