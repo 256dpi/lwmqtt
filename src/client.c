@@ -185,7 +185,7 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       if (lwmqtt_deserialize_publish(&msg.dup, &intQoS, &msg.retained, &msg.id, &topicName,
                                      (unsigned char **)&msg.payload, (int *)&msg.payload_len, c->read_buf,
                                      c->read_buf_size) != 1) {
-        goto exit;
+        return LWMQTT_FAILURE;
       }
 
       msg.qos = (lwmqtt_qos_t)intQoS;
@@ -208,7 +208,7 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
         }
 
         if (rc == LWMQTT_FAILURE) {
-          goto exit;
+          return LWMQTT_FAILURE;
         }
       }
 
@@ -227,7 +227,7 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       }
 
       if (rc == LWMQTT_FAILURE) {
-        goto exit;
+        return LWMQTT_FAILURE;
       }
 
       break;
@@ -241,8 +241,6 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
 
   lwmqtt_keep_alive(c);
 
-// TODO: Remove goto and label.
-exit:
   if (rc == LWMQTT_SUCCESS && packet_type != LWMQTT_FAILURE) {
     rc = packet_type;
   }
@@ -276,12 +274,12 @@ static int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type) {
 }
 
 int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options) {
-  int rc = LWMQTT_FAILURE;
+  int rc;
   lwmqtt_options_t default_options = lwmqtt_default_options;
   int len = 0;
 
   if (c->is_connected) {  // don't send connect src again if we are already connected
-    goto exit;
+    return LWMQTT_FAILURE;
   }
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
@@ -295,11 +293,11 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options) {
   c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
 
   if ((len = lwmqtt_serialize_connect(c->write_buf, c->write_buf_size, options)) <= 0) {
-    goto exit;
+    return LWMQTT_FAILURE;
   }
 
-  if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the connect src
-    goto exit;                                                // there was a problem
+  if ((lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {
+    return LWMQTT_FAILURE;
   }
 
   // this will be a blocking call, wait for the connack
@@ -315,8 +313,6 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options) {
     rc = LWMQTT_FAILURE;
   }
 
-// TODO: Remove goto and label.
-exit:
   if (rc == LWMQTT_SUCCESS) {
     c->is_connected = 1;
   }
