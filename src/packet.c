@@ -13,6 +13,7 @@
 
 #include "packet.h"
 
+// TODO: Should also write the header byte.
 int lwmqtt_header_encode(unsigned char *buf, int rem_len) {
   int rc = 0;
 
@@ -41,6 +42,7 @@ int lwmqtt_header_len(int rem_len) {
   }
 }
 
+// TODO: Should also read the header byte.
 int lwmqtt_header_decode(unsigned char *buf, int *rem_len) {
   unsigned char c;
   int multiplier = 1;
