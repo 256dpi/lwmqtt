@@ -17,7 +17,7 @@ int lwmqtt_header_encode(unsigned char *buf, int rem_len) {
   int rc = 0;
 
   do {
-    char d = rem_len % 128;
+    unsigned char d = (unsigned  char)(rem_len % 128);
     rem_len /= 128;
     // if there are more digits to encode, set the top bit of this digit
     if (rem_len > 0) d |= 0x80;
