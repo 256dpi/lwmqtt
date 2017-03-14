@@ -166,11 +166,11 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
   int len = 0, rc = LWMQTT_SUCCESS;
 
   switch (packet_type) {
-    case CONNACK:
-    case PUBACK:
-    case SUBACK:
+    case LWMQTT_CONNACK_PACKET:
+    case LWMQTT_PUBACK_PACKET:
+    case LWMQTT_SUBACK_PACKET:
       break;
-    case PUBLISH: {
+    case LWMQTT_PUBLISH_PACKET: {
       lwmqtt_string_t topicName;
       lwmqtt_message_t msg;
       int intQoS;
@@ -186,9 +186,9 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
 
       if (msg.qos != LWMQTT_QOS0) {
         if (msg.qos == LWMQTT_QOS1)
-          len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, PUBACK, 0, msg.id);
+          len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, LWMQTT_PUBACK_PACKET, 0, msg.id);
         else if (msg.qos == LWMQTT_QOS2)
-          len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, PUBREC, 0, msg.id);
+          len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, LWMQTT_PUBREC_PACKET, 0, msg.id);
         if (len <= 0)
           rc = LWMQTT_FAILURE;
         else
@@ -197,21 +197,21 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       }
       break;
     }
-    case PUBREC: {
+    case LWMQTT_PUBREC_PACKET: {
       unsigned short mypacketid;
       unsigned char dup, type;
       if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->read_buf, c->read_buf_size) != 1)
         rc = LWMQTT_FAILURE;
-      else if ((len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, PUBREL, 0, mypacketid)) <= 0)
+      else if ((len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, LWMQTT_PUBREL_PACKET, 0, mypacketid)) <= 0)
         rc = LWMQTT_FAILURE;
       else if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the PUBREL src
         rc = LWMQTT_FAILURE;                                         // there was a problem
       if (rc == LWMQTT_FAILURE) goto exit;                           // there was a problem
       break;
     }
-    case PUBCOMP:
+    case LWMQTT_PUBCOMP_PACKET:
       break;
-    case PINGRESP:
+    case LWMQTT_PINGRESP_PACKET:
       c->ping_outstanding = 0;
       break;
   }
@@ -272,7 +272,7 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options) {
     goto exit;                                              // there was a problem
 
   // this will be a blocking call, wait for the connack
-  if (lwmqtt_cycle_until(c, CONNACK) == CONNACK) {
+  if (lwmqtt_cycle_until(c, LWMQTT_CONNACK_PACKET) == LWMQTT_CONNACK_PACKET) {
     unsigned char connack_rc = 255;
     unsigned char sessionPresent = 0;
     if (lwmqtt_deserialize_connack(&sessionPresent, &connack_rc, c->read_buf, c->read_buf_size) == 1) {
@@ -315,7 +315,7 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
     return rc;                                                // there was a problem
   }
 
-  if (lwmqtt_cycle_until(c, SUBACK) == SUBACK)  // wait for suback
+  if (lwmqtt_cycle_until(c, LWMQTT_SUBACK_PACKET) == LWMQTT_SUBACK_PACKET)  // wait for suback
   {
     int count = 0, grantedQoS = -1;
     unsigned short mypacketid;
@@ -353,7 +353,7 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
     return rc;                                                // there was a problem
   }
 
-  if (lwmqtt_cycle_until(c, UNSUBACK) == UNSUBACK) {
+  if (lwmqtt_cycle_until(c, LWMQTT_UNSUBACK_PACKET) == LWMQTT_UNSUBACK_PACKET) {
     unsigned short mypacketid;  // should be the same as the packetid above
     if (lwmqtt_deserialize_unsuback(&mypacketid, c->read_buf, c->read_buf_size) == 1) rc = 0;
   } else {
@@ -390,7 +390,7 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
   }
 
   if (message->qos == LWMQTT_QOS1) {
-    if (lwmqtt_cycle_until(c, PUBACK) == PUBACK) {
+    if (lwmqtt_cycle_until(c, LWMQTT_PUBACK_PACKET) == LWMQTT_PUBACK_PACKET) {
       unsigned short mypacketid;
       unsigned char dup, type;
       if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
@@ -398,7 +398,7 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
       rc = LWMQTT_FAILURE;
     }
   } else if (message->qos == LWMQTT_QOS2) {
-    if (lwmqtt_cycle_until(c, PUBCOMP) == PUBCOMP) {
+    if (lwmqtt_cycle_until(c, LWMQTT_PUBCOMP_PACKET) == LWMQTT_PUBCOMP_PACKET) {
       unsigned short mypacketid;
       unsigned char dup, type;
       if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;

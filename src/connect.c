@@ -50,7 +50,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   }
 
   header.byte = 0;
-  header.bits.type = CONNECT;
+  header.bits.type = LWMQTT_CONNECT_PACKET;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
   ptr += lwmqtt_fixed_header_encode(ptr, len);  // write remaining length
@@ -104,7 +104,7 @@ int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *co
   lwmqtt_connack_flags flags = {0};
 
   header.byte = lwmqtt_read_char(&curdata);
-  if (header.bits.type != CONNACK) {
+  if (header.bits.type != LWMQTT_CONNACK_PACKET) {
     return rc;
   }
 
@@ -139,7 +139,9 @@ static int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char p
 }
 
 int lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len) {
-  return lwmqtt_serialize_zero(buf, buf_len, DISCONNECT);
+  return lwmqtt_serialize_zero(buf, buf_len, LWMQTT_DISCONNECT_PACKET);
 }
 
-int lwmqtt_serialize_pingreq(unsigned char *buf, int buf_len) { return lwmqtt_serialize_zero(buf, buf_len, PINGREQ); }
+int lwmqtt_serialize_pingreq(unsigned char *buf, int buf_len) {
+  return lwmqtt_serialize_zero(buf, buf_len, LWMQTT_PINGREQ_PACKET);
+}

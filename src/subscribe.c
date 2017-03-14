@@ -40,7 +40,7 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buf_len, unsigned char du
   }
 
   header.byte = 0;
-  header.bits.type = SUBSCRIBE;
+  header.bits.type = LWMQTT_SUBSCRIBE_PACKET;
   header.bits.dup = dup;
   header.bits.qos = 1;
   lwmqtt_write_char(&ptr, header.byte);  // write header
@@ -66,7 +66,7 @@ int lwmqtt_deserialize_suback(unsigned short *packet_id, int max_count, int *cou
   int mylen;
 
   header.byte = lwmqtt_read_char(&curdata);
-  if (header.bits.type != SUBACK) {
+  if (header.bits.type != LWMQTT_SUBACK_PACKET) {
     return rc;
   }
 

@@ -38,7 +38,7 @@ int lwmqtt_serialize_unsubscribe(unsigned char *buf, int buf_len, unsigned char 
   }
 
   header.byte = 0;
-  header.bits.type = UNSUBSCRIBE;
+  header.bits.type = LWMQTT_UNSUBSCRIBE_PACKET;
   header.bits.dup = dup;
   header.bits.qos = 1;
   lwmqtt_write_char(&ptr, header.byte);  // write header
@@ -59,7 +59,7 @@ int lwmqtt_deserialize_unsuback(unsigned short *packet_id, unsigned char *buf, i
   unsigned char dup = 0;
 
   int rc = lwmqtt_deserialize_ack(&type, &dup, packet_id, buf, buf_len);
-  if (type == UNSUBACK) {
+  if (type == LWMQTT_UNSUBACK_PACKET) {
     rc = 1;
   }
 
