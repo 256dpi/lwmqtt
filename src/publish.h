@@ -66,6 +66,16 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
 int lwmqtt_serialize_puback(unsigned char *buf, int buf_len, unsigned short packet_id);
 
 /**
+  * Serializes a pubrec packet into the supplied buffer.
+  *
+  * @param buf the buffer into which the packet will be serialized
+  * @param buf_len the length in bytes of the supplied buffer
+  * @param packet_id integer - the MQTT packet identifier
+  * @return serialized length, or error if 0
+  */
+int lwmqtt_serialize_pubrec(unsigned char *buf, int buf_len, unsigned short packet_id);
+
+/**
   * Serializes a pubrel packet into the supplied buffer.
   *
   * @param buf the buffer into which the packet will be serialized

@@ -121,7 +121,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
   return ptr - buf;
 }
 
-int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char packettype, unsigned char dup,
+static int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char packettype, unsigned char dup,
                          unsigned short packet_id) {
   lwmqtt_header_t header = {0};
   unsigned char *ptr = buf;
@@ -143,6 +143,10 @@ int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char packetty
 
 int lwmqtt_serialize_puback(unsigned char *buf, int buf_len, unsigned short packet_id) {
   return lwmqtt_serialize_ack(buf, buf_len, LWMQTT_PUBACK_PACKET, 0, packet_id);
+}
+
+int lwmqtt_serialize_pubrec(unsigned char *buf, int buf_len, unsigned short packet_id) {
+  return lwmqtt_serialize_ack(buf, buf_len, LWMQTT_PUBREC_PACKET, 0, packet_id);
 }
 
 int lwmqtt_serialize_pubrel(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id) {

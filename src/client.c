@@ -186,9 +186,9 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
 
       if (msg.qos != LWMQTT_QOS0) {
         if (msg.qos == LWMQTT_QOS1)
-          len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, LWMQTT_PUBACK_PACKET, 0, msg.id);
+          len = lwmqtt_serialize_puback(c->write_buf, c->write_buf_size, msg.id);
         else if (msg.qos == LWMQTT_QOS2)
-          len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, LWMQTT_PUBREC_PACKET, 0, msg.id);
+          len = lwmqtt_serialize_pubrec(c->write_buf, c->write_buf_size, msg.id);
         if (len <= 0)
           rc = LWMQTT_FAILURE;
         else
@@ -202,7 +202,7 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       unsigned char dup, type;
       if (lwmqtt_deserialize_ack(&type, &dup, &mypacketid, c->read_buf, c->read_buf_size) != 1)
         rc = LWMQTT_FAILURE;
-      else if ((len = lwmqtt_serialize_ack(c->write_buf, c->write_buf_size, LWMQTT_PUBREL_PACKET, 0, mypacketid)) <= 0)
+      else if ((len = lwmqtt_serialize_pubrel(c->write_buf, c->write_buf_size, 0, mypacketid)) <= 0)
         rc = LWMQTT_FAILURE;
       else if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS)  // send the PUBREL src
         rc = LWMQTT_FAILURE;                                         // there was a problem

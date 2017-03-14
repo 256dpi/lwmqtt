@@ -51,19 +51,6 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-/**
-  * Serializes the ack packet into the supplied buffer.
-  *
-  * @param buf the buffer into which the packet will be serialized
-  * @param buf_len the length in bytes of the supplied buffer
-  * @param type the MQTT packet type
-  * @param dup the MQTT dup flag
-  * @param packet_id the MQTT packet identifier
-  * @return serialized length, or error if 0
-  */
-int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char type, unsigned char dup,
-                         unsigned short packet_id);
-
 int lwmqtt_deserialize_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
                            unsigned char *buf, int buf_len);
 
