@@ -122,7 +122,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
 }
 
 static int lwmqtt_serialize_ack(unsigned char *buf, int buf_len, unsigned char packettype, unsigned char dup,
-                         unsigned short packet_id) {
+                                unsigned short packet_id) {
   lwmqtt_header_t header = {0};
   unsigned char *ptr = buf;
 
