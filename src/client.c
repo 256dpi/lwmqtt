@@ -168,10 +168,6 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
   int len = 0, rc = LWMQTT_SUCCESS;
 
   switch (packet_type) {
-    case LWMQTT_CONNACK_PACKET:
-    case LWMQTT_PUBACK_PACKET:
-    case LWMQTT_SUBACK_PACKET:
-      break;
     case LWMQTT_PUBLISH_PACKET: {
       lwmqtt_string_t topicName;
       lwmqtt_message_t msg;
@@ -211,12 +207,15 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       if (rc == LWMQTT_FAILURE) goto exit;                           // there was a problem
       break;
     }
-    case LWMQTT_PUBCOMP_PACKET:
-      break;
-    case LWMQTT_PINGRESP_PACKET:
+    case LWMQTT_PINGRESP_PACKET: {
       c->ping_outstanding = 0;
       break;
+    }
+    default: {
+      break;
+    }
   }
+
   lwmqtt_keep_alive(c);
 
 // TODO: Remove goto and label.
