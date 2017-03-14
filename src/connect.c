@@ -122,16 +122,16 @@ int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *co
   return 1;
 }
 
-static int lwmqtt_serialize_zero(unsigned char *buf, int buflen, unsigned char packettype) {
+static int lwmqtt_serialize_zero(unsigned char *buf, int buf_len, unsigned char packet_type) {
   lwmqtt_header_t header = {0};
   unsigned char *ptr = buf;
 
-  if (buflen < 2) {
+  if (buf_len < 2) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   header.byte = 0;
-  header.bits.type = packettype;
+  header.bits.type = packet_type;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
   ptr += lwmqtt_header_encode(ptr, 0);  // write remaining length

@@ -37,7 +37,7 @@ int lwmqtt_deserialize_identified(unsigned char *packet_type, unsigned char *dup
   return 1;
 }
 
-int lwmqtt_serialize_identified(unsigned char *buf, int buf_len, unsigned char packettype, unsigned char dup,
+int lwmqtt_serialize_identified(unsigned char *buf, int buf_len, unsigned char packet_type, unsigned char dup,
                                 unsigned short packet_id) {
   lwmqtt_header_t header = {0};
   unsigned char *ptr = buf;
@@ -46,9 +46,9 @@ int lwmqtt_serialize_identified(unsigned char *buf, int buf_len, unsigned char p
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
-  header.bits.type = packettype;
+  header.bits.type = packet_type;
   header.bits.dup = dup;
-  header.bits.qos = (packettype == LWMQTT_PUBREL_PACKET) ? 1 : 0;
+  header.bits.qos = (packet_type == LWMQTT_PUBREL_PACKET) ? 1 : 0;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
   ptr += lwmqtt_header_encode(ptr, 2);  // write remaining length

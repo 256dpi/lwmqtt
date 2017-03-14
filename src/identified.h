@@ -27,7 +27,7 @@
 int lwmqtt_deserialize_identified(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
                                   unsigned char *buf, int buf_len);
 
-int lwmqtt_serialize_identified(unsigned char *buf, int buf_len, unsigned char packettype, unsigned char dup,
+int lwmqtt_serialize_identified(unsigned char *buf, int buf_len, unsigned char packet_type, unsigned char dup,
                                 unsigned short packet_id);
 
 #endif
