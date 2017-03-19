@@ -15,7 +15,7 @@
   * @param qos_levels - array of requested QoS
   * @return the length of the encoded data.  <= 0 indicates error
   */
-int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id, int count,
+int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned short packet_id, int count,
                             lwmqtt_string_t *topic_filters, int *qos_levels);
 
 /**

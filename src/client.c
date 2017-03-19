@@ -319,8 +319,7 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  len =
-      lwmqtt_encode_subscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic, (int *)&qos);
+  len = lwmqtt_encode_subscribe(c->write_buf, c->write_buf_size, lwmqtt_get_next_packet_id(c), 1, &topic, (int *)&qos);
   if (len <= 0) {
     return rc;
   }
@@ -359,7 +358,7 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  if ((len = lwmqtt_encode_unsubscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic)) <=
+  if ((len = lwmqtt_encode_unsubscribe(c->write_buf, c->write_buf_size, lwmqtt_get_next_packet_id(c), 1, &topic)) <=
       0) {
     return rc;
   }

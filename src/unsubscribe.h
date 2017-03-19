@@ -14,7 +14,7 @@
   * @param topic_filters - array of topic filter names
   * @return the length of the encoded data.  <= 0 indicates error
   */
-int lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id, int count,
+int lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, unsigned short packet_id, int count,
                               lwmqtt_string_t *topic_filters);
 
 /**

@@ -1,7 +1,7 @@
 #include "subscribe.h"
 #include "packet.h"
 
-int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id, int count,
+int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned short packet_id, int count,
                             lwmqtt_string_t *topic_filters, int *qos_levels) {
   unsigned char *ptr = buf;
 
@@ -17,7 +17,6 @@ int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned char dup, 
 
   lwmqtt_header_t header = {0};
   header.bits.type = LWMQTT_SUBSCRIBE_PACKET;
-  header.bits.dup = dup;
   header.bits.qos = 1;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
