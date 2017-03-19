@@ -6,6 +6,8 @@
 #include "helpers.h"
 #include "packet.h"
 
+// TODO: Err should be returned by all functions.
+
 typedef struct {
   lwmqtt_qos_t qos;
   bool retained;
