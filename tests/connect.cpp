@@ -2,7 +2,6 @@
 
 extern "C" {
 #include "../src/client.h"
-#include "../src/connect.h"
 }
 
 #include "macros.h"
@@ -165,7 +164,7 @@ TEST(ConnackTest, DeserializeError2) {
   unsigned char pkt[3] = {
       LWMQTT_CONNACK_PACKET << 4, 3,
       0,  // session not present
-          // <- wrong packet size
+          // <- missing packet size
   };
 
   bool session_present;
@@ -173,4 +172,24 @@ TEST(ConnackTest, DeserializeError2) {
   int r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 3);
 
   EXPECT_EQ(r, 0);
+}
+
+TEST(DisconnectTest, Serialize1) {
+  unsigned char pkt[2] = {LWMQTT_DISCONNECT_PACKET << 4, 0};
+
+  unsigned char buf[2];
+
+  int l = lwmqtt_serialize_disconnect(buf, 2);
+
+  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
+}
+
+TEST(PingreqTest, Serialize1) {
+  unsigned char pkt[2] = {LWMQTT_PINGREQ_PACKET << 4, 0};
+
+  unsigned char buf[2];
+
+  int l = lwmqtt_serialize_pingreq(buf, 2);
+
+  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
 }
