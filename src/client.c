@@ -300,10 +300,10 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_
 
   // this will be a blocking call, wait for the connack
   if (lwmqtt_cycle_until(c, LWMQTT_CONNACK_PACKET) == LWMQTT_CONNACK_PACKET) {
-    unsigned char connack_rc = 255;
-    unsigned char sessionPresent = 0;
-    if (lwmqtt_deserialize_connack(&sessionPresent, &connack_rc, c->read_buf, c->read_buf_size) == 1) {
-      rc = connack_rc;
+    bool session_present;
+    lwmqtt_connack_t connack;
+    if (lwmqtt_deserialize_connack(&session_present, &connack, c->read_buf, c->read_buf_size) == 1) {
+      rc = connack;
     } else {
       rc = LWMQTT_FAILURE;
     }

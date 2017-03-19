@@ -14,6 +14,8 @@
 #ifndef LWMQTT_CONNECT_H
 #define LWMQTT_CONNECT_H
 
+#include <stdbool.h>
+
 #include "packet.h"
 #include "string.h"
 
@@ -43,6 +45,15 @@ typedef struct {
 #define lwmqtt_default_options \
   { lwmqtt_default_string, 60, 1, lwmqtt_default_string, lwmqtt_default_string }
 
+typedef enum {
+  LWMQTT_CONNACK_CONNECTION_ACCEPTED = 0,
+  LWMQTT_CONNACK_UNACCEPTABLE_PROTOCOL = 1,
+  LWMQTT_CONNACK_IDENTIFIER_REJECTED = 2,
+  LWMQTT_CONNACK_SERVER_UNAVAILABLE = 3,
+  LWMQTT_CONNACK_BAD_USERNAME_OR_PASSWORD = 4,
+  LWMQTT_CONNACK_NOT_AUTHORIZED = 5
+} lwmqtt_connack_t;
+
 /**
   * Serializes the connect options into the buffer.
   *
@@ -62,8 +73,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   * @param len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *connack_rc, unsigned char *buf,
-                               int buf_len);
+int lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t *connack, unsigned char *buf, int buf_len);
 
 /**
   * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket

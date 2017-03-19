@@ -15,7 +15,6 @@
 
 #include "connect.h"
 #include "helpers.h"
-#include "packet.h"
 
 typedef union {
   unsigned char byte;
@@ -119,7 +118,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   // write will topic and payload if present
   if (will != NULL) {
     lwmqtt_write_string(&ptr, will->topic);
-    lwmqtt_write_int(&ptr, will->payload_len);
+    lwmqtt_write_int(&ptr, (int)will->payload_len);
     memcpy(ptr, will->payload, will->payload_len);
     ptr += will->payload_len;
   }
@@ -138,8 +137,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   return (int)(ptr - buf);
 }
 
-int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *connack_rc, unsigned char *buf,
-                               int buf_len) {
+int lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t *connack_rc, unsigned char *buf, int buf_len) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -168,8 +166,8 @@ int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *co
   // read flags
   lwmqtt_connack_flags_t flags;
   flags.byte = lwmqtt_read_char(&ptr);
-  *session_present = (unsigned char)flags.bits.session_present;  // TODO: Constrain received values?
-  *connack_rc = lwmqtt_read_char(&ptr);                          // TODO: Constraint received values?
+  *session_present = flags.bits.session_present == 1;
+  *connack_rc = (lwmqtt_connack_t)lwmqtt_read_char(&ptr);
 
   return 1;
 }

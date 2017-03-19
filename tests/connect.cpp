@@ -137,13 +137,13 @@ TEST(ConnackTest, Deserialize1) {
       0,  // connection accepted
   };
 
-  unsigned char session_present = 0;
-  unsigned char connack_rc = 255;
-  int r = lwmqtt_deserialize_connack(&session_present, &connack_rc, pkt, 4);
+  bool session_present;
+  lwmqtt_connack_t connack;
+  int r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 4);
 
   EXPECT_EQ(r, 1);
   EXPECT_EQ(session_present, 0);
-  EXPECT_EQ(connack_rc, 0);
+  EXPECT_EQ(connack, 0);
 }
 
 TEST(ConnackTest, DeserializeError1) {
@@ -154,9 +154,9 @@ TEST(ConnackTest, DeserializeError1) {
       0,  // connection accepted
   };
 
-  unsigned char session_present;
-  unsigned char connack_rc;
-  int r = lwmqtt_deserialize_connack(&session_present, &connack_rc, pkt, 4);
+  bool session_present;
+  lwmqtt_connack_t connack;
+  int r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 4);
 
   EXPECT_EQ(r, 0);
 }
@@ -168,9 +168,9 @@ TEST(ConnackTest, DeserializeError2) {
           // <- wrong packet size
   };
 
-  unsigned char session_present;
-  unsigned char connack_rc;
-  int r = lwmqtt_deserialize_connack(&session_present, &connack_rc, pkt, 3);
+  bool session_present;
+  lwmqtt_connack_t connack;
+  int r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 3);
 
   EXPECT_EQ(r, 0);
 }
