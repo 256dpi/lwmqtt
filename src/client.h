@@ -17,9 +17,8 @@
 #include <stdio.h>
 
 #include "connect.h"
+#include "packet.h"
 #include "string.h"
-
-typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
 
 // all failure return codes must be negative
 typedef enum { LWMQTT_FAILURE = -1, LWMQTT_SUCCESS = 0 } lwmqtt_err_t;

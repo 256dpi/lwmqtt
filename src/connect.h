@@ -15,6 +15,7 @@
 #define LWMQTT_CONNECT_H
 
 #include "string.h"
+#include "packet.h"
 
 /**
  * Defines the MQTT "Last Will and Testament" (LWT) settings for
@@ -24,7 +25,7 @@ typedef struct {
   lwmqtt_string_t topic;
   lwmqtt_string_t message;
   unsigned char retained;
-  char qos;
+  lwmqtt_qos_t qos;
 } lwmqtt_will_t;
 
 #define lwmqtt_default_will \

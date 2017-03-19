@@ -17,6 +17,8 @@
 // TODO: What to do with those?
 enum { LWMQTT_BUFFER_TOO_SHORT = -2, LWMQTT_READ_ERROR = -1 };
 
+typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
+
 typedef enum {
   LWMQTT_CONNECT_PACKET = 1,
   LWMQTT_CONNACK_PACKET,
