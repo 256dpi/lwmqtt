@@ -18,17 +18,17 @@
 #include "packet.h"
 
 typedef union {
-    unsigned char byte;
+  unsigned char byte;
 
-    struct {
-        unsigned int _ : 1;
-        unsigned int clean_session : 1;
-        unsigned int will : 1;
-        unsigned int will_qos : 2;
-        unsigned int will_retain : 1;
-        unsigned int password : 1;
-        unsigned int username : 1;
-    } bits;
+  struct {
+    unsigned int _ : 1;
+    unsigned int clean_session : 1;
+    unsigned int will : 1;
+    unsigned int will_qos : 2;
+    unsigned int will_retain : 1;
+    unsigned int password : 1;
+    unsigned int username : 1;
+  } bits;
 } lwmqtt_connect_flags_t;
 
 static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options, lwmqtt_will_t *will) {
@@ -42,10 +42,10 @@ static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options, lwmqtt_wil
 
   if (options->username.c_string || options->username.lp_string.data) {
     len += lwmqtt_strlen(options->username) + 2;
-  }
 
-  if (options->password.c_string || options->password.lp_string.data) {
-    len += lwmqtt_strlen(options->password) + 2;
+    if (options->password.c_string || options->password.lp_string.data) {
+      len += lwmqtt_strlen(options->password) + 2;
+    }
   }
 
   return len;
@@ -79,10 +79,10 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
 
   if (options->username.c_string || options->username.lp_string.data) {
     flags.bits.username = 1;
-  }
 
-  if (options->password.c_string || options->password.lp_string.data) {
-    flags.bits.password = 1;
+    if (options->password.c_string || options->password.lp_string.data) {
+      flags.bits.password = 1;
+    }
   }
 
   lwmqtt_write_char(&ptr, flags.byte);
@@ -96,10 +96,10 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
 
   if (flags.bits.username) {
     lwmqtt_write_string(&ptr, options->username);
-  }
 
-  if (flags.bits.password) {
-    lwmqtt_write_string(&ptr, options->password);
+    if (flags.bits.password) {
+      lwmqtt_write_string(&ptr, options->password);
+    }
   }
 
   return (int)(ptr - buf);

@@ -14,8 +14,8 @@
 #ifndef LWMQTT_CONNECT_H
 #define LWMQTT_CONNECT_H
 
-#include "string.h"
 #include "packet.h"
+#include "string.h"
 
 /**
  * Defines the MQTT "Last Will and Testament" (LWT) settings for
@@ -29,7 +29,7 @@ typedef struct {
 } lwmqtt_will_t;
 
 #define lwmqtt_default_will \
-  { {NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, 0 }
+  { {NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, LWMQTT_QOS0 }
 
 typedef struct {
   lwmqtt_string_t client_id;
