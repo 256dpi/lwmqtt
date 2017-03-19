@@ -49,11 +49,7 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-int lwmqtt_total_header_length(int rem_len);
-
 int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len);
-
-int lwmqtt_decode_remaining_length(unsigned char *buf, int *rem_len);
 
 /**
  * Defines the MQTT "Last Will and Testament" (LWT) settings for
