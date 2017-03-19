@@ -23,13 +23,14 @@
  */
 typedef struct {
   lwmqtt_string_t topic;
-  lwmqtt_string_t message;  // TODO: Rename to payload and change type?
+  void *payload;
+  size_t payload_len;
   unsigned char retained;
   lwmqtt_qos_t qos;
 } lwmqtt_will_t;
 
 #define lwmqtt_default_will \
-  { {NULL, {0, NULL}}, {NULL, {0, NULL}}, 0, LWMQTT_QOS0 }
+  { {NULL, {0, NULL}}, NULL, 0, 0, LWMQTT_QOS0 }
 
 typedef struct {
   lwmqtt_string_t client_id;

@@ -51,7 +51,7 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-int lwmqtt_header_len(int rem_len);
+int lwmqtt_total_header_length(int rem_len);
 
 /**
  * Encodes the message length according to the MQTT algorithm
@@ -60,8 +60,8 @@ int lwmqtt_header_len(int rem_len);
  * @param rem_len the length to be encoded
  * @return the number of bytes written to buffer
  */
-int lwmqtt_header_encode(unsigned char *buf, int rem_len);
+int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len);
 
-int lwmqtt_header_decode(unsigned char *buf, int *rem_len);
+int lwmqtt_decode_remaining_length(unsigned char *buf, int *rem_len);
 
 #endif  // LWMQTT_PACKET_H

@@ -2,6 +2,7 @@
 
 extern "C" {
 #include "../src/client.h"
+#include "../src/connect.h"
 }
 
 #include "macros.h"
@@ -76,7 +77,8 @@ TEST(ConnectTest, Serialize1) {
 
   lwmqtt_will_t will = lwmqtt_default_will;
   will.topic.c_string = (char*)"will";
-  will.message.c_string = (char*)"send me home";
+  will.payload = (void*)"send me home";
+  will.payload_len = strlen((const char*)will.payload);
   will.qos = LWMQTT_QOS1;
 
   lwmqtt_options_t opts = lwmqtt_default_options;

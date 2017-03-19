@@ -35,7 +35,7 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
   *qos = header.bits.qos;
   *retained = (unsigned char)header.bits.retain;
 
-  cur_ptr += (rc = lwmqtt_header_decode(cur_ptr, &len));  // read remaining length
+  cur_ptr += (rc = lwmqtt_decode_remaining_length(cur_ptr, &len));  // read remaining length
   unsigned char *end_ptr = cur_ptr + len;
 
   // do we have enough data to read the protocol version byte?
@@ -71,7 +71,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
 
   int rem_len = lwmqtt_serialize_publish_length(qos, topic, payload_len);
 
-  if (lwmqtt_header_len(rem_len) + rem_len > buf_len) {
+  if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
@@ -82,7 +82,7 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
   header.bits.retain = retained;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_header_encode(ptr, rem_len);  // write remaining length
+  ptr += lwmqtt_encode_remaining_length(ptr, rem_len);  // write remaining length
 
   lwmqtt_write_string(&ptr, topic);
 

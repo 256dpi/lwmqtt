@@ -54,7 +54,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
 
   // add will if present
   if (will != NULL) {
-    rem_len += lwmqtt_strlen(will->topic) + 2 + lwmqtt_strlen(will->message) + 2;
+    rem_len += lwmqtt_strlen(will->topic) + 2 + will->payload_len + 2;
   }
 
   // add username if present
@@ -68,7 +68,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   }
 
   // check buffer capacity
-  if (lwmqtt_header_len(rem_len) + rem_len > buf_len) {
+  if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
@@ -80,7 +80,7 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  ptr += lwmqtt_header_encode(ptr, rem_len);
+  ptr += lwmqtt_encode_remaining_length(ptr, rem_len);
 
   // write version
   lwmqtt_write_c_string(&ptr, "MQTT");
@@ -119,7 +119,9 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   // write will topic and payload if present
   if (will != NULL) {
     lwmqtt_write_string(&ptr, will->topic);
-    lwmqtt_write_string(&ptr, will->message);
+    lwmqtt_write_int(&ptr, will->payload_len);
+    memcpy(ptr, will->payload, will->payload_len);
+    ptr += will->payload_len;
   }
 
   // write username if present
@@ -150,7 +152,7 @@ int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *co
 
   // read remaining length
   int len;
-  int rc = lwmqtt_header_decode(ptr, &len);
+  int rc = lwmqtt_decode_remaining_length(ptr, &len);
   if (rc == LWMQTT_HEADER_DECODE_ERROR) {
     return 0;
   }
@@ -184,7 +186,7 @@ static int lwmqtt_serialize_zero(unsigned char *buf, int buf_len, unsigned char 
   header.bits.type = packet_type;
   lwmqtt_write_char(&ptr, header.byte);  // write header
 
-  ptr += lwmqtt_header_encode(ptr, 0);  // write remaining length
+  ptr += lwmqtt_encode_remaining_length(ptr, 0);  // write remaining length
 
   return (int)(ptr - buf);
 }

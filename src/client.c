@@ -123,7 +123,7 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
   len += lwmqtt_decode_packet(c, &rem_len, c->timer_get(c, c->timer_network_ref));
 
   // TODO: Can we remove this unnecessary call?
-  lwmqtt_header_encode(c->read_buf + 1, rem_len);  // put the original remaining length back into the buffer
+  lwmqtt_encode_remaining_length(c->read_buf + 1, rem_len);  // put the original remaining length back into the buffer
 
   // 3. read the rest of the buffer using a callback to supply the rest of the data
   if (rem_len > 0 && (rc = c->network_read(c, c->network_ref, c->read_buf + len, rem_len,
