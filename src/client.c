@@ -319,9 +319,10 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  len = lwmqtt_encode_subscribe(c->write_buf, c->write_buf_size, lwmqtt_get_next_packet_id(c), 1, &topic, (int *)&qos);
-  if (len <= 0) {
-    return rc;
+  lwmqtt_err_t err =
+      lwmqtt_encode_subscribe(c->write_buf, c->write_buf_size, &len, lwmqtt_get_next_packet_id(c), 1, &topic, &qos);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the subscribe src
@@ -332,7 +333,7 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
   {
     int count = 0, grantedQoS = -1;
     unsigned short packet_id;
-    if (lwmqtt_decode_suback(&packet_id, 1, &count, &grantedQoS, c->read_buf, c->read_buf_size) == 1) {
+    if (lwmqtt_decode_suback(&packet_id, 1, &count, &grantedQoS, c->read_buf, c->read_buf_size) == LWMQTT_SUCCESS) {
       rc = grantedQoS;  // 0, 1, 2 or 0x80
     }
 

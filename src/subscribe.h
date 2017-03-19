@@ -2,6 +2,7 @@
 #define LWMQTT_SUBSCRIBE_H
 
 #include "helpers.h"
+#include "packet.h"
 
 /**
   * Encodes the supplied subscribe data into the supplied buffer, ready for sending
@@ -15,8 +16,8 @@
   * @param qos_levels - array of requested QoS
   * @return the length of the encoded data.  <= 0 indicates error
   */
-int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned short packet_id, int count,
-                            lwmqtt_string_t *topic_filters, int *qos_levels);
+lwmqtt_err_t lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, int *len, unsigned short packet_id, int count,
+                                     lwmqtt_string_t *topic_filters, lwmqtt_qos_t *qos_levels);
 
 /**
   * Decodes the supplied (wire) buffer into suback data
@@ -29,7 +30,7 @@ int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned short pack
   * @param buf_len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int *count, int *granted_qos_levels,
-                         unsigned char *buf, int buf_len);
+lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int *count, int *granted_qos_levels,
+                                  unsigned char *buf, int buf_len);
 
 #endif  // LWMQTT_SUBSCRIBE_H
