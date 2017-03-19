@@ -313,95 +313,88 @@ TEST(PublishTest, Decode1) {
   EXPECT_ARRAY_EQ("send me home", payload, 12);
 }
 
-TEST(PublishTest, DecodeError1) {
-  unsigned char pkt[4] = {
-      LWMQTT_PUBACK_PACKET << 4,
-      1,  // <-- wrong remaining length
-      0,  // packet ID MSB
-      7,  // packet ID LSB
+TEST(PublishTest, Decode2) {
+  unsigned char pkt[23] = {
+      LWMQTT_PUBLISH_PACKET << 4,
+      21,
+      0,  // topic name MSB
+      7,  // topic name LSB
+      's',
+      'u',
+      'r',
+      'g',
+      'e',
+      'm',
+      'q',
+      's',
+      'e',
+      'n',
+      'd',
+      ' ',
+      'm',
+      'e',
+      ' ',
+      'h',
+      'o',
+      'm',
+      'e',
   };
 
-  lwmqtt_packet_t type;
   bool dup;
+  lwmqtt_qos_t qos;
+  bool retained;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 4);
+  lwmqtt_string_t topic;
+  unsigned char* payload;
+  int payload_len;
+  lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 23);
+
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_EQ(dup, false);
+  EXPECT_EQ(qos, 0);
+  EXPECT_EQ(retained, false);
+  EXPECT_EQ(packet_id, 0);
+  EXPECT_ARRAY_EQ("surgemq", topic.lp_string.data, 7);
+  EXPECT_ARRAY_EQ("send me home", payload, 12);
+}
+
+TEST(PublishTest, DecodeError1) {
+  unsigned char pkt[2] = {
+      LWMQTT_PUBLISH_PACKET << 4,
+      2,  // <-- too much
+  };
+
+  bool dup;
+  lwmqtt_qos_t qos;
+  bool retained;
+  unsigned short packet_id;
+  lwmqtt_string_t topic;
+  unsigned char* payload;
+  int payload_len;
+  lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 2);
+
+  EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
+}
+
+TEST(PublishTest, DecodeError2) {
+  unsigned char pkt[2] = {
+      LWMQTT_PUBLISH_PACKET << 4,
+      2,  // <-- too much
+  };
+
+  bool dup;
+  lwmqtt_qos_t qos;
+  bool retained;
+  unsigned short packet_id;
+  lwmqtt_string_t topic;
+  unsigned char* payload;
+  int payload_len;
+  lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 2);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
 
 /*
-func TestPublishPacketDecode1(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH<<4) | 11,
-                23,
-                0, // topic name MSB
-                7, // topic name LSB
-                's', 'u', 'r', 'g', 'e', 'm', 'q',
-                0, // packet ID MSB
-                7, // packet ID LSB
-                's', 'e', 'n', 'd', ' ', 'm', 'e', ' ', 'h', 'o', 'm', 'e',
-        }
-
-        pkt := NewPublishPacket()
-        n, err := pkt.Decode(pktBytes)
-
-        assert.NoError(t, err)
-        assert.Equal(t, len(pktBytes), n)
-        assert.Equal(t, uint16(7), pkt.PacketID)
-        assert.Equal(t, "surgemq", pkt.Message.Topic)
-        assert.Equal(t, []byte("send me home"), pkt.Message.Payload)
-        assert.Equal(t, uint8(1), pkt.Message.QOS)
-        assert.Equal(t, true, pkt.Message.Retain)
-        assert.Equal(t, true, pkt.Dup)
-}
-
-func TestPublishPacketDecode2(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH << 4),
-                21,
-                0, // topic name MSB
-                7, // topic name LSB
-                's', 'u', 'r', 'g', 'e', 'm', 'q',
-                's', 'e', 'n', 'd', ' ', 'm', 'e', ' ', 'h', 'o', 'm', 'e',
-        }
-
-        pkt := NewPublishPacket()
-        n, err := pkt.Decode(pktBytes)
-
-        assert.NoError(t, err)
-        assert.Equal(t, len(pktBytes), n)
-        assert.Equal(t, uint16(0), pkt.PacketID)
-        assert.Equal(t, "surgemq", pkt.Message.Topic)
-        assert.Equal(t, []byte("send me home"), pkt.Message.Payload)
-        assert.Equal(t, uint8(0), pkt.Message.QOS)
-        assert.Equal(t, false, pkt.Message.Retain)
-        assert.Equal(t, false, pkt.Dup)
-}
-
-func TestPublishPacketDecodeError1(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH << 4),
-                2, // <- too much
-        }
-
-        pkt := NewPublishPacket()
-        _, err := pkt.Decode(pktBytes)
-
-        assert.Error(t, err)
-}
-
-func TestPublishPacketDecodeError2(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH<<4) | 6, // <- wrong qos
-                0,
-        }
-
-        pkt := NewPublishPacket()
-        _, err := pkt.Decode(pktBytes)
-
-        assert.Error(t, err)
-}
-
 func TestPublishPacketDecodeError3(t *testing.T) {
         pktBytes := []byte{
                 byte(PUBLISH << 4),
@@ -444,125 +437,100 @@ func TestPublishPacketDecodeError5(t *testing.T) {
         _, err := pkt.Decode(pktBytes)
 
         assert.Error(t, err)
+}*/
+
+TEST(PublishTest, Encode1) {
+  unsigned char pkt[25] = {
+      LWMQTT_PUBLISH_PACKET << 4 | 11,
+      23,
+      0,  // topic name MSB
+      7,  // topic name LSB
+      's',
+      'u',
+      'r',
+      'g',
+      'e',
+      'm',
+      'q',
+      0,  // packet ID MSB
+      7,  // packet ID LSB
+      's',
+      'e',
+      'n',
+      'd',
+      ' ',
+      'm',
+      'e',
+      ' ',
+      'h',
+      'o',
+      'm',
+      'e',
+  };
+
+  unsigned char buf[25];
+
+  lwmqtt_string_t topic = lwmqtt_default_string;
+  topic.c_string = (char*)"surgemq";
+
+  unsigned char* payload = (unsigned char*)"send me home";
+
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 25, &len, true, LWMQTT_QOS1, true, 7, topic, payload, 12);
+
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-func TestPublishPacketDecodeError6(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH<<4) | 2,
-                2,
-                0, // topic name MSB
-                1, // topic name LSB
-                't',
-                0,
-                0, // <- zero packet id
-        }
+TEST(PublishTest, Encode2) {
+  unsigned char pkt[23] = {
+      LWMQTT_PUBLISH_PACKET << 4,
+      21,
+      0,  // topic name MSB
+      7,  // topic name LSB
+      's',
+      'u',
+      'r',
+      'g',
+      'e',
+      'm',
+      'q',
+      's',
+      'e',
+      'n',
+      'd',
+      ' ',
+      'm',
+      'e',
+      ' ',
+      'h',
+      'o',
+      'm',
+      'e',
+  };
 
-        pkt := NewPublishPacket()
-        _, err := pkt.Decode(pktBytes)
+  unsigned char buf[23];
 
-        assert.Error(t, err)
+  lwmqtt_string_t topic = lwmqtt_default_string;
+  topic.c_string = (char*)"surgemq";
+  unsigned char* payload = (unsigned char*)"send me home";
+
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 23, &len, false, LWMQTT_QOS0, false, 0, topic, payload, 12);
+
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-func TestPublishPacketEncode1(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH<<4) | 11,
-                23,
-                0, // topic name MSB
-                7, // topic name LSB
-                's', 'u', 'r', 'g', 'e', 'm', 'q',
-                0, // packet ID MSB
-                7, // packet ID LSB
-                's', 'e', 'n', 'd', ' ', 'm', 'e', ' ', 'h', 'o', 'm', 'e',
-        }
+TEST(PublishTest, EncodeError1) {
+  unsigned char buf[2];  // <- too small buffer
 
-        pkt := NewPublishPacket()
-        pkt.Message.Topic = "surgemq"
-        pkt.Message.QOS = QOSAtLeastOnce
-        pkt.Message.Retain = true
-        pkt.Dup = true
-        pkt.PacketID = 7
-        pkt.Message.Payload = []byte("send me home")
+  lwmqtt_string_t topic = lwmqtt_default_string;
+  topic.c_string = (char*)"surgemq";
+  unsigned char* payload = (unsigned char*)"send me home";
 
-        dst := make([]byte, pkt.Len())
-        n, err := pkt.Encode(dst)
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 2, &len, false, LWMQTT_QOS0, false, 0, topic, payload, 12);
 
-        assert.NoError(t, err)
-        assert.Equal(t, len(pktBytes), n)
-        assert.Equal(t, pktBytes, dst[:n])
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
 }
-
-func TestPublishPacketEncode2(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH << 4),
-                21,
-                0, // topic name MSB
-                7, // topic name LSB
-                's', 'u', 'r', 'g', 'e', 'm', 'q',
-                's', 'e', 'n', 'd', ' ', 'm', 'e', ' ', 'h', 'o', 'm', 'e',
-        }
-
-        pkt := NewPublishPacket()
-        pkt.Message.Topic = "surgemq"
-        pkt.Message.Payload = []byte("send me home")
-
-        dst := make([]byte, pkt.Len())
-        n, err := pkt.Encode(dst)
-
-        assert.NoError(t, err)
-        assert.Equal(t, len(pktBytes), n)
-        assert.Equal(t, pktBytes, dst[:n])
-}
-
-func TestPublishPacketEncodeError1(t *testing.T) {
-        pkt := NewPublishPacket()
-        pkt.Message.Topic = "" // <- empty topic
-
-        dst := make([]byte, pkt.Len())
-        _, err := pkt.Encode(dst)
-
-        assert.Error(t, err)
-}
-
-func TestPublishPacketEncodeError2(t *testing.T) {
-        pkt := NewPublishPacket()
-        pkt.Message.Topic = "t"
-        pkt.Message.QOS = 3 // <- wrong qos
-
-        dst := make([]byte, pkt.Len())
-        _, err := pkt.Encode(dst)
-
-        assert.Error(t, err)
-}
-
-func TestPublishPacketEncodeError3(t *testing.T) {
-        pkt := NewPublishPacket()
-        pkt.Message.Topic = "t"
-
-        dst := make([]byte, 1) // <- too small
-        _, err := pkt.Encode(dst)
-
-        assert.Error(t, err)
-}
-
-func TestPublishPacketEncodeError4(t *testing.T) {
-        pkt := NewPublishPacket()
-        pkt.Message.Topic = string(make([]byte, 65536)) // <- too big
-
-        dst := make([]byte, pkt.Len())
-        _, err := pkt.Encode(dst)
-
-        assert.Error(t, err)
-}
-
-func TestPublishPacketEncodeError5(t *testing.T) {
-        pkt := NewPublishPacket()
-        pkt.Message.Topic = "test"
-        pkt.Message.QOS = 1
-        pkt.PacketID = 0 // <- zero packet id
-
-        dst := make([]byte, pkt.Len())
-        _, err := pkt.Encode(dst)
-
-        assert.Error(t, err)
-}
- */

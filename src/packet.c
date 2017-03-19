@@ -331,6 +331,11 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   int rc = lwmqtt_decode_remaining_length(ptr, &rem_len);
   ptr += rc;
 
+  // check lengths
+  if (buf_len < rem_len + 2) {
+    return LWMQTT_LENGTH_MISMATCH;
+  }
+
   // calculate end pointer
   unsigned char *end_ptr = ptr + rem_len;
 
@@ -342,6 +347,8 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   // read packet id if qos is at least 1
   if (*qos > 0) {
     *packet_id = (unsigned short)lwmqtt_read_int(&ptr);
+  } else {
+    *packet_id = 0;
   }
 
   // set payload
