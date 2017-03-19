@@ -13,9 +13,7 @@ set(SOURCE_FILES
         src/helpers.c
         src/helpers.h
         src/packet.c
-        src/packet.h
-        src/unsubscribe.c
-        src/unsubscribe.h)
+        src/packet.h)
 
 add_library(lwmqtt ${SOURCE_FILES})
 

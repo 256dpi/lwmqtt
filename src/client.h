@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 
+#include "helpers.h"
 #include "packet.h"
-#include "string.h"
 
 typedef struct {
   lwmqtt_qos_t qos;

@@ -628,61 +628,67 @@ TEST(SubscribeTest, EncodeError1) {
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
 }
 
-/*
-func TestUnsubscribePacketEncode(t *testing.T) {
-        pktBytes := []byte{
-                byte(UNSUBSCRIBE<<4) | 2,
-                33,
-                0, // packet ID MSB
-                7, // packet ID LSB
-                0, // topic name MSB
-                7, // topic name LSB
-                's', 'u', 'r', 'g', 'e', 'm', 'q',
-                0, // topic name MSB
-                8, // topic name LSB
-                '/', 'a', '/', 'b', '/', '#', '/', 'c',
-                0,  // topic name MSB
-                10, // topic name LSB
-                '/', 'a', '/', 'b', '/', '#', '/', 'c', 'd', 'd',
-        }
+TEST(UnsubscribeTest, Encode1) {
+  unsigned char pkt[35] = {
+      LWMQTT_UNSUBSCRIBE_PACKET << 4 | 2,
+      33,
+      0,  // packet ID MSB
+      7,  // packet ID LSB
+      0,  // topic name MSB
+      7,  // topic name LSB
+      's',
+      'u',
+      'r',
+      'g',
+      'e',
+      'm',
+      'q',
+      0,  // topic name MSB
+      8,  // topic name LSB
+      '/',
+      'a',
+      '/',
+      'b',
+      '/',
+      '#',
+      '/',
+      'c',
+      0,   // topic name MSB
+      10,  // topic name LSB
+      '/',
+      'a',
+      '/',
+      'b',
+      '/',
+      '#',
+      '/',
+      'c',
+      'd',
+      'd',
+  };
 
-        pkt := NewUnsubscribePacket()
-        pkt.PacketID = 7
-        pkt.Topics = []string{
-                "surgemq",
-                "/a/b/#/c",
-                "/a/b/#/cdd",
-        }
+  unsigned char buf[38];
 
-        dst := make([]byte, 100)
-        n, err := pkt.Encode(dst)
+  lwmqtt_string_t topic_filters[3] = {lwmqtt_default_string, lwmqtt_default_string, lwmqtt_default_string};
+  topic_filters[0].c_string = (char*)"surgemq";
+  topic_filters[1].c_string = (char*)"/a/b/#/c";
+  topic_filters[2].c_string = (char*)"/a/b/#/cdd";
 
-        assert.NoError(t, err)
-        assert.Equal(t, len(pktBytes), n)
-        assert.Equal(t, pktBytes, dst[:n])
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 38, &len, 7, 3, topic_filters);
+
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-func TestUnsubscribePacketEncodeError1(t *testing.T) {
-        pkt := NewUnsubscribePacket()
-        pkt.PacketID = 7
-        pkt.Topics = []string{"surgemq"}
+TEST(UnsubscribeTest, EncodeError1) {
+  unsigned char buf[2];  // <- too small buffer
 
-        dst := make([]byte, 1) // <- too small
-        n, err := pkt.Encode(dst)
+  lwmqtt_string_t topic_filters[1] = {lwmqtt_default_string};
+  topic_filters[0].c_string = (char*)"surgemq";
 
-        assert.Error(t, err)
-        assert.Equal(t, 0, n)
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 2, &len, 7, 1, topic_filters);
+
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
 }
-
-
-func TestUnsubscribePacketEncodeError3(t *testing.T) {
-        pkt := NewUnsubscribePacket()
-        pkt.PacketID = 0 // <- zero packet id
-
-        dst := make([]byte, pkt.Len())
-        n, err := pkt.Encode(dst)
-
-        assert.Error(t, err)
-        assert.Equal(t, 0, n)
-}
- */

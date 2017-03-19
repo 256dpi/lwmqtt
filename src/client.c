@@ -1,5 +1,4 @@
 #include "client.h"
-#include "unsubscribe.h"
 
 static int lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packet_id = (c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1;
