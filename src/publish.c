@@ -40,22 +40,16 @@ int lwmqtt_decode_publish(bool *dup, int *qos, bool *retained, unsigned short *p
   return rc;
 }
 
-static int lwmqtt_encode_publish_length(int qos, lwmqtt_string_t topicName, int payload_len) {
-  int len = 0;
-
-  len += 2 + lwmqtt_strlen(topicName) + payload_len;
-  if (qos > 0) {
-    len += 2;
-  }  // packet id
-
-  return len;
-}
-
 int lwmqtt_encode_publish(unsigned char *buf, int buf_len, unsigned char dup, int qos, unsigned char retained,
                           unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload, int payload_len) {
   unsigned char *ptr = buf;
 
-  int rem_len = lwmqtt_encode_publish_length(qos, topic, payload_len);
+  int rem_len = 0;
+
+  rem_len += 2 + lwmqtt_strlen(topic) + payload_len;
+  if (qos > 0) {
+    rem_len += 2;
+  }  // packet id
 
   if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT_ERROR;
