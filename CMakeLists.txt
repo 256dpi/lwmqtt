@@ -10,8 +10,6 @@ include_directories(lib/gtest/googletest/include)
 set(SOURCE_FILES
         src/client.c
         src/client.h
-        src/connect.c
-        src/connect.h
         src/helpers.c
         src/helpers.h
         src/identified.c
@@ -39,7 +37,7 @@ add_executable(example ${EXAMPLE_FILES})
 target_link_libraries(example lwmqtt)
 
 set(TEST_FILES
-        tests/connect.cpp
+        tests/packet.cpp
         tests/macros.h
         tests/tests.cpp)
 
