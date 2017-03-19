@@ -17,7 +17,7 @@ typedef enum {
   LWMQTT_LENGTH_MISMATCH = -4
 } lwmqtt_err_t;
 
-typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
+typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2 } lwmqtt_qos_t;
 
 typedef enum {
   LWMQTT_CONNECT_PACKET = 1,
@@ -172,5 +172,34 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
 lwmqtt_err_t lwmqtt_encode_publish(unsigned char *buf, int buf_len, int *len, bool dup, lwmqtt_qos_t qos, bool retained,
                                    unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload,
                                    int payload_len);
+
+/**
+  * Encodes the supplied subscribe data into the supplied buffer, ready for sending
+  *
+  * @param buf the buffer into which the packet will be encoded
+  * @param buf_len the length in bytes of the supplied buffer
+  * @param dup integer - the MQTT dup flag
+  * @param packet_id integer - the MQTT packet identifier
+  * @param count - number of members in the topicFilters and reqQos arrays
+  * @param topic_filters - array of topic filter names
+  * @param qos_levels - array of requested QoS
+  * @return the length of the encoded data.  <= 0 indicates error
+  */
+lwmqtt_err_t lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, int *len, unsigned short packet_id, int count,
+                                     lwmqtt_string_t *topic_filters, lwmqtt_qos_t *qos_levels);
+
+/**
+  * Decodes the supplied (wire) buffer into suback data
+  *
+  * @param packet_id returned integer - the MQTT packet identifier
+  * @param max_count - the maximum number of members allowed in the grantedQoSs array
+  * @param count returned integer - number of members in the grantedQoSs array
+  * @param granted_qos_levels returned array of integers - the granted qualities of service
+  * @param buf the raw buffer data, of the correct length determined by the remaining length field
+  * @param buf_len the length in bytes of the data in the supplied buffer
+  * @return error code.  1 is success, 0 is failure
+  */
+lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int *count,
+                                  lwmqtt_qos_t *granted_qos_levels, unsigned char *buf, int buf_len);
 
 #endif  // LWMQTT_PACKET_H

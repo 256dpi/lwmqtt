@@ -9,7 +9,7 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len
   int rem_len = 2;
 
   // add all topics
-  for (int i = 0; i < count; ++i) {
+  for (int i = 0; i < count; i++) {
     rem_len += 2 + lwmqtt_strlen(topic_filters[i]);
   }
 
@@ -31,7 +31,7 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len
   lwmqtt_write_int(&ptr, packet_id);
 
   // write topics
-  for (int i = 0; i < count; ++i) {
+  for (int i = 0; i < count; i++) {
     lwmqtt_write_string(&ptr, topic_filters[i]);
   }
 

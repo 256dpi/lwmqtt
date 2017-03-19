@@ -1,5 +1,4 @@
 #include "client.h"
-#include "subscribe.h"
 #include "unsubscribe.h"
 
 static int lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
@@ -309,7 +308,6 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_
 
 int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos) {
   int rc = LWMQTT_FAILURE;
-  int len = 0;
   lwmqtt_string_t topic = lwmqtt_default_string;
   topic.c_string = (char *)topic_filter;
 
@@ -319,10 +317,11 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
+  int len;
   lwmqtt_err_t err =
       lwmqtt_encode_subscribe(c->write_buf, c->write_buf_size, &len, lwmqtt_get_next_packet_id(c), 1, &topic, &qos);
   if (err != LWMQTT_SUCCESS) {
-    return err;
+    return LWMQTT_FAILURE;
   }
 
   if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the subscribe src
@@ -331,7 +330,8 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
 
   if (lwmqtt_cycle_until(c, LWMQTT_SUBACK_PACKET) == LWMQTT_SUBACK_PACKET)  // wait for suback
   {
-    int count = 0, grantedQoS = -1;
+    int count = 0;
+    lwmqtt_qos_t grantedQoS;
     unsigned short packet_id;
     if (lwmqtt_decode_suback(&packet_id, 1, &count, &grantedQoS, c->read_buf, c->read_buf_size) == LWMQTT_SUCCESS) {
       rc = grantedQoS;  // 0, 1, 2 or 0x80
@@ -341,6 +341,7 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
       rc = 0;
     }
   } else {
+    printf("ok\n");
     rc = LWMQTT_FAILURE;
   }
 

@@ -376,24 +376,6 @@ TEST(PublishTest, DecodeError1) {
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
 
-TEST(PublishTest, DecodeError2) {
-  unsigned char pkt[2] = {
-      LWMQTT_PUBLISH_PACKET << 4,
-      2,  // <-- too much
-  };
-
-  bool dup;
-  lwmqtt_qos_t qos;
-  bool retained;
-  unsigned short packet_id;
-  lwmqtt_string_t topic;
-  unsigned char* payload;
-  int payload_len;
-  lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 2);
-
-  EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
-}
-
 /*
 func TestPublishPacketDecodeError3(t *testing.T) {
         pktBytes := []byte{
@@ -534,3 +516,173 @@ TEST(PublishTest, EncodeError1) {
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
 }
+
+TEST(SubackTest, Decode1) {
+  unsigned char pkt[8] = {
+      LWMQTT_SUBACK_PACKET << 4,
+      4,
+      0,  // packet ID MSB
+      7,  // packet ID LSB
+      0,  // return code 1
+      1,  // return code 2
+  };
+
+  unsigned short packet_id;
+  int count;
+  lwmqtt_qos_t granted_qos_levels[2];
+  lwmqtt_err_t err = lwmqtt_decode_suback(&packet_id, 2, &count, granted_qos_levels, pkt, 8);
+
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_EQ(packet_id, 7);
+  EXPECT_EQ(count, 2);
+  EXPECT_EQ(granted_qos_levels[0], 0);
+  EXPECT_EQ(granted_qos_levels[1], 1);
+}
+
+TEST(SubackTest, DecodeError1) {
+  unsigned char pkt[5] = {
+      LWMQTT_SUBACK_PACKET << 4,
+      1,  // <- wrong remaining length
+      0,  // packet ID MSB
+      7,  // packet ID LSB
+      0,  // return code 1
+  };
+
+  lwmqtt_packet_t type;
+  bool dup;
+  unsigned short packet_id;
+  lwmqtt_err_t err = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 5);
+
+  EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
+}
+
+TEST(SubscribeTest, Encode1) {
+  unsigned char pkt[38] = {
+      LWMQTT_SUBSCRIBE_PACKET << 4 | 2,
+      36,
+      0,  // packet ID MSB
+      7,  // packet ID LSB
+      0,  // topic name MSB
+      7,  // topic name LSB
+      's',
+      'u',
+      'r',
+      'g',
+      'e',
+      'm',
+      'q',
+      0,  // QOS
+      0,  // topic name MSB
+      8,  // topic name LSB
+      '/',
+      'a',
+      '/',
+      'b',
+      '/',
+      '#',
+      '/',
+      'c',
+      1,   // QOS
+      0,   // topic name MSB
+      10,  // topic name LSB
+      '/',
+      'a',
+      '/',
+      'b',
+      '/',
+      '#',
+      '/',
+      'c',
+      'd',
+      'd',
+      2,  // QOS
+  };
+
+  unsigned char buf[38];
+
+  lwmqtt_string_t topic_filters[3] = {lwmqtt_default_string, lwmqtt_default_string, lwmqtt_default_string};
+  topic_filters[0].c_string = (char*)"surgemq";
+  topic_filters[1].c_string = (char*)"/a/b/#/c";
+  topic_filters[2].c_string = (char*)"/a/b/#/cdd";
+
+  lwmqtt_qos_t qos_levels[3] = {LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2};
+
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 38, &len, 7, 3, topic_filters, qos_levels);
+
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(pkt, buf, len);
+}
+
+TEST(SubscribeTest, EncodeError1) {
+  unsigned char buf[2];  // <- too small buffer
+
+  lwmqtt_string_t topic_filters[1] = {lwmqtt_default_string};
+  topic_filters[0].c_string = (char*)"surgemq";
+
+  lwmqtt_qos_t qos_levels[1] = {LWMQTT_QOS0};
+
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 2, &len, 7, 1, topic_filters, qos_levels);
+
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+}
+
+/*
+func TestUnsubscribePacketEncode(t *testing.T) {
+        pktBytes := []byte{
+                byte(UNSUBSCRIBE<<4) | 2,
+                33,
+                0, // packet ID MSB
+                7, // packet ID LSB
+                0, // topic name MSB
+                7, // topic name LSB
+                's', 'u', 'r', 'g', 'e', 'm', 'q',
+                0, // topic name MSB
+                8, // topic name LSB
+                '/', 'a', '/', 'b', '/', '#', '/', 'c',
+                0,  // topic name MSB
+                10, // topic name LSB
+                '/', 'a', '/', 'b', '/', '#', '/', 'c', 'd', 'd',
+        }
+
+        pkt := NewUnsubscribePacket()
+        pkt.PacketID = 7
+        pkt.Topics = []string{
+                "surgemq",
+                "/a/b/#/c",
+                "/a/b/#/cdd",
+        }
+
+        dst := make([]byte, 100)
+        n, err := pkt.Encode(dst)
+
+        assert.NoError(t, err)
+        assert.Equal(t, len(pktBytes), n)
+        assert.Equal(t, pktBytes, dst[:n])
+}
+
+func TestUnsubscribePacketEncodeError1(t *testing.T) {
+        pkt := NewUnsubscribePacket()
+        pkt.PacketID = 7
+        pkt.Topics = []string{"surgemq"}
+
+        dst := make([]byte, 1) // <- too small
+        n, err := pkt.Encode(dst)
+
+        assert.Error(t, err)
+        assert.Equal(t, 0, n)
+}
+
+
+func TestUnsubscribePacketEncodeError3(t *testing.T) {
+        pkt := NewUnsubscribePacket()
+        pkt.PacketID = 0 // <- zero packet id
+
+        dst := make([]byte, pkt.Len())
+        n, err := pkt.Encode(dst)
+
+        assert.Error(t, err)
+        assert.Equal(t, 0, n)
+}
+ */
