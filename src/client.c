@@ -164,14 +164,10 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       lwmqtt_string_t topicName;
       lwmqtt_message_t msg;
 
-      int intQoS;
-
-      if (lwmqtt_decode_publish(&msg.dup, &intQoS, &msg.retained, &msg.id, &topicName, (unsigned char **)&msg.payload,
-                                &msg.payload_len, c->read_buf, c->read_buf_size) != 1) {
+      if (lwmqtt_decode_publish(&msg.dup, &msg.qos, &msg.retained, &msg.id, &topicName, (unsigned char **)&msg.payload,
+                                &msg.payload_len, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS) {
         return LWMQTT_FAILURE;
       }
-
-      msg.qos = (lwmqtt_qos_t)intQoS;
 
       if (c->callback != NULL) {
         c->callback(c, &topicName, &msg);
@@ -401,10 +397,11 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
     message->id = lwmqtt_get_next_packet_id(c);
   }
 
-  len = lwmqtt_encode_publish(c->write_buf, c->write_buf_size, 0, message->qos, (char)(message->retained ? 1 : 0),
-                              message->id, topic, (unsigned char *)message->payload, message->payload_len);
-  if (len <= 0) {
-    return rc;
+  int err =
+      lwmqtt_encode_publish(c->write_buf, c->write_buf_size, &len, 0, message->qos, (char)(message->retained ? 1 : 0),
+                            message->id, topic, (unsigned char *)message->payload, message->payload_len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the subscribe src
