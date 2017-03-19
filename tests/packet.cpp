@@ -134,7 +134,7 @@ TEST(ConnectTest, EncodeError1) {
   EXPECT_EQ(r, LWMQTT_BUFFER_TOO_SHORT_ERROR);
 }
 
-TEST(ConnackTest, decode1) {
+TEST(ConnackTest, Decode1) {
   unsigned char pkt[4] = {
       LWMQTT_CONNACK_PACKET << 4, 2,
       0,  // session not present
@@ -150,7 +150,7 @@ TEST(ConnackTest, decode1) {
   EXPECT_EQ(connack, 0);
 }
 
-TEST(ConnackTest, decodeError1) {
+TEST(ConnackTest, DecodeError1) {
   unsigned char pkt[4] = {
       LWMQTT_CONNACK_PACKET << 4,
       3,  // <-- wrong size
@@ -165,7 +165,7 @@ TEST(ConnackTest, decodeError1) {
   EXPECT_EQ(r, LWMQTT_LENGTH_MISMATCH);
 }
 
-TEST(ConnackTest, decodeError2) {
+TEST(ConnackTest, DecodeError2) {
   unsigned char pkt[3] = {
       LWMQTT_CONNACK_PACKET << 4, 3,
       0,  // session not present
@@ -189,4 +189,79 @@ TEST(ZeroTest, Encode1) {
 
   EXPECT_EQ(r, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
+}
+
+TEST(AckTest, Decode1) {
+  unsigned char pkt[4] = {
+      LWMQTT_PUBACK_PACKET << 4, 2,
+      0,  // packet ID MSB
+      7,  // packet ID LSB
+  };
+
+  lwmqtt_packet_t type;
+  bool dup;
+  unsigned short packet_id;
+  lwmqtt_err_t r = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 4);
+
+  EXPECT_EQ(r, LWMQTT_SUCCESS);
+  EXPECT_EQ(type, LWMQTT_PUBACK_PACKET);
+  EXPECT_EQ(dup, false);
+  EXPECT_EQ(packet_id, 7);
+}
+
+TEST(AckTest, DecodeError1) {
+  unsigned char pkt[4] = {
+      LWMQTT_PUBACK_PACKET << 4,
+      1,  // <-- wrong remaining length
+      0,  // packet ID MSB
+      7,  // packet ID LSB
+  };
+
+  lwmqtt_packet_t type;
+  bool dup;
+  unsigned short packet_id;
+  lwmqtt_err_t r = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 4);
+
+  EXPECT_EQ(r, LWMQTT_LENGTH_MISMATCH);
+}
+
+TEST(AckTest, DecodeError2) {
+  unsigned char pkt[3] = {
+      LWMQTT_PUBACK_PACKET << 4,
+      1,  // <-- wrong remaining length
+      0,  // packet ID MSB
+          //  <- insufficient bytes
+  };
+
+  lwmqtt_packet_t type;
+  bool dup;
+  unsigned short packet_id;
+  lwmqtt_err_t r = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 4);
+
+  EXPECT_EQ(r, LWMQTT_LENGTH_MISMATCH);
+}
+
+TEST(AckTest, Encode1) {
+  unsigned char pkt[4] = {
+      LWMQTT_PUBACK_PACKET << 4, 2,
+      0,  // packet ID MSB
+      7,  // packet ID LSB
+  };
+
+  unsigned char buf[4];
+
+  int len;
+  lwmqtt_err_t r = lwmqtt_encode_ack(buf, 4, &len, LWMQTT_PUBACK_PACKET, 0, 7);
+
+  EXPECT_EQ(r, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
+}
+
+TEST(AckTest, EncodeError1) {
+  unsigned char buf[2];  // <- too small buffer
+
+  int len;
+  lwmqtt_err_t r = lwmqtt_encode_ack(buf, 2, &len, LWMQTT_PUBACK_PACKET, 0, 7);
+
+  EXPECT_EQ(r, LWMQTT_BUFFER_TOO_SHORT_ERROR);
 }
