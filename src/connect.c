@@ -75,13 +75,13 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
 
   // prepare flags
   lwmqtt_connect_flags_t flags = {0};
-  flags.bits.clean_session = options->clean_session;
+  flags.bits.clean_session = options->clean_session ? 1 : 0;
 
   // set will flags if present
   if (will != NULL) {
     flags.bits.will = 1;
     flags.bits.will_qos = (unsigned int)will->qos;
-    flags.bits.will_retain = will->retained;
+    flags.bits.will_retain = will->retained ? 1 : 0;
   }
 
   // set username flag if present

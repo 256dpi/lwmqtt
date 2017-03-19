@@ -9,8 +9,8 @@
 
 typedef struct {
   lwmqtt_qos_t qos;
-  unsigned char retained;
-  unsigned char dup;
+  bool retained;
+  bool dup;
   unsigned short id;
   void *payload;
   int payload_len;

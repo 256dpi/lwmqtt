@@ -5,9 +5,8 @@
 #include "packet.h"
 #include "publish.h"
 
-int lwmqtt_decode_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packet_id,
-                          lwmqtt_string_t *topic, unsigned char **payload, int *payload_len, unsigned char *buf,
-                          int buf_len) {
+int lwmqtt_decode_publish(bool *dup, int *qos, bool *retained, unsigned short *packet_id, lwmqtt_string_t *topic,
+                          unsigned char **payload, int *payload_len, unsigned char *buf, int buf_len) {
   lwmqtt_header_t header = {0};
   unsigned char *cur_ptr = buf;
   int rc = 0;
@@ -18,9 +17,9 @@ int lwmqtt_decode_publish(unsigned char *dup, int *qos, unsigned char *retained,
     return rc;
   }
 
-  *dup = (unsigned char)header.bits.dup;
+  *dup = header.bits.dup == 1;
   *qos = header.bits.qos;
-  *retained = (unsigned char)header.bits.retain;
+  *retained = header.bits.retain == 1;
 
   cur_ptr += (rc = lwmqtt_decode_remaining_length(cur_ptr, &len));  // read remaining length
   unsigned char *end_ptr = cur_ptr + len;

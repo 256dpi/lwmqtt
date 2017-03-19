@@ -14,17 +14,17 @@ typedef struct {
   lwmqtt_string_t topic;
   void *payload;
   int payload_len;
-  unsigned char retained;
+  bool retained;
   lwmqtt_qos_t qos;
 } lwmqtt_will_t;
 
 #define lwmqtt_default_will \
-  { {NULL, {0, NULL}}, NULL, 0, 0, LWMQTT_QOS0 }
+  { lwmqtt_default_string, NULL, 0, false, LWMQTT_QOS0 }
 
 typedef struct {
   lwmqtt_string_t client_id;
   unsigned short keep_alive;
-  unsigned char clean_session;
+  bool clean_session;
   lwmqtt_string_t username;
   lwmqtt_string_t password;
 } lwmqtt_options_t;

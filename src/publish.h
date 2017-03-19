@@ -1,6 +1,8 @@
 #ifndef LWMQTT_PUBLISH_H
 #define LWMQTT_PUBLISH_H
 
+#include <stdbool.h>
+
 #include "string.h"
 
 /**
@@ -34,9 +36,8 @@ int lwmqtt_encode_publish(unsigned char *buf, int buf_len, unsigned char dup, in
   * @param buf_len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success
   */
-int lwmqtt_decode_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packet_id,
-                          lwmqtt_string_t *topic, unsigned char **payload, int *payload_len, unsigned char *buf,
-                          int buf_len);
+int lwmqtt_decode_publish(bool *dup, int *qos, bool *retained, unsigned short *packet_id, lwmqtt_string_t *topic,
+                          unsigned char **payload, int *payload_len, unsigned char *buf, int buf_len);
 
 /**
   * Encodes a puback packet into the supplied buffer.

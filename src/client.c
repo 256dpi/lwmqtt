@@ -401,8 +401,8 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
     message->id = lwmqtt_get_next_packet_id(c);
   }
 
-  len = lwmqtt_encode_publish(c->write_buf, c->write_buf_size, 0, message->qos, message->retained, message->id, topic,
-                              (unsigned char *)message->payload, message->payload_len);
+  len = lwmqtt_encode_publish(c->write_buf, c->write_buf_size, 0, message->qos, (char)(message->retained ? 1 : 0),
+                              message->id, topic, (unsigned char *)message->payload, message->payload_len);
   if (len <= 0) {
     return rc;
   }

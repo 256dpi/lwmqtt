@@ -77,11 +77,11 @@ TEST(ConnectTest, Encode1) {
   lwmqtt_will_t will = lwmqtt_default_will;
   will.topic.c_string = (char*)"will";
   will.payload = (void*)"send me home";
-  will.payload_len = strlen((const char*)will.payload);
+  will.payload_len = (int)strlen((const char*)will.payload);
   will.qos = LWMQTT_QOS1;
 
   lwmqtt_options_t opts = lwmqtt_default_options;
-  opts.clean_session = 0;
+  opts.clean_session = false;
   opts.keep_alive = 10;
   opts.client_id.c_string = (char*)"surgemq";
   opts.username.c_string = (char*)"surgemq";
