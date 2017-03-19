@@ -5,30 +5,38 @@
 #include "packet.h"
 
 int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
-  int rc = 0;
+  // init len counter
+  int len = 0;
 
+  // encode variadic number
   do {
+    // calculate current digit
     unsigned char d = (unsigned char)(rem_len % 128);
+
+    // change remaining length
     rem_len /= 128;
+
     // if there are more digits to encode, set the top bit of this digit
-    if (rem_len > 0) d |= 0x80;
-    buf[rc++] = d;
+    if (rem_len > 0) {
+      d |= 0x80;
+    }
+
+    // set digit
+    buf[len++] = d;
   } while (rem_len > 0);
 
-  return rc;
+  return len;
 }
 
 int lwmqtt_total_header_length(int rem_len) {
-  int len = 1;  // header byte
-
   if (rem_len < 128) {
-    return len + 1;
+    return 1 + 1;
   } else if (rem_len < 16384) {
-    return len + 2;
+    return 1 + 2;
   } else if (rem_len < 2097151) {
-    return len + 3;
+    return 1 + 3;
   } else {
-    return len + 4;
+    return 1 + 4;
   }
 }
 
