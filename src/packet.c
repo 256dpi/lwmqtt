@@ -1,7 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "helpers.h"
 #include "packet.h"
 
 int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {

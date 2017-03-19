@@ -1,7 +1,7 @@
 #ifndef LWMQTT_UNSUBSCRIBE_H
 #define LWMQTT_UNSUBSCRIBE_H
 
-#include "string.h"
+#include "helpers.h"
 
 /**
   * Encodes the supplied unsubscribe data into the supplied buffer, ready for sending

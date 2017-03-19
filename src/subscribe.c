@@ -1,5 +1,4 @@
 #include "subscribe.h"
-#include "helpers.h"
 #include "packet.h"
 
 int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id, int count,

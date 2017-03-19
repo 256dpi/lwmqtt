@@ -14,8 +14,6 @@ set(SOURCE_FILES
         src/helpers.h
         src/packet.c
         src/packet.h
-        src/string.c
-        src/string.h
         src/subscribe.c
         src/subscribe.h
         src/unsubscribe.c

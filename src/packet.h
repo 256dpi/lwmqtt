@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include "string.h"
+#include "helpers.h"
 
 typedef enum {
   LWMQTT_SUCCESS = 0,

@@ -1,7 +1,7 @@
 #ifndef LWMQTT_SUBSCRIBE_H
 #define LWMQTT_SUBSCRIBE_H
 
-#include "string.h"
+#include "helpers.h"
 
 /**
   * Encodes the supplied subscribe data into the supplied buffer, ready for sending
