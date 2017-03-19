@@ -179,25 +179,13 @@ TEST(ConnackTest, decodeError2) {
   EXPECT_EQ(r, LWMQTT_LENGTH_MISMATCH);
 }
 
-TEST(DisconnectTest, Encode1) {
-  unsigned char pkt[2] = {LWMQTT_DISCONNECT_PACKET << 4, 0};
-
-  unsigned char buf[2];
-
-  int len;
-  lwmqtt_err_t r = lwmqtt_encode_disconnect(buf, 2, &len);
-
-  EXPECT_EQ(r, LWMQTT_SUCCESS);
-  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
-}
-
-TEST(PingreqTest, Encode1) {
+TEST(ZeroTest, Encode1) {
   unsigned char pkt[2] = {LWMQTT_PINGREQ_PACKET << 4, 0};
 
   unsigned char buf[2];
 
   int len;
-  lwmqtt_err_t r = lwmqtt_encode_pingreq(buf, 2, &len);
+  lwmqtt_err_t r = lwmqtt_encode_zero(buf, 2, &len, LWMQTT_PINGREQ_PACKET);
 
   EXPECT_EQ(r, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);

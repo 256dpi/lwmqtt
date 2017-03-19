@@ -138,7 +138,7 @@ static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
       c->timer_set(c, c->timer_network_ref, 1000);
 
       int len;
-      lwmqtt_encode_pingreq(c->write_buf, c->write_buf_size, &len);
+      lwmqtt_encode_zero(c->write_buf, c->write_buf_size, &len, LWMQTT_PINGREQ_PACKET);
       if (len > 0 && (rc = lwmqtt_send_packet(c, len)) == LWMQTT_SUCCESS) {  // send the ping src
         c->ping_outstanding = 1;
       }
@@ -437,7 +437,7 @@ int lwmqtt_client_disconnect(lwmqtt_client_t *c) {
 
   // encode disconnect packet
   int len = 0;
-  if (lwmqtt_encode_disconnect(c->write_buf, c->write_buf_size, &len) != LWMQTT_SUCCESS) {
+  if (lwmqtt_encode_zero(c->write_buf, c->write_buf_size, &len, LWMQTT_DISCONNECT_PACKET) != LWMQTT_SUCCESS) {
     return LWMQTT_FAILURE;
   }
 

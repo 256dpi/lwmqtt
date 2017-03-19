@@ -34,7 +34,7 @@ typedef enum {
   LWMQTT_PINGREQ_PACKET,
   LWMQTT_PINGRESP_PACKET,
   LWMQTT_DISCONNECT_PACKET,
-} lwmqtt_packet_type_t;
+} lwmqtt_packet_t;
 
 /**
  * Bitfields for the MQTT header byte.
@@ -126,16 +126,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
   * @param buf_len The length in bytes of the supplied buffer, to avoid overruns.
   * @return Encoded length, or error if 0.
   */
-lwmqtt_err_t lwmqtt_encode_disconnect(unsigned char *buf, int buf_len, int *len);
-
-/**
-  * Encodes a disconnect packet into the supplied buffer, ready for writing to a socket
-  *
-  * @param buf The buffer into which the packet will be encoded.
-  * @param buf_len The length in bytes of the supplied buffer, to avoid overruns.
-  * @return Encoded length, or error if 0.
-  */
-lwmqtt_err_t lwmqtt_encode_pingreq(unsigned char *buf, int buf_len, int *len);
+lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_t packet);
 
 /**
   * Decodes the supplied (wire) buffer into an ack

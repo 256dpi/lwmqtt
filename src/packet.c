@@ -215,7 +215,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, unsigned char packet_type) {
+lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_t packet) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -226,7 +226,7 @@ static lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len
 
   // write header
   lwmqtt_header_t header = {0};
-  header.bits.type = packet_type;
+  header.bits.type = packet;
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
@@ -236,14 +236,6 @@ static lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len
   *len = (int)(ptr - buf);
 
   return LWMQTT_SUCCESS;
-}
-
-lwmqtt_err_t lwmqtt_encode_disconnect(unsigned char *buf, int buf_len, int *len) {
-  return lwmqtt_encode_zero(buf, buf_len, len, LWMQTT_DISCONNECT_PACKET);
-}
-
-lwmqtt_err_t lwmqtt_encode_pingreq(unsigned char *buf, int buf_len, int *len) {
-  return lwmqtt_encode_zero(buf, buf_len, len, LWMQTT_PINGREQ_PACKET);
 }
 
 int lwmqtt_decode_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id, unsigned char *buf,
