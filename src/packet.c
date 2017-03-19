@@ -13,9 +13,6 @@
 
 #include "packet.h"
 
-// TODO: Rename methods?
-
-// TODO: Should also write the header byte.
 int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
   int rc = 0;
 
