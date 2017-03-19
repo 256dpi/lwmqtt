@@ -87,9 +87,11 @@ TEST(ConnectTest, Serialize1) {
   opts.username.c_string = (char*)"surgemq";
   opts.password.c_string = (char*)"verysecret";
 
-  int l = lwmqtt_serialize_connect(buf, 62, &opts, &will);
+  int len;
+  lwmqtt_err_t r = lwmqtt_serialize_connect(buf, 62, &len, &opts, &will);
 
-  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
+  EXPECT_EQ(r, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
 }
 
 TEST(ConnectTest, Serialize2) {
@@ -114,9 +116,11 @@ TEST(ConnectTest, Serialize2) {
 
   lwmqtt_options_t opts = lwmqtt_default_options;
 
-  int l = lwmqtt_serialize_connect(buf, 14, &opts, NULL);
+  int len;
+  lwmqtt_err_t r = lwmqtt_serialize_connect(buf, 14, &len, &opts, NULL);
 
-  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
+  EXPECT_EQ(r, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
 }
 
 TEST(ConnectTest, SerializeError1) {
@@ -124,9 +128,10 @@ TEST(ConnectTest, SerializeError1) {
 
   lwmqtt_options_t opts = lwmqtt_default_options;
 
-  int l = lwmqtt_serialize_connect(buf, 4, &opts, NULL);
+  int len;
+  lwmqtt_err_t r = lwmqtt_serialize_connect(buf, 4, &len, &opts, NULL);
 
-  EXPECT_EQ(l, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+  EXPECT_EQ(r, LWMQTT_BUFFER_TOO_SHORT_ERROR);
 }
 
 TEST(ConnackTest, Deserialize1) {
@@ -138,9 +143,9 @@ TEST(ConnackTest, Deserialize1) {
 
   bool session_present;
   lwmqtt_connack_t connack;
-  int r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 4);
+  lwmqtt_err_t r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 4);
 
-  EXPECT_EQ(r, 1);
+  EXPECT_EQ(r, LWMQTT_SUCCESS);
   EXPECT_EQ(session_present, 0);
   EXPECT_EQ(connack, 0);
 }
@@ -155,9 +160,9 @@ TEST(ConnackTest, DeserializeError1) {
 
   bool session_present;
   lwmqtt_connack_t connack;
-  int r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 4);
+  lwmqtt_err_t r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 4);
 
-  EXPECT_EQ(r, 0);
+  EXPECT_EQ(r, LWMQTT_LENGTH_MISMATCH);
 }
 
 TEST(ConnackTest, DeserializeError2) {
@@ -169,9 +174,9 @@ TEST(ConnackTest, DeserializeError2) {
 
   bool session_present;
   lwmqtt_connack_t connack;
-  int r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 3);
+  lwmqtt_err_t r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 3);
 
-  EXPECT_EQ(r, 0);
+  EXPECT_EQ(r, LWMQTT_LENGTH_MISMATCH);
 }
 
 TEST(DisconnectTest, Serialize1) {
@@ -179,9 +184,11 @@ TEST(DisconnectTest, Serialize1) {
 
   unsigned char buf[2];
 
-  int l = lwmqtt_serialize_disconnect(buf, 2);
+  int len;
+  lwmqtt_err_t r = lwmqtt_serialize_disconnect(buf, 2, &len);
 
-  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
+  EXPECT_EQ(r, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
 }
 
 TEST(PingreqTest, Serialize1) {
@@ -189,7 +196,9 @@ TEST(PingreqTest, Serialize1) {
 
   unsigned char buf[2];
 
-  int l = lwmqtt_serialize_pingreq(buf, 2);
+  int len;
+  lwmqtt_err_t r = lwmqtt_serialize_pingreq(buf, 2, &len);
 
-  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
+  EXPECT_EQ(r, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
 }

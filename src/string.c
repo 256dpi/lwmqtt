@@ -31,7 +31,7 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
   }
 
   // get length of b
-  size_t len = strlen(b);
+  int len = (int)strlen(b);
 
   // otherwise check if length matches
   if (len != a->lp_string.len) {

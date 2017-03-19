@@ -39,7 +39,8 @@ typedef union {
   } bits;
 } lwmqtt_connack_flags_t;
 
-int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options, lwmqtt_will_t *will) {
+lwmqtt_err_t lwmqtt_serialize_connect(unsigned char *buf, int buf_len, int *len, lwmqtt_options_t *options,
+                                      lwmqtt_will_t *will) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -133,11 +134,14 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
     }
   }
 
-  // return written length
-  return (int)(ptr - buf);
+  // set written length
+  *len = (int)(ptr - buf);
+
+  return LWMQTT_SUCCESS;
 }
 
-int lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t *connack_rc, unsigned char *buf, int buf_len) {
+lwmqtt_err_t lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t *connack_rc, unsigned char *buf,
+                                        int buf_len) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -145,19 +149,19 @@ int lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t *connack_
   lwmqtt_header_t header;
   header.byte = lwmqtt_read_char(&ptr);
   if (header.bits.type != LWMQTT_CONNACK_PACKET) {
-    return 0;
+    return LWMQTT_FAILURE;
   }
 
   // read remaining length
   int len;
   int rc = lwmqtt_decode_remaining_length(ptr, &len);
   if (rc == LWMQTT_HEADER_DECODE_ERROR) {
-    return 0;
+    return LWMQTT_HEADER_DECODE_ERROR;
   }
 
   // check lengths
-  if (len != 2 || len + 2 < buf_len) {
-    return 0;
+  if (len != 2 || buf_len < len + 2) {
+    return LWMQTT_LENGTH_MISMATCH;
   }
 
   // advance pointer
@@ -169,10 +173,10 @@ int lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t *connack_
   *session_present = flags.bits.session_present == 1;
   *connack_rc = (lwmqtt_connack_t)lwmqtt_read_char(&ptr);
 
-  return 1;
+  return LWMQTT_SUCCESS;
 }
 
-static int lwmqtt_serialize_zero(unsigned char *buf, int buf_len, unsigned char packet_type) {
+static lwmqtt_err_t lwmqtt_serialize_zero(unsigned char *buf, int buf_len, int *len, unsigned char packet_type) {
   lwmqtt_header_t header = {0};
   unsigned char *ptr = buf;
 
@@ -186,13 +190,15 @@ static int lwmqtt_serialize_zero(unsigned char *buf, int buf_len, unsigned char 
 
   ptr += lwmqtt_encode_remaining_length(ptr, 0);  // write remaining length
 
-  return (int)(ptr - buf);
+  *len = (int)(ptr - buf);
+
+  return LWMQTT_SUCCESS;
 }
 
-int lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len) {
-  return lwmqtt_serialize_zero(buf, buf_len, LWMQTT_DISCONNECT_PACKET);
+lwmqtt_err_t lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len, int *len) {
+  return lwmqtt_serialize_zero(buf, buf_len, len, LWMQTT_DISCONNECT_PACKET);
 }
 
-int lwmqtt_serialize_pingreq(unsigned char *buf, int buf_len) {
-  return lwmqtt_serialize_zero(buf, buf_len, LWMQTT_PINGREQ_PACKET);
+lwmqtt_err_t lwmqtt_serialize_pingreq(unsigned char *buf, int buf_len, int *len) {
+  return lwmqtt_serialize_zero(buf, buf_len, len, LWMQTT_PINGREQ_PACKET);
 }

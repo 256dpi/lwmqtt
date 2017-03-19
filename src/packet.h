@@ -16,8 +16,15 @@
 
 // TODO: Generally rename serialize to encode and deserialize to decode.
 
-// TODO: What to do with those?
-enum { LWMQTT_BUFFER_TOO_SHORT_ERROR = -2, LWMQTT_HEADER_DECODE_ERROR = -1 };
+// TODO: Err should be returned by all functions.
+
+typedef enum {
+  LWMQTT_SUCCESS = 0,
+  LWMQTT_FAILURE = -1,
+  LWMQTT_BUFFER_TOO_SHORT_ERROR = -2,
+  LWMQTT_HEADER_DECODE_ERROR = -3,
+  LWMQTT_LENGTH_MISMATCH = -4
+} lwmqtt_err_t;
 
 typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
 

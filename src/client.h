@@ -20,17 +20,13 @@
 #include "packet.h"
 #include "string.h"
 
-// all failure return codes must be negative
-typedef enum { LWMQTT_FAILURE = -1, LWMQTT_SUCCESS = 0 } lwmqtt_err_t;
-// TODO: Err should be returned by all functions.
-
 typedef struct {
   lwmqtt_qos_t qos;
   unsigned char retained;
   unsigned char dup;
   unsigned short id;
   void *payload;
-  size_t payload_len;
+  int payload_len;
 } lwmqtt_message_t;
 
 #define lwmqtt_default_message \
@@ -48,7 +44,7 @@ typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_m
 
 struct lwmqtt_client_t {
   unsigned int next_packet_id, command_timeout;
-  size_t write_buf_size, read_buf_size;
+  int write_buf_size, read_buf_size;
   unsigned char *write_buf, *read_buf;
   unsigned int keep_alive_interval;
   char ping_outstanding;
@@ -79,8 +75,8 @@ struct lwmqtt_client_t {
  * @param read_buf
  * @param read_buf_size
  */
-void lwmqtt_client_init(lwmqtt_client_t *c, unsigned int command_timeout, unsigned char *write_buf,
-                        size_t write_buf_size, unsigned char *read_buf, size_t read_buf_size);
+void lwmqtt_client_init(lwmqtt_client_t *c, unsigned int command_timeout, unsigned char *write_buf, int write_buf_size,
+                        unsigned char *read_buf, int read_buf_size);
 
 void lwmqtt_client_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
@@ -91,12 +87,13 @@ void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
 
 /**
  * MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
- *  The nework object must be connected to the network endpoint before calling this
+ *  The network object must be connected to the network endpoint before calling this
  *  @param options - connect options
  *  @param will - the will message
  *  @return success code
  */
-int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will);
+int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
+                          lwmqtt_connack_t *connack);
 
 /**
  * MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
