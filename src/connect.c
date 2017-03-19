@@ -17,6 +17,20 @@
 #include "helpers.h"
 #include "packet.h"
 
+typedef union {
+    unsigned char byte;
+
+    struct {
+        unsigned int _ : 1;
+        unsigned int clean_session : 1;
+        unsigned int will : 1;
+        unsigned int will_qos : 2;
+        unsigned int will_retain : 1;
+        unsigned int password : 1;
+        unsigned int username : 1;
+    } bits;
+} lwmqtt_connect_flags_t;
+
 static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options, lwmqtt_will_t *will) {
   int len = 10;
 
