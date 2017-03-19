@@ -376,51 +376,6 @@ TEST(PublishTest, DecodeError1) {
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
 
-/*
-func TestPublishPacketDecodeError3(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH << 4),
-                0,
-                // <- missing topic stuff
-        }
-
-        pkt := NewPublishPacket()
-        _, err := pkt.Decode(pktBytes)
-
-        assert.Error(t, err)
-}
-
-func TestPublishPacketDecodeError4(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH << 4),
-                2,
-                0, // topic name MSB
-                1, // topic name LSB
-                // <- missing topic string
-        }
-
-        pkt := NewPublishPacket()
-        _, err := pkt.Decode(pktBytes)
-
-        assert.Error(t, err)
-}
-
-func TestPublishPacketDecodeError5(t *testing.T) {
-        pktBytes := []byte{
-                byte(PUBLISH<<4) | 2,
-                2,
-                0, // topic name MSB
-                1, // topic name LSB
-                't',
-                // <- missing packet id
-        }
-
-        pkt := NewPublishPacket()
-        _, err := pkt.Decode(pktBytes)
-
-        assert.Error(t, err)
-}*/
-
 TEST(PublishTest, Encode1) {
   unsigned char pkt[25] = {
       LWMQTT_PUBLISH_PACKET << 4 | 11,
