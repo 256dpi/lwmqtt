@@ -2,7 +2,6 @@
 
 extern "C" {
 #include "../src/client.h"
-#include "../src/connect.h"
 #include "../src/packet.h"
 }
 
