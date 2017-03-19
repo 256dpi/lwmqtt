@@ -18,6 +18,8 @@
 
 // TODO: Err should be returned by all functions.
 
+// TODO: Make sure all functions properly propagate the errors.
+
 typedef enum {
   LWMQTT_SUCCESS = 0,
   LWMQTT_FAILURE = -1,
