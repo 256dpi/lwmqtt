@@ -179,9 +179,9 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
 
       if (msg.qos != LWMQTT_QOS0) {
         if (msg.qos == LWMQTT_QOS1) {
-          len = lwmqtt_encode_puback(c->write_buf, c->write_buf_size, msg.id);
+          lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, LWMQTT_PUBACK_PACKET, false, msg.id);
         } else if (msg.qos == LWMQTT_QOS2) {
-          len = lwmqtt_encode_pubrec(c->write_buf, c->write_buf_size, msg.id);
+          lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, LWMQTT_PUBREC_PACKET, false, msg.id);
         }
 
         if (len <= 0) {
@@ -199,11 +199,12 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
     }
     case LWMQTT_PUBREC_PACKET: {
       unsigned short packet_id;
-      unsigned char dup, type;
+      lwmqtt_packet_t packet;
+      bool dup;
 
-      if (lwmqtt_decode_ack(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) {
+      if (lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS) {
         rc = LWMQTT_FAILURE;
-      } else if ((len = lwmqtt_encode_pubrel(c->write_buf, c->write_buf_size, 0, packet_id)) <= 0) {
+      } else if (lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, LWMQTT_PUBREL_PACKET, 0, packet_id) <= 0) {
         rc = LWMQTT_FAILURE;
       } else if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {
         rc = LWMQTT_FAILURE;
@@ -413,16 +414,20 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
   if (message->qos == LWMQTT_QOS1) {
     if (lwmqtt_cycle_until(c, LWMQTT_PUBACK_PACKET) == LWMQTT_PUBACK_PACKET) {
       unsigned short packet_id;
-      unsigned char dup, type;
-      if (lwmqtt_decode_ack(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
+      lwmqtt_packet_t packet;
+      bool dup;
+      if (lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS)
+        rc = LWMQTT_FAILURE;
     } else {
       rc = LWMQTT_FAILURE;
     }
   } else if (message->qos == LWMQTT_QOS2) {
     if (lwmqtt_cycle_until(c, LWMQTT_PUBCOMP_PACKET) == LWMQTT_PUBCOMP_PACKET) {
       unsigned short packet_id;
-      unsigned char dup, type;
-      if (lwmqtt_decode_ack(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
+      lwmqtt_packet_t packet;
+      bool dup;
+      if (lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS)
+        rc = LWMQTT_FAILURE;
     } else {
       rc = LWMQTT_FAILURE;
     }

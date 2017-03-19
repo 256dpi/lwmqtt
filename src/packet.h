@@ -138,10 +138,10 @@ lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqt
   * @param buf_len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int lwmqtt_decode_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id, unsigned char *buf,
-                      int buf_len);
+lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet, bool *dup, unsigned short *packet_id, unsigned char *buf,
+                               int buf_len);
 
-int lwmqtt_encode_ack(unsigned char *buf, int buf_len, unsigned char packet_type, unsigned char dup,
-                      unsigned short packet_id);
+lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_t packet, bool dup,
+                               unsigned short packet_id);
 
 #endif  // LWMQTT_PACKET_H

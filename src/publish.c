@@ -74,19 +74,3 @@ int lwmqtt_encode_publish(unsigned char *buf, int buf_len, unsigned char dup, in
 
   return (int)(ptr - buf);
 }
-
-int lwmqtt_encode_puback(unsigned char *buf, int buf_len, unsigned short packet_id) {
-  return lwmqtt_encode_ack(buf, buf_len, LWMQTT_PUBACK_PACKET, 0, packet_id);
-}
-
-int lwmqtt_encode_pubrec(unsigned char *buf, int buf_len, unsigned short packet_id) {
-  return lwmqtt_encode_ack(buf, buf_len, LWMQTT_PUBREC_PACKET, 0, packet_id);
-}
-
-int lwmqtt_encode_pubrel(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id) {
-  return lwmqtt_encode_ack(buf, buf_len, LWMQTT_PUBREL_PACKET, dup, packet_id);
-}
-
-int lwmqtt_encode_pubcomp(unsigned char *buf, int buf_len, unsigned short packet_id) {
-  return lwmqtt_encode_ack(buf, buf_len, LWMQTT_PUBCOMP_PACKET, 0, packet_id);
-}

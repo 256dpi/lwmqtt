@@ -39,45 +39,4 @@ int lwmqtt_encode_publish(unsigned char *buf, int buf_len, unsigned char dup, in
 int lwmqtt_decode_publish(bool *dup, int *qos, bool *retained, unsigned short *packet_id, lwmqtt_string_t *topic,
                           unsigned char **payload, int *payload_len, unsigned char *buf, int buf_len);
 
-/**
-  * Encodes a puback packet into the supplied buffer.
-  *
-  * @param buf the buffer into which the packet will be encoded
-  * @param buf_len the length in bytes of the supplied buffer
-  * @param packet_id integer - the MQTT packet identifier
-  * @return encoded length, or error if 0
-  */
-int lwmqtt_encode_puback(unsigned char *buf, int buf_len, unsigned short packet_id);
-
-/**
-  * Encodes a pubrec packet into the supplied buffer.
-  *
-  * @param buf the buffer into which the packet will be encoded
-  * @param buf_len the length in bytes of the supplied buffer
-  * @param packet_id integer - the MQTT packet identifier
-  * @return encoded length, or error if 0
-  */
-int lwmqtt_encode_pubrec(unsigned char *buf, int buf_len, unsigned short packet_id);
-
-/**
-  * Encodes a pubrel packet into the supplied buffer.
-  *
-  * @param buf the buffer into which the packet will be encoded
-  * @param buf_len the length in bytes of the supplied buffer
-  * @param dup integer - the MQTT dup flag
-  * @param packet_id integer - the MQTT packet identifier
-  * @return encoded length, or error if 0
-  */
-int lwmqtt_encode_pubrel(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id);
-
-/**
-  * Encodes a pubrel packet into the supplied buffer.
-  *
-  * @param buf the buffer into which the packet will be encoded
-  * @param buf_len the length in bytes of the supplied buffer
-  * @param packet_id integer - the MQTT packet identifier
-  * @return encoded length, or error if 0
-  */
-int lwmqtt_encode_pubcomp(unsigned char *buf, int buf_len, unsigned short packet_id);
-
 #endif  // LWMQTT_PUBLISH_H

@@ -34,13 +34,19 @@ int lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, unsigned char dup
 }
 
 int lwmqtt_decode_unsuback(unsigned short *packet_id, unsigned char *buf, int buf_len) {
-  unsigned char type = 0;
-  unsigned char dup = 0;
+  lwmqtt_packet_t type;
+  bool dup;
 
-  int rc = lwmqtt_decode_ack(&type, &dup, packet_id, buf, buf_len);
-  if (type == LWMQTT_UNSUBACK_PACKET) {
-    rc = 1;
+  // decode packet
+  int err = lwmqtt_decode_ack(&type, &dup, packet_id, buf, buf_len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
-  return rc;
+  // check type
+  if (type != LWMQTT_UNSUBACK_PACKET) {
+    return LWMQTT_FAILURE;
+  }
+
+  return 1;
 }

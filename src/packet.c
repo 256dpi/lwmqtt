@@ -193,8 +193,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
 
   // read remaining length
   int len;
-  int rc = lwmqtt_decode_remaining_length(ptr, &len);
-  if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
+  if (lwmqtt_decode_remaining_length(ptr, &len) == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
@@ -238,45 +237,62 @@ lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqt
   return LWMQTT_SUCCESS;
 }
 
-int lwmqtt_decode_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id, unsigned char *buf,
-                      int buf_len) {
-  lwmqtt_header_t header = {0};
+lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned short *packet_id, unsigned char *buf,
+                               int buf_len) {
+  // prepare pointer
   unsigned char *cur_ptr = buf;
-  int rc = 0;
-  int len;
 
+  // read header
+  lwmqtt_header_t header = {0};
   header.byte = lwmqtt_read_char(&cur_ptr);
-  *dup = (unsigned char)header.bits.dup;
-  *packet_type = (unsigned char)header.bits.type;
+  *dup = header.bits.dup == 1;
+  *packet_type = (lwmqtt_packet_t)header.bits.type;
 
-  cur_ptr += (rc = lwmqtt_decode_remaining_length(cur_ptr, &len));  // read remaining length
-  unsigned char *end_ptr = cur_ptr + len;
-
-  if (end_ptr - cur_ptr < 2) {
-    return rc;
+  // read remaining length
+  int rem_len;
+  if (lwmqtt_decode_remaining_length(cur_ptr, &rem_len) == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
+  // check lengths
+  if (rem_len != 2 || buf_len < rem_len + 2) {
+    return LWMQTT_LENGTH_MISMATCH;
+  }
+
+  // advance pointer
+  cur_ptr++;
+
+  // read packet id
   *packet_id = (unsigned short)lwmqtt_read_int(&cur_ptr);
 
-  return 1;
+  return LWMQTT_SUCCESS;
 }
 
-int lwmqtt_encode_ack(unsigned char *buf, int buf_len, unsigned char packet_type, unsigned char dup,
-                      unsigned short packet_id) {
-  lwmqtt_header_t header = {0};
+lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_t packet, bool dup,
+                               unsigned short packet_id) {
+  // prepare pointer
   unsigned char *ptr = buf;
 
+  // check buffer size
   if (buf_len < 4) {
     return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
-  header.bits.type = packet_type;
-  header.bits.dup = dup;
-  header.bits.qos = (packet_type == LWMQTT_PUBREL_PACKET) ? 1 : 0;
-  lwmqtt_write_char(&ptr, header.byte);  // write header
+  // write header
+  lwmqtt_header_t header = {0};
+  header.bits.type = packet;
+  header.bits.dup = dup ? 1 : 0;
+  header.bits.qos = (packet == LWMQTT_PUBREL_PACKET) ? 1 : 0;
+  lwmqtt_write_char(&ptr, header.byte);
 
-  ptr += lwmqtt_encode_remaining_length(ptr, 2);  // write remaining length
+  // write remaining length
+  ptr += lwmqtt_encode_remaining_length(ptr, 2);
+
+  // write packet id
   lwmqtt_write_int(&ptr, packet_id);
 
-  return (int)(ptr - buf);
+  // set written length
+  *len = (int)(ptr - buf);
+
+  return LWMQTT_SUCCESS;
 }
