@@ -1,6 +1,4 @@
 #include "client.h"
-#include "packet.h"
-#include "publish.h"
 #include "subscribe.h"
 #include "unsubscribe.h"
 
