@@ -87,9 +87,8 @@ TEST(ConnectTest, IsEqual) {
   opts.client_id.c_string = (char*)"surgemq";
   opts.username.c_string = (char*)"surgemq";
   opts.password.c_string = (char*)"verysecret";
-  opts.will = &will;
 
-  int l = lwmqtt_serialize_connect(buf, 256, &opts);
+  int l = lwmqtt_serialize_connect(buf, 256, &opts, &will);
 
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
 }

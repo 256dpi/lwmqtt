@@ -17,13 +17,13 @@
 #include "helpers.h"
 #include "packet.h"
 
-static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options) {
+static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options, lwmqtt_will_t *will) {
   int len = 10;
 
   len += lwmqtt_strlen(options->client_id) + 2;
 
-  if (options->will != NULL) {
-    len += lwmqtt_strlen(options->will->topic) + 2 + lwmqtt_strlen(options->will->message) + 2;
+  if (will != NULL) {
+    len += lwmqtt_strlen(will->topic) + 2 + lwmqtt_strlen(will->message) + 2;
   }
 
   if (options->username.c_string || options->username.lp_string.data) {
@@ -37,10 +37,10 @@ static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options) {
   return len;
 }
 
-int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options) {
+int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options, lwmqtt_will_t *will) {
   unsigned char *ptr = buf;
 
-  int rem_len = lwmqtt_serialize_connect_length(options);
+  int rem_len = lwmqtt_serialize_connect_length(options, will);
 
   if (lwmqtt_header_len(rem_len) + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
@@ -57,10 +57,10 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
 
   lwmqtt_connect_flags_t flags = {0};
   flags.bits.clean_session = options->clean_session;
-  flags.bits.will = (options->will != NULL) ? 1 : 0;
+  flags.bits.will = (will != NULL) ? 1 : 0;
   if (flags.bits.will) {
-    flags.bits.will_qos = (unsigned int)options->will->qos;
-    flags.bits.will_retain = options->will->retained;
+    flags.bits.will_qos = (unsigned int)will->qos;
+    flags.bits.will_retain = will->retained;
   }
 
   if (options->username.c_string || options->username.lp_string.data) {
@@ -75,9 +75,9 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
   lwmqtt_write_int(&ptr, options->keep_alive);
   lwmqtt_write_string(&ptr, options->client_id);
 
-  if (options->will != NULL) {
-    lwmqtt_write_string(&ptr, options->will->topic);
-    lwmqtt_write_string(&ptr, options->will->message);
+  if (will != NULL) {
+    lwmqtt_write_string(&ptr, will->topic);
+    lwmqtt_write_string(&ptr, will->message);
   }
 
   if (flags.bits.username) {

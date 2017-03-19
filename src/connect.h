@@ -48,13 +48,12 @@ typedef struct {
   lwmqtt_string_t client_id;
   unsigned short keep_alive;
   unsigned char clean_session;
-  lwmqtt_will_t *will;
   lwmqtt_string_t username;
   lwmqtt_string_t password;
 } lwmqtt_options_t;
 
 #define lwmqtt_default_options \
-  { lwmqtt_default_string, 60, 1, NULL, lwmqtt_default_string, lwmqtt_default_string }
+  { lwmqtt_default_string, 60, 1, lwmqtt_default_string, lwmqtt_default_string }
 
 typedef union {
   unsigned char byte;
@@ -73,7 +72,7 @@ typedef union {
   * @param options the options to be used to build the connect packet
   * @return serialized length, or error if 0
   */
-int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options);
+int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options, lwmqtt_will_t *will);
 
 /**
   * Deserializes the supplied (wire) buffer into connack data - return code

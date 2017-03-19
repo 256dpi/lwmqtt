@@ -271,7 +271,7 @@ static int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type) {
   return rc;
 }
 
-int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options) {
+int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will) {
   int rc;
   lwmqtt_options_t default_options = lwmqtt_default_options;
   int len = 0;
@@ -290,7 +290,7 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options) {
 
   c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
 
-  if ((len = lwmqtt_serialize_connect(c->write_buf, c->write_buf_size, options)) <= 0) {
+  if ((len = lwmqtt_serialize_connect(c->write_buf, c->write_buf_size, options, will)) <= 0) {
     return LWMQTT_FAILURE;
   }
 

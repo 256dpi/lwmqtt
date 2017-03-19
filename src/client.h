@@ -94,9 +94,10 @@ void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
  * MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
  *  The nework object must be connected to the network endpoint before calling this
  *  @param options - connect options
+ *  @param will - the will message
  *  @return success code
  */
-int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options);
+int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will);
 
 /**
  * MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs

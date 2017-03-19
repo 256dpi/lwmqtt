@@ -67,7 +67,7 @@ static void test(lwmqtt_qos_t qos) {
   lwmqtt_options_t data = lwmqtt_default_options;
   data.client_id.c_string = "lwmqtt";
 
-  rc = lwmqtt_client_connect(&c, &data);
+  rc = lwmqtt_client_connect(&c, &data, NULL);
   if (rc != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_client_connect\n");
     exit(1);
