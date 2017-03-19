@@ -77,7 +77,7 @@ static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
   do {
     len++;
     if (len > 4) {
-      return LWMQTT_HEADER_DECODE_ERROR;  // bad data
+      return LWMQTT_REMAINING_LENGTH_OVERFLOW;  // bad data
     }
 
     int rc = c->network_read(c, c->network_ref, &i, 1, timeout);
@@ -168,7 +168,7 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       int intQoS;
 
       if (lwmqtt_decode_publish(&msg.dup, &intQoS, &msg.retained, &msg.id, &topicName, (unsigned char **)&msg.payload,
-                                (int *)&msg.payload_len, c->read_buf, c->read_buf_size) != 1) {
+                                &msg.payload_len, c->read_buf, c->read_buf_size) != 1) {
         return LWMQTT_FAILURE;
       }
 

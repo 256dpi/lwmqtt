@@ -28,6 +28,7 @@ int lwmqtt_total_header_length(int rem_len) {
   }
 }
 
+// TODO: Increment pointer directly?
 int lwmqtt_decode_remaining_length(unsigned char *buf, int *rem_len) {
   unsigned char c;
   int multiplier = 1;
@@ -38,7 +39,7 @@ int lwmqtt_decode_remaining_length(unsigned char *buf, int *rem_len) {
     len++;
 
     if (len > 4) {
-      return LWMQTT_HEADER_DECODE_ERROR;  // bad data
+      return LWMQTT_REMAINING_LENGTH_OVERFLOW;
     }
 
     c = buf[len - 1];
