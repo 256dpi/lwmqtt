@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 
-#include "connect.h"
 #include "packet.h"
 #include "string.h"
 

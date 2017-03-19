@@ -5,6 +5,8 @@
 
 // TODO: Make sure all functions properly propagate the errors.
 
+#include <stdbool.h>
+
 #include "string.h"
 
 typedef enum {
@@ -65,34 +67,34 @@ int lwmqtt_decode_remaining_length(unsigned char *buf, int *rem_len);
  * the connect packet.
  */
 typedef struct {
-    lwmqtt_string_t topic;
-    void *payload;
-    int payload_len;
-    bool retained;
-    lwmqtt_qos_t qos;
+  lwmqtt_string_t topic;
+  void *payload;
+  int payload_len;
+  bool retained;
+  lwmqtt_qos_t qos;
 } lwmqtt_will_t;
 
 #define lwmqtt_default_will \
   { lwmqtt_default_string, NULL, 0, false, LWMQTT_QOS0 }
 
 typedef struct {
-    lwmqtt_string_t client_id;
-    unsigned short keep_alive;
-    bool clean_session;
-    lwmqtt_string_t username;
-    lwmqtt_string_t password;
+  lwmqtt_string_t client_id;
+  unsigned short keep_alive;
+  bool clean_session;
+  lwmqtt_string_t username;
+  lwmqtt_string_t password;
 } lwmqtt_options_t;
 
 #define lwmqtt_default_options \
   { lwmqtt_default_string, 60, 1, lwmqtt_default_string, lwmqtt_default_string }
 
 typedef enum {
-    LWMQTT_CONNACK_CONNECTION_ACCEPTED = 0,
-    LWMQTT_CONNACK_UNACCEPTABLE_PROTOCOL = 1,
-    LWMQTT_CONNACK_IDENTIFIER_REJECTED = 2,
-    LWMQTT_CONNACK_SERVER_UNAVAILABLE = 3,
-    LWMQTT_CONNACK_BAD_USERNAME_OR_PASSWORD = 4,
-    LWMQTT_CONNACK_NOT_AUTHORIZED = 5
+  LWMQTT_CONNACK_CONNECTION_ACCEPTED = 0,
+  LWMQTT_CONNACK_UNACCEPTABLE_PROTOCOL = 1,
+  LWMQTT_CONNACK_IDENTIFIER_REJECTED = 2,
+  LWMQTT_CONNACK_SERVER_UNAVAILABLE = 3,
+  LWMQTT_CONNACK_BAD_USERNAME_OR_PASSWORD = 4,
+  LWMQTT_CONNACK_NOT_AUTHORIZED = 5
 } lwmqtt_connack_t;
 
 /**
@@ -134,5 +136,21 @@ lwmqtt_err_t lwmqtt_encode_disconnect(unsigned char *buf, int buf_len, int *len)
   * @return Encoded length, or error if 0.
   */
 lwmqtt_err_t lwmqtt_encode_pingreq(unsigned char *buf, int buf_len, int *len);
+
+/**
+  * Decodes the supplied (wire) buffer into an ack
+  *
+  * @param packet_type returned integer - the MQTT packet type
+  * @param dup returned integer - the MQTT dup flag
+  * @param packet_id returned integer - the MQTT packet identifier
+  * @param buf the raw buffer data, of the correct length determined by the remaining length field
+  * @param buf_len the length in bytes of the data in the supplied buffer
+  * @return error code.  1 is success, 0 is failure
+  */
+int lwmqtt_decode_ack(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id, unsigned char *buf,
+                      int buf_len);
+
+int lwmqtt_encode_ack(unsigned char *buf, int buf_len, unsigned char packet_type, unsigned char dup,
+                      unsigned short packet_id);
 
 #endif  // LWMQTT_PACKET_H

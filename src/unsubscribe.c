@@ -1,6 +1,5 @@
 #include "unsubscribe.h"
 #include "helpers.h"
-#include "identified.h"
 #include "packet.h"
 
 int lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id, int count,
@@ -38,7 +37,7 @@ int lwmqtt_decode_unsuback(unsigned short *packet_id, unsigned char *buf, int bu
   unsigned char type = 0;
   unsigned char dup = 0;
 
-  int rc = lwmqtt_decode_identified(&type, &dup, packet_id, buf, buf_len);
+  int rc = lwmqtt_decode_ack(&type, &dup, packet_id, buf, buf_len);
   if (type == LWMQTT_UNSUBACK_PACKET) {
     rc = 1;
   }

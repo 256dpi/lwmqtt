@@ -1,5 +1,4 @@
 #include "client.h"
-#include "identified.h"
 #include "packet.h"
 #include "publish.h"
 #include "subscribe.h"
@@ -202,7 +201,7 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       unsigned short packet_id;
       unsigned char dup, type;
 
-      if (lwmqtt_decode_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) {
+      if (lwmqtt_decode_ack(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) {
         rc = LWMQTT_FAILURE;
       } else if ((len = lwmqtt_encode_pubrel(c->write_buf, c->write_buf_size, 0, packet_id)) <= 0) {
         rc = LWMQTT_FAILURE;
@@ -415,7 +414,7 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
     if (lwmqtt_cycle_until(c, LWMQTT_PUBACK_PACKET) == LWMQTT_PUBACK_PACKET) {
       unsigned short packet_id;
       unsigned char dup, type;
-      if (lwmqtt_decode_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
+      if (lwmqtt_decode_ack(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
     } else {
       rc = LWMQTT_FAILURE;
     }
@@ -423,7 +422,7 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
     if (lwmqtt_cycle_until(c, LWMQTT_PUBCOMP_PACKET) == LWMQTT_PUBCOMP_PACKET) {
       unsigned short packet_id;
       unsigned char dup, type;
-      if (lwmqtt_decode_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
+      if (lwmqtt_decode_ack(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
     } else {
       rc = LWMQTT_FAILURE;
     }

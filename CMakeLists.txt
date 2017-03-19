@@ -12,8 +12,6 @@ set(SOURCE_FILES
         src/client.h
         src/helpers.c
         src/helpers.h
-        src/identified.c
-        src/identified.h
         src/packet.c
         src/packet.h
         src/publish.c
