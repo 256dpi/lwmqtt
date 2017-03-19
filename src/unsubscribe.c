@@ -1,8 +1,7 @@
 #include "unsubscribe.h"
-#include "packet.h"
 
-int lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, unsigned short packet_id, int count,
-                              lwmqtt_string_t *topic_filters) {
+lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len, unsigned short packet_id, int count,
+                                       lwmqtt_string_t *topic_filters) {
   unsigned char *ptr = buf;
 
   int rem_len = 2;
@@ -28,15 +27,17 @@ int lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, unsigned short pa
     lwmqtt_write_string(&ptr, topic_filters[i]);
   }
 
-  return (int)(ptr - buf);
+  *len = (int)(ptr - buf);
+
+  return LWMQTT_SUCCESS;
 }
 
-int lwmqtt_decode_unsuback(unsigned short *packet_id, unsigned char *buf, int buf_len) {
+lwmqtt_err_t lwmqtt_decode_unsuback(unsigned short *packet_id, unsigned char *buf, int buf_len) {
   lwmqtt_packet_t type;
   bool dup;
 
   // decode packet
-  int err = lwmqtt_decode_ack(&type, &dup, packet_id, buf, buf_len);
+  lwmqtt_err_t err = lwmqtt_decode_ack(&type, &dup, packet_id, buf, buf_len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -46,5 +47,5 @@ int lwmqtt_decode_unsuback(unsigned short *packet_id, unsigned char *buf, int bu
     return LWMQTT_FAILURE;
   }
 
-  return 1;
+  return LWMQTT_SUCCESS;
 }

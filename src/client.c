@@ -359,8 +359,8 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  if ((len = lwmqtt_encode_unsubscribe(c->write_buf, c->write_buf_size, lwmqtt_get_next_packet_id(c), 1, &topic)) <=
-      0) {
+  if (lwmqtt_encode_unsubscribe(c->write_buf, c->write_buf_size, &len, lwmqtt_get_next_packet_id(c), 1, &topic) !=
+      LWMQTT_SUCCESS) {
     return rc;
   }
   if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the subscribe src
@@ -369,7 +369,7 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
 
   if (lwmqtt_cycle_until(c, LWMQTT_UNSUBACK_PACKET) == LWMQTT_UNSUBACK_PACKET) {
     unsigned short packet_id;  // should be the same as the packet id above
-    if (lwmqtt_decode_unsuback(&packet_id, c->read_buf, c->read_buf_size) == 1) {
+    if (lwmqtt_decode_unsuback(&packet_id, c->read_buf, c->read_buf_size) == LWMQTT_SUCCESS) {
       rc = 0;
     }
   } else {

@@ -2,6 +2,7 @@
 #define LWMQTT_UNSUBSCRIBE_H
 
 #include "helpers.h"
+#include "packet.h"
 
 /**
   * Encodes the supplied unsubscribe data into the supplied buffer, ready for sending
@@ -14,8 +15,8 @@
   * @param topic_filters - array of topic filter names
   * @return the length of the encoded data.  <= 0 indicates error
   */
-int lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, unsigned short packet_id, int count,
-                              lwmqtt_string_t *topic_filters);
+lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len, unsigned short packet_id, int count,
+                                       lwmqtt_string_t *topic_filters);
 
 /**
   * Decodes the supplied (wire) buffer into unsuback data
@@ -25,6 +26,6 @@ int lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, unsigned short pa
   * @param buf_len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-int lwmqtt_decode_unsuback(unsigned short *packet_id, unsigned char *buf, int buf_len);
+lwmqtt_err_t lwmqtt_decode_unsuback(unsigned short *packet_id, unsigned char *buf, int buf_len);
 
 #endif  // LWMQTT_UNSUBSCRIBE_H
