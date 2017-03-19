@@ -3,6 +3,10 @@ project(lwmqtt)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+add_subdirectory(lib/gtest)
+
+include_directories(lib/gtest/googletest/include)
+
 set(SOURCE_FILES
         src/client.c
         src/client.h
@@ -21,9 +25,18 @@ set(SOURCE_FILES
         src/subscribe.c
         src/subscribe.h
         src/unsubscribe.c
-        src/unsubscribe.h
+        src/unsubscribe.h)
+
+set(EXAMPLE_FILES
         example/main.c
         example/unix.c
         example/unix.h)
 
-add_executable(lwmqtt ${SOURCE_FILES})
+set(TEST_FILES
+        tests/tests.cpp)
+
+add_executable(example ${SOURCE_FILES} ${EXAMPLE_FILES})
+
+add_executable(tests ${SOURCE_FILES} ${TEST_FILES})
+
+target_link_libraries(tests gtest gtest_main)
