@@ -13,6 +13,8 @@
 
 #include "packet.h"
 
+// TODO: Rename methods?
+
 // TODO: Should also write the header byte.
 int lwmqtt_header_encode(unsigned char *buf, int rem_len) {
   int rc = 0;
@@ -53,7 +55,7 @@ int lwmqtt_header_decode(unsigned char *buf, int *rem_len) {
     len++;
 
     if (len > 4) {
-      return LWMQTT_READ_ERROR;  // bad data
+      return LWMQTT_HEADER_DECODE_ERROR;  // bad data
     }
 
     c = buf[len - 1];

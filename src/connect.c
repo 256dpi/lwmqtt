@@ -31,102 +31,141 @@ typedef union {
   } bits;
 } lwmqtt_connect_flags_t;
 
-static int lwmqtt_serialize_connect_length(lwmqtt_options_t *options, lwmqtt_will_t *will) {
-  int len = 10;
+typedef union {
+  unsigned char byte;
 
-  len += lwmqtt_strlen(options->client_id) + 2;
+  struct {
+    unsigned int _ : 7;
+    unsigned int session_present : 1;
+  } bits;
+} lwmqtt_connack_flags_t;
 
+int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options, lwmqtt_will_t *will) {
+  // prepare pointer
+  unsigned char *ptr = buf;
+
+  /* calculate remaining length */
+
+  // fixed header is 10
+  int rem_len = 10;
+
+  // add client id
+  rem_len += lwmqtt_strlen(options->client_id) + 2;
+
+  // add will if present
   if (will != NULL) {
-    len += lwmqtt_strlen(will->topic) + 2 + lwmqtt_strlen(will->message) + 2;
+    rem_len += lwmqtt_strlen(will->topic) + 2 + lwmqtt_strlen(will->message) + 2;
   }
 
+  // add username if present
   if (options->username.c_string || options->username.lp_string.data) {
-    len += lwmqtt_strlen(options->username) + 2;
+    rem_len += lwmqtt_strlen(options->username) + 2;
 
+    // add password if present
     if (options->password.c_string || options->password.lp_string.data) {
-      len += lwmqtt_strlen(options->password) + 2;
+      rem_len += lwmqtt_strlen(options->password) + 2;
     }
   }
 
-  return len;
-}
-
-int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *options, lwmqtt_will_t *will) {
-  unsigned char *ptr = buf;
-
-  int rem_len = lwmqtt_serialize_connect_length(options, will);
-
+  // check buffer capacity
   if (lwmqtt_header_len(rem_len) + rem_len > buf_len) {
-    return LWMQTT_BUFFER_TOO_SHORT;
+    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
+  // write header
   lwmqtt_header_t header = {0};
   header.bits.type = LWMQTT_CONNECT_PACKET;
-  lwmqtt_write_char(&ptr, header.byte);  // write header
+  lwmqtt_write_char(&ptr, header.byte);
 
-  ptr += lwmqtt_header_encode(ptr, rem_len);  // write remaining length
+  // write remaining length
+  ptr += lwmqtt_header_encode(ptr, rem_len);
 
+  // write version
   lwmqtt_write_c_string(&ptr, "MQTT");
   lwmqtt_write_char(&ptr, 4);
 
+  // prepare flags
   lwmqtt_connect_flags_t flags = {0};
   flags.bits.clean_session = options->clean_session;
-  flags.bits.will = (will != NULL) ? 1 : 0;
-  if (flags.bits.will) {
+
+  // set will flags if present
+  if (will != NULL) {
+    flags.bits.will = 1;
     flags.bits.will_qos = (unsigned int)will->qos;
     flags.bits.will_retain = will->retained;
   }
 
+  // set username flag if present
   if (options->username.c_string || options->username.lp_string.data) {
     flags.bits.username = 1;
 
+    // set password flag if present
     if (options->password.c_string || options->password.lp_string.data) {
       flags.bits.password = 1;
     }
   }
 
+  // write flags
   lwmqtt_write_char(&ptr, flags.byte);
+
+  // write keep alive
   lwmqtt_write_int(&ptr, options->keep_alive);
+
+  // write client id
   lwmqtt_write_string(&ptr, options->client_id);
 
+  // write will topic and payload if present
   if (will != NULL) {
     lwmqtt_write_string(&ptr, will->topic);
     lwmqtt_write_string(&ptr, will->message);
   }
 
+  // write username if present
   if (flags.bits.username) {
     lwmqtt_write_string(&ptr, options->username);
 
+    // write password if present
     if (flags.bits.password) {
       lwmqtt_write_string(&ptr, options->password);
     }
   }
 
+  // return written length
   return (int)(ptr - buf);
 }
 
 int lwmqtt_deserialize_connack(unsigned char *session_present, unsigned char *connack_rc, unsigned char *buf,
                                int buf_len) {
-  lwmqtt_header_t header = {0};
-  unsigned char *cur_ptr = buf;
-  int rc = 0;
-  int len;
-  lwmqtt_connack_flags flags = {0};
+  // prepare pointer
+  unsigned char *ptr = buf;
 
-  header.byte = lwmqtt_read_char(&cur_ptr);
+  // read header
+  lwmqtt_header_t header;
+  header.byte = lwmqtt_read_char(&ptr);
   if (header.bits.type != LWMQTT_CONNACK_PACKET) {
-    return rc;
+    return 0;
   }
 
-  cur_ptr += (rc = lwmqtt_header_decode(cur_ptr, &len));  // read remaining length
-  unsigned char *end_ptr = cur_ptr + len;
-  if (end_ptr - cur_ptr < 2) {
-    return rc;
+  // read remaining length
+  int len;
+  int rc = lwmqtt_header_decode(ptr, &len);
+  if (rc == LWMQTT_HEADER_DECODE_ERROR) {
+    return 0;
   }
 
-  flags.byte = lwmqtt_read_char(&cur_ptr);
-  *session_present = (unsigned char)flags.bits.session_present;
-  *connack_rc = lwmqtt_read_char(&cur_ptr);
+  // check lengths
+  if (len != 2 || len + 2 < buf_len) {
+    return 0;
+  }
+
+  // advance pointer
+  ptr++;
+
+  // read flags
+  lwmqtt_connack_flags_t flags;
+  flags.byte = lwmqtt_read_char(&ptr);
+  *session_present = (unsigned char)flags.bits.session_present;  // TODO: Constrain received values?
+  *connack_rc = lwmqtt_read_char(&ptr);                          // TODO: Constraint received values?
 
   return 1;
 }
@@ -136,7 +175,7 @@ static int lwmqtt_serialize_zero(unsigned char *buf, int buf_len, unsigned char 
   unsigned char *ptr = buf;
 
   if (buf_len < 2) {
-    return LWMQTT_BUFFER_TOO_SHORT;
+    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
   header.byte = 0;

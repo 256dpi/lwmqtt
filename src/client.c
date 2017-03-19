@@ -91,7 +91,7 @@ static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
   do {
     len++;
     if (len > 4) {
-      return LWMQTT_READ_ERROR;  // bad data
+      return LWMQTT_HEADER_DECODE_ERROR;  // bad data
     }
 
     int rc = c->network_read(c, c->network_ref, &i, 1, timeout);

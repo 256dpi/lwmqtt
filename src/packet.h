@@ -15,7 +15,7 @@
 #define LWMQTT_PACKET_H
 
 // TODO: What to do with those?
-enum { LWMQTT_BUFFER_TOO_SHORT = -2, LWMQTT_READ_ERROR = -1 };
+enum { LWMQTT_BUFFER_TOO_SHORT_ERROR = -2, LWMQTT_HEADER_DECODE_ERROR = -1 };
 
 typedef enum { LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2 } lwmqtt_qos_t;
 

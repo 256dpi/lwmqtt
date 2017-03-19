@@ -6,7 +6,7 @@ extern "C" {
 
 #include "macros.h"
 
-TEST(ConnectTest, ConnectPacketSerialize1) {
+TEST(ConnectTest, Serialize1) {
   unsigned char pkt[62] = {
       LWMQTT_CONNECT_PACKET << 4,
       60,
@@ -91,7 +91,7 @@ TEST(ConnectTest, ConnectPacketSerialize1) {
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
 }
 
-TEST(ConnectTest, ConnectPacketSerialize2) {
+TEST(ConnectTest, Serialize2) {
   unsigned char pkt[14] = {
       LWMQTT_CONNECT_PACKET << 4,
       12,
@@ -118,12 +118,57 @@ TEST(ConnectTest, ConnectPacketSerialize2) {
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
 }
 
-TEST(ConnectTest, ConnectPacketSerializeError1) {
+TEST(ConnectTest, SerializeError1) {
   unsigned char buf[4];  // <- too small buffer
 
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   int l = lwmqtt_serialize_connect(buf, 4, &opts, NULL);
 
-  EXPECT_EQ(l, LWMQTT_BUFFER_TOO_SHORT);
+  EXPECT_EQ(l, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+}
+
+TEST(ConnackTest, Deserialize1) {
+  unsigned char pkt[4] = {
+      LWMQTT_CONNACK_PACKET << 4, 2,
+      0,  // session not present
+      0,  // connection accepted
+  };
+
+  unsigned char session_present = 0;
+  unsigned char connack_rc = 255;
+  int r = lwmqtt_deserialize_connack(&session_present, &connack_rc, pkt, 4);
+
+  EXPECT_EQ(r, 1);
+  EXPECT_EQ(session_present, 0);
+  EXPECT_EQ(connack_rc, 0);
+}
+
+TEST(ConnackTest, DeserializeError1) {
+  unsigned char pkt[4] = {
+      LWMQTT_CONNACK_PACKET << 4,
+      3,  // <-- wrong size
+      0,  // session not present
+      0,  // connection accepted
+  };
+
+  unsigned char session_present;
+  unsigned char connack_rc;
+  int r = lwmqtt_deserialize_connack(&session_present, &connack_rc, pkt, 4);
+
+  EXPECT_EQ(r, 0);
+}
+
+TEST(ConnackTest, DeserializeError2) {
+  unsigned char pkt[3] = {
+      LWMQTT_CONNACK_PACKET << 4, 3,
+      0,  // session not present
+          // <- wrong packet size
+  };
+
+  unsigned char session_present;
+  unsigned char connack_rc;
+  int r = lwmqtt_deserialize_connack(&session_present, &connack_rc, pkt, 3);
+
+  EXPECT_EQ(r, 0);
 }

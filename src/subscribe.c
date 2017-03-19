@@ -32,7 +32,7 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buf_len, unsigned char du
   int rem_len = lwmqtt_serialize_subscribe_length(count, topic_filters);
 
   if (lwmqtt_header_len(rem_len) + rem_len > buf_len) {
-    return LWMQTT_BUFFER_TOO_SHORT;
+    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
   lwmqtt_header_t header = {0};

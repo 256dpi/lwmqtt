@@ -43,7 +43,7 @@ int lwmqtt_serialize_identified(unsigned char *buf, int buf_len, unsigned char p
   unsigned char *ptr = buf;
 
   if (buf_len < 4) {
-    return LWMQTT_BUFFER_TOO_SHORT;
+    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
   header.bits.type = packet_type;

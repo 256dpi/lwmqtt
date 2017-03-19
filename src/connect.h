@@ -23,7 +23,7 @@
  */
 typedef struct {
   lwmqtt_string_t topic;
-  lwmqtt_string_t message;
+  lwmqtt_string_t message;  // TODO: Rename to payload and change type?
   unsigned char retained;
   lwmqtt_qos_t qos;
 } lwmqtt_will_t;
@@ -41,15 +41,6 @@ typedef struct {
 
 #define lwmqtt_default_options \
   { lwmqtt_default_string, 60, 1, lwmqtt_default_string, lwmqtt_default_string }
-
-typedef union {
-  unsigned char byte;
-
-  struct {
-    unsigned int _ : 7;
-    unsigned int session_present : 1;
-  } bits;
-} lwmqtt_connack_flags;
 
 /**
   * Serializes the connect options into the buffer.
