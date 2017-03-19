@@ -14,8 +14,8 @@
 #include "helpers.h"
 #include "packet.h"
 
-int lwmqtt_deserialize_identified(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
-                                  unsigned char *buf, int buf_len) {
+int lwmqtt_decode_identified(unsigned char *packet_type, unsigned char *dup, unsigned short *packet_id,
+                             unsigned char *buf, int buf_len) {
   lwmqtt_header_t header = {0};
   unsigned char *cur_ptr = buf;
   int rc = 0;
@@ -37,8 +37,8 @@ int lwmqtt_deserialize_identified(unsigned char *packet_type, unsigned char *dup
   return 1;
 }
 
-int lwmqtt_serialize_identified(unsigned char *buf, int buf_len, unsigned char packet_type, unsigned char dup,
-                                unsigned short packet_id) {
+int lwmqtt_encode_identified(unsigned char *buf, int buf_len, unsigned char packet_type, unsigned char dup,
+                             unsigned short packet_id) {
   lwmqtt_header_t header = {0};
   unsigned char *ptr = buf;
 

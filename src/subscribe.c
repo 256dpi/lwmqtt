@@ -15,7 +15,7 @@
 #include "helpers.h"
 #include "packet.h"
 
-static int lwmqtt_serialize_subscribe_length(int count, lwmqtt_string_t *topicFilters) {
+static int lwmqtt_encode_subscribe_length(int count, lwmqtt_string_t *topicFilters) {
   int len = 2;  // packet id
 
   for (int i = 0; i < count; ++i) {
@@ -25,11 +25,11 @@ static int lwmqtt_serialize_subscribe_length(int count, lwmqtt_string_t *topicFi
   return len;
 }
 
-int lwmqtt_serialize_subscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id, int count,
-                               lwmqtt_string_t *topic_filters, int *qos_levels) {
+int lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id, int count,
+                            lwmqtt_string_t *topic_filters, int *qos_levels) {
   unsigned char *ptr = buf;
 
-  int rem_len = lwmqtt_serialize_subscribe_length(count, topic_filters);
+  int rem_len = lwmqtt_encode_subscribe_length(count, topic_filters);
 
   if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT_ERROR;
@@ -53,8 +53,8 @@ int lwmqtt_serialize_subscribe(unsigned char *buf, int buf_len, unsigned char du
   return (int)(ptr - buf);
 }
 
-int lwmqtt_deserialize_suback(unsigned short *packet_id, int max_count, int *count, int *granted_qos_levels,
-                              unsigned char *buf, int buf_len) {
+int lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int *count, int *granted_qos_levels,
+                         unsigned char *buf, int buf_len) {
   lwmqtt_header_t header = {0};
   unsigned char *cur_ptr = buf;
   int rc = 0;

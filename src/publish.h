@@ -17,9 +17,9 @@
 #include "string.h"
 
 /**
-  * Serializes the supplied publish data into the supplied buffer, ready for sending
+  * Encodes the supplied publish data into the supplied buffer, ready for sending
   *
-  * @param buf the buffer into which the packet will be serialized
+  * @param buf the buffer into which the packet will be encoded
   * @param buf_len the length in bytes of the supplied buffer
   * @param dup integer - the MQTT dup flag
   * @param qos integer - the MQTT QoS value
@@ -28,13 +28,13 @@
   * @param topic MQTTString - the MQTT topic in the publish
   * @param payload byte buffer - the MQTT publish payload
   * @param payload_len integer - the length of the MQTT payload
-  * @return the length of the serialized data.  <= 0 indicates error
+  * @return the length of the encoded data.  <= 0 indicates error
   */
-int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup, int qos, unsigned char retained,
-                             unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload, int payload_len);
+int lwmqtt_encode_publish(unsigned char *buf, int buf_len, unsigned char dup, int qos, unsigned char retained,
+                          unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload, int payload_len);
 
 /**
-  * Deserializes the supplied (wire) buffer into publish data
+  * Decodes the supplied (wire) buffer into publish data
   *
   * @param dup returned integer - the MQTT dup flag
   * @param qos returned integer - the MQTT QoS value
@@ -47,49 +47,49 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
   * @param buf_len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success
   */
-int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packet_id,
-                               lwmqtt_string_t *topic, unsigned char **payload, int *payload_len, unsigned char *buf,
-                               int buf_len);
+int lwmqtt_decode_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packet_id,
+                          lwmqtt_string_t *topic, unsigned char **payload, int *payload_len, unsigned char *buf,
+                          int buf_len);
 
 /**
-  * Serializes a puback packet into the supplied buffer.
+  * Encodes a puback packet into the supplied buffer.
   *
-  * @param buf the buffer into which the packet will be serialized
+  * @param buf the buffer into which the packet will be encoded
   * @param buf_len the length in bytes of the supplied buffer
   * @param packet_id integer - the MQTT packet identifier
-  * @return serialized length, or error if 0
+  * @return encoded length, or error if 0
   */
-int lwmqtt_serialize_puback(unsigned char *buf, int buf_len, unsigned short packet_id);
+int lwmqtt_encode_puback(unsigned char *buf, int buf_len, unsigned short packet_id);
 
 /**
-  * Serializes a pubrec packet into the supplied buffer.
+  * Encodes a pubrec packet into the supplied buffer.
   *
-  * @param buf the buffer into which the packet will be serialized
+  * @param buf the buffer into which the packet will be encoded
   * @param buf_len the length in bytes of the supplied buffer
   * @param packet_id integer - the MQTT packet identifier
-  * @return serialized length, or error if 0
+  * @return encoded length, or error if 0
   */
-int lwmqtt_serialize_pubrec(unsigned char *buf, int buf_len, unsigned short packet_id);
+int lwmqtt_encode_pubrec(unsigned char *buf, int buf_len, unsigned short packet_id);
 
 /**
-  * Serializes a pubrel packet into the supplied buffer.
+  * Encodes a pubrel packet into the supplied buffer.
   *
-  * @param buf the buffer into which the packet will be serialized
+  * @param buf the buffer into which the packet will be encoded
   * @param buf_len the length in bytes of the supplied buffer
   * @param dup integer - the MQTT dup flag
   * @param packet_id integer - the MQTT packet identifier
-  * @return serialized length, or error if 0
+  * @return encoded length, or error if 0
   */
-int lwmqtt_serialize_pubrel(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id);
+int lwmqtt_encode_pubrel(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id);
 
 /**
-  * Serializes a pubrel packet into the supplied buffer.
+  * Encodes a pubrel packet into the supplied buffer.
   *
-  * @param buf the buffer into which the packet will be serialized
+  * @param buf the buffer into which the packet will be encoded
   * @param buf_len the length in bytes of the supplied buffer
   * @param packet_id integer - the MQTT packet identifier
-  * @return serialized length, or error if 0
+  * @return encoded length, or error if 0
   */
-int lwmqtt_serialize_pubcomp(unsigned char *buf, int buf_len, unsigned short packet_id);
+int lwmqtt_encode_pubcomp(unsigned char *buf, int buf_len, unsigned short packet_id);
 
 #endif  // LWMQTT_PUBLISH_H

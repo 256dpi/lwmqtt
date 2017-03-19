@@ -153,7 +153,7 @@ static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
       c->timer_set(c, c->timer_network_ref, 1000);
 
       int len;
-      lwmqtt_serialize_pingreq(c->write_buf, c->write_buf_size, &len);
+      lwmqtt_encode_pingreq(c->write_buf, c->write_buf_size, &len);
       if (len > 0 && (rc = lwmqtt_send_packet(c, len)) == LWMQTT_SUCCESS) {  // send the ping src
         c->ping_outstanding = 1;
       }
@@ -181,9 +181,8 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
 
       int intQoS;
 
-      if (lwmqtt_deserialize_publish(&msg.dup, &intQoS, &msg.retained, &msg.id, &topicName,
-                                     (unsigned char **)&msg.payload, (int *)&msg.payload_len, c->read_buf,
-                                     c->read_buf_size) != 1) {
+      if (lwmqtt_decode_publish(&msg.dup, &intQoS, &msg.retained, &msg.id, &topicName, (unsigned char **)&msg.payload,
+                                (int *)&msg.payload_len, c->read_buf, c->read_buf_size) != 1) {
         return LWMQTT_FAILURE;
       }
 
@@ -195,9 +194,9 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
 
       if (msg.qos != LWMQTT_QOS0) {
         if (msg.qos == LWMQTT_QOS1) {
-          len = lwmqtt_serialize_puback(c->write_buf, c->write_buf_size, msg.id);
+          len = lwmqtt_encode_puback(c->write_buf, c->write_buf_size, msg.id);
         } else if (msg.qos == LWMQTT_QOS2) {
-          len = lwmqtt_serialize_pubrec(c->write_buf, c->write_buf_size, msg.id);
+          len = lwmqtt_encode_pubrec(c->write_buf, c->write_buf_size, msg.id);
         }
 
         if (len <= 0) {
@@ -217,9 +216,9 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
       unsigned short packet_id;
       unsigned char dup, type;
 
-      if (lwmqtt_deserialize_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) {
+      if (lwmqtt_decode_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) {
         rc = LWMQTT_FAILURE;
-      } else if ((len = lwmqtt_serialize_pubrel(c->write_buf, c->write_buf_size, 0, packet_id)) <= 0) {
+      } else if ((len = lwmqtt_encode_pubrel(c->write_buf, c->write_buf_size, 0, packet_id)) <= 0) {
         rc = LWMQTT_FAILURE;
       } else if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {
         rc = LWMQTT_FAILURE;
@@ -289,9 +288,9 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_
   // TODO: Skip that is keep alive is zero?
   c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
 
-  // serialize connect packet
+  // encode connect packet
   int len;
-  if (lwmqtt_serialize_connect(c->write_buf, c->write_buf_size, &len, options, will) != LWMQTT_SUCCESS) {
+  if (lwmqtt_encode_connect(c->write_buf, c->write_buf_size, &len, options, will) != LWMQTT_SUCCESS) {
     return LWMQTT_FAILURE;
   }
 
@@ -305,10 +304,10 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_
     return LWMQTT_FAILURE;
   }
 
-  // deserialize connack packet
+  // decode connack packet
   bool session_present;
   lwmqtt_connack_t return_code;
-  if (lwmqtt_deserialize_connack(&session_present, &return_code, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS) {
+  if (lwmqtt_decode_connack(&session_present, &return_code, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS) {
     return LWMQTT_FAILURE;
   }
 
@@ -340,8 +339,8 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  len = lwmqtt_serialize_subscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic,
-                                   (int *)&qos);
+  len =
+      lwmqtt_encode_subscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic, (int *)&qos);
   if (len <= 0) {
     return rc;
   }
@@ -354,7 +353,7 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
   {
     int count = 0, grantedQoS = -1;
     unsigned short packet_id;
-    if (lwmqtt_deserialize_suback(&packet_id, 1, &count, &grantedQoS, c->read_buf, c->read_buf_size) == 1) {
+    if (lwmqtt_decode_suback(&packet_id, 1, &count, &grantedQoS, c->read_buf, c->read_buf_size) == 1) {
       rc = grantedQoS;  // 0, 1, 2 or 0x80
     }
 
@@ -380,8 +379,8 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  if ((len = lwmqtt_serialize_unsubscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1,
-                                          &topic)) <= 0) {
+  if ((len = lwmqtt_encode_unsubscribe(c->write_buf, c->write_buf_size, 0, lwmqtt_get_next_packet_id(c), 1, &topic)) <=
+      0) {
     return rc;
   }
   if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the subscribe src
@@ -390,7 +389,7 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
 
   if (lwmqtt_cycle_until(c, LWMQTT_UNSUBACK_PACKET) == LWMQTT_UNSUBACK_PACKET) {
     unsigned short packet_id;  // should be the same as the packet id above
-    if (lwmqtt_deserialize_unsuback(&packet_id, c->read_buf, c->read_buf_size) == 1) {
+    if (lwmqtt_decode_unsuback(&packet_id, c->read_buf, c->read_buf_size) == 1) {
       rc = 0;
     }
   } else {
@@ -416,8 +415,8 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
     message->id = lwmqtt_get_next_packet_id(c);
   }
 
-  len = lwmqtt_serialize_publish(c->write_buf, c->write_buf_size, 0, message->qos, message->retained, message->id,
-                                 topic, (unsigned char *)message->payload, message->payload_len);
+  len = lwmqtt_encode_publish(c->write_buf, c->write_buf_size, 0, message->qos, message->retained, message->id, topic,
+                              (unsigned char *)message->payload, message->payload_len);
   if (len <= 0) {
     return rc;
   }
@@ -430,8 +429,7 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
     if (lwmqtt_cycle_until(c, LWMQTT_PUBACK_PACKET) == LWMQTT_PUBACK_PACKET) {
       unsigned short packet_id;
       unsigned char dup, type;
-      if (lwmqtt_deserialize_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1)
-        rc = LWMQTT_FAILURE;
+      if (lwmqtt_decode_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
     } else {
       rc = LWMQTT_FAILURE;
     }
@@ -439,8 +437,7 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
     if (lwmqtt_cycle_until(c, LWMQTT_PUBCOMP_PACKET) == LWMQTT_PUBCOMP_PACKET) {
       unsigned short packet_id;
       unsigned char dup, type;
-      if (lwmqtt_deserialize_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1)
-        rc = LWMQTT_FAILURE;
+      if (lwmqtt_decode_identified(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) != 1) rc = LWMQTT_FAILURE;
     } else {
       rc = LWMQTT_FAILURE;
     }
@@ -453,9 +450,9 @@ int lwmqtt_client_disconnect(lwmqtt_client_t *c) {
   // set timer
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
-  // serialize disconnect packet
+  // encode disconnect packet
   int len = 0;
-  if (lwmqtt_serialize_disconnect(c->write_buf, c->write_buf_size, &len) != LWMQTT_SUCCESS) {
+  if (lwmqtt_encode_disconnect(c->write_buf, c->write_buf_size, &len) != LWMQTT_SUCCESS) {
     return LWMQTT_FAILURE;
   }
 

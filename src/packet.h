@@ -14,8 +14,6 @@
 #ifndef LWMQTT_PACKET_H
 #define LWMQTT_PACKET_H
 
-// TODO: Generally rename serialize to encode and deserialize to decode.
-
 // TODO: Err should be returned by all functions.
 
 // TODO: Make sure all functions properly propagate the errors.

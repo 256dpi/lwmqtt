@@ -55,18 +55,18 @@ typedef enum {
 } lwmqtt_connack_t;
 
 /**
-  * Serializes the connect options into the buffer.
+  * Encodes the connect options into the buffer.
   *
-  * @param buf the buffer into which the packet will be serialized
+  * @param buf the buffer into which the packet will be encoded
   * @param len the length in bytes of the supplied buffer
   * @param options the options to be used to build the connect packet
-  * @return serialized length, or error if 0
+  * @return encoded length, or error if 0
   */
-lwmqtt_err_t lwmqtt_serialize_connect(unsigned char *buf, int buf_len, int *len, lwmqtt_options_t *options,
-                                      lwmqtt_will_t *will);
+lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lwmqtt_options_t *options,
+                                   lwmqtt_will_t *will);
 
 /**
-  * Deserializes the supplied (wire) buffer into connack data - return code
+  * Decodes the supplied (wire) buffer into connack data - return code
   *
   * @param session_present the session present flag returned (only for MQTT 3.1.1)
   * @param connack_rc returned integer value of the connack return code
@@ -74,25 +74,24 @@ lwmqtt_err_t lwmqtt_serialize_connect(unsigned char *buf, int buf_len, int *len,
   * @param len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-lwmqtt_err_t lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t *connack, unsigned char *buf,
-                                        int buf_len);
+lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *connack, unsigned char *buf, int buf_len);
 
 /**
-  * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
+  * Encodes a disconnect packet into the supplied buffer, ready for writing to a socket
   *
-  * @param buf The buffer into which the packet will be serialized.
+  * @param buf The buffer into which the packet will be encoded.
   * @param buf_len The length in bytes of the supplied buffer, to avoid overruns.
-  * @return Serialized length, or error if 0.
+  * @return Encoded length, or error if 0.
   */
-lwmqtt_err_t lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len, int *len);
+lwmqtt_err_t lwmqtt_encode_disconnect(unsigned char *buf, int buf_len, int *len);
 
 /**
-  * Serializes a disconnect packet into the supplied buffer, ready for writing to a socket
+  * Encodes a disconnect packet into the supplied buffer, ready for writing to a socket
   *
-  * @param buf The buffer into which the packet will be serialized.
+  * @param buf The buffer into which the packet will be encoded.
   * @param buf_len The length in bytes of the supplied buffer, to avoid overruns.
-  * @return Serialized length, or error if 0.
+  * @return Encoded length, or error if 0.
   */
-lwmqtt_err_t lwmqtt_serialize_pingreq(unsigned char *buf, int buf_len, int *len);
+lwmqtt_err_t lwmqtt_encode_pingreq(unsigned char *buf, int buf_len, int *len);
 
 #endif  // LWMQTT_CONNECT_H

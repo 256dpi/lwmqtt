@@ -6,7 +6,7 @@ extern "C" {
 
 #include "macros.h"
 
-TEST(ConnectTest, Serialize1) {
+TEST(ConnectTest, Encode1) {
   unsigned char pkt[62] = {
       LWMQTT_CONNECT_PACKET << 4,
       60,
@@ -88,13 +88,13 @@ TEST(ConnectTest, Serialize1) {
   opts.password.c_string = (char*)"verysecret";
 
   int len;
-  lwmqtt_err_t r = lwmqtt_serialize_connect(buf, 62, &len, &opts, &will);
+  lwmqtt_err_t r = lwmqtt_encode_connect(buf, 62, &len, &opts, &will);
 
   EXPECT_EQ(r, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
 }
 
-TEST(ConnectTest, Serialize2) {
+TEST(ConnectTest, Encode2) {
   unsigned char pkt[14] = {
       LWMQTT_CONNECT_PACKET << 4,
       12,
@@ -117,24 +117,24 @@ TEST(ConnectTest, Serialize2) {
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   int len;
-  lwmqtt_err_t r = lwmqtt_serialize_connect(buf, 14, &len, &opts, NULL);
+  lwmqtt_err_t r = lwmqtt_encode_connect(buf, 14, &len, &opts, NULL);
 
   EXPECT_EQ(r, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
 }
 
-TEST(ConnectTest, SerializeError1) {
+TEST(ConnectTest, EncodeError1) {
   unsigned char buf[4];  // <- too small buffer
 
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   int len;
-  lwmqtt_err_t r = lwmqtt_serialize_connect(buf, 4, &len, &opts, NULL);
+  lwmqtt_err_t r = lwmqtt_encode_connect(buf, 4, &len, &opts, NULL);
 
   EXPECT_EQ(r, LWMQTT_BUFFER_TOO_SHORT_ERROR);
 }
 
-TEST(ConnackTest, Deserialize1) {
+TEST(ConnackTest, decode1) {
   unsigned char pkt[4] = {
       LWMQTT_CONNACK_PACKET << 4, 2,
       0,  // session not present
@@ -143,14 +143,14 @@ TEST(ConnackTest, Deserialize1) {
 
   bool session_present;
   lwmqtt_connack_t connack;
-  lwmqtt_err_t r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 4);
+  lwmqtt_err_t r = lwmqtt_decode_connack(&session_present, &connack, pkt, 4);
 
   EXPECT_EQ(r, LWMQTT_SUCCESS);
   EXPECT_EQ(session_present, 0);
   EXPECT_EQ(connack, 0);
 }
 
-TEST(ConnackTest, DeserializeError1) {
+TEST(ConnackTest, decodeError1) {
   unsigned char pkt[4] = {
       LWMQTT_CONNACK_PACKET << 4,
       3,  // <-- wrong size
@@ -160,12 +160,12 @@ TEST(ConnackTest, DeserializeError1) {
 
   bool session_present;
   lwmqtt_connack_t connack;
-  lwmqtt_err_t r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 4);
+  lwmqtt_err_t r = lwmqtt_decode_connack(&session_present, &connack, pkt, 4);
 
   EXPECT_EQ(r, LWMQTT_LENGTH_MISMATCH);
 }
 
-TEST(ConnackTest, DeserializeError2) {
+TEST(ConnackTest, decodeError2) {
   unsigned char pkt[3] = {
       LWMQTT_CONNACK_PACKET << 4, 3,
       0,  // session not present
@@ -174,30 +174,30 @@ TEST(ConnackTest, DeserializeError2) {
 
   bool session_present;
   lwmqtt_connack_t connack;
-  lwmqtt_err_t r = lwmqtt_deserialize_connack(&session_present, &connack, pkt, 3);
+  lwmqtt_err_t r = lwmqtt_decode_connack(&session_present, &connack, pkt, 3);
 
   EXPECT_EQ(r, LWMQTT_LENGTH_MISMATCH);
 }
 
-TEST(DisconnectTest, Serialize1) {
+TEST(DisconnectTest, Encode1) {
   unsigned char pkt[2] = {LWMQTT_DISCONNECT_PACKET << 4, 0};
 
   unsigned char buf[2];
 
   int len;
-  lwmqtt_err_t r = lwmqtt_serialize_disconnect(buf, 2, &len);
+  lwmqtt_err_t r = lwmqtt_encode_disconnect(buf, 2, &len);
 
   EXPECT_EQ(r, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);
 }
 
-TEST(PingreqTest, Serialize1) {
+TEST(PingreqTest, Encode1) {
   unsigned char pkt[2] = {LWMQTT_PINGREQ_PACKET << 4, 0};
 
   unsigned char buf[2];
 
   int len;
-  lwmqtt_err_t r = lwmqtt_serialize_pingreq(buf, 2, &len);
+  lwmqtt_err_t r = lwmqtt_encode_pingreq(buf, 2, &len);
 
   EXPECT_EQ(r, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, len);

@@ -39,8 +39,8 @@ typedef union {
   } bits;
 } lwmqtt_connack_flags_t;
 
-lwmqtt_err_t lwmqtt_serialize_connect(unsigned char *buf, int buf_len, int *len, lwmqtt_options_t *options,
-                                      lwmqtt_will_t *will) {
+lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lwmqtt_options_t *options,
+                                   lwmqtt_will_t *will) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -72,7 +72,7 @@ lwmqtt_err_t lwmqtt_serialize_connect(unsigned char *buf, int buf_len, int *len,
     return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
-  /* serialize packet */
+  /* encode packet */
 
   // write header
   lwmqtt_header_t header = {0};
@@ -140,8 +140,8 @@ lwmqtt_err_t lwmqtt_serialize_connect(unsigned char *buf, int buf_len, int *len,
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t *connack_rc, unsigned char *buf,
-                                        int buf_len) {
+lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *connack_rc, unsigned char *buf,
+                                   int buf_len) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -176,7 +176,7 @@ lwmqtt_err_t lwmqtt_deserialize_connack(bool *session_present, lwmqtt_connack_t 
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_serialize_zero(unsigned char *buf, int buf_len, int *len, unsigned char packet_type) {
+static lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, unsigned char packet_type) {
   lwmqtt_header_t header = {0};
   unsigned char *ptr = buf;
 
@@ -195,10 +195,10 @@ static lwmqtt_err_t lwmqtt_serialize_zero(unsigned char *buf, int buf_len, int *
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_serialize_disconnect(unsigned char *buf, int buf_len, int *len) {
-  return lwmqtt_serialize_zero(buf, buf_len, len, LWMQTT_DISCONNECT_PACKET);
+lwmqtt_err_t lwmqtt_encode_disconnect(unsigned char *buf, int buf_len, int *len) {
+  return lwmqtt_encode_zero(buf, buf_len, len, LWMQTT_DISCONNECT_PACKET);
 }
 
-lwmqtt_err_t lwmqtt_serialize_pingreq(unsigned char *buf, int buf_len, int *len) {
-  return lwmqtt_serialize_zero(buf, buf_len, len, LWMQTT_PINGREQ_PACKET);
+lwmqtt_err_t lwmqtt_encode_pingreq(unsigned char *buf, int buf_len, int *len) {
+  return lwmqtt_encode_zero(buf, buf_len, len, LWMQTT_PINGREQ_PACKET);
 }

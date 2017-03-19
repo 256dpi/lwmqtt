@@ -18,9 +18,9 @@
 #include "packet.h"
 #include "publish.h"
 
-int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packet_id,
-                               lwmqtt_string_t *topic, unsigned char **payload, int *payload_len, unsigned char *buf,
-                               int buf_len) {
+int lwmqtt_decode_publish(unsigned char *dup, int *qos, unsigned char *retained, unsigned short *packet_id,
+                          lwmqtt_string_t *topic, unsigned char **payload, int *payload_len, unsigned char *buf,
+                          int buf_len) {
   lwmqtt_header_t header = {0};
   unsigned char *cur_ptr = buf;
   int rc = 0;
@@ -54,7 +54,7 @@ int lwmqtt_deserialize_publish(unsigned char *dup, int *qos, unsigned char *reta
   return rc;
 }
 
-static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, int payload_len) {
+static int lwmqtt_encode_publish_length(int qos, lwmqtt_string_t topicName, int payload_len) {
   int len = 0;
 
   len += 2 + lwmqtt_strlen(topicName) + payload_len;
@@ -65,11 +65,11 @@ static int lwmqtt_serialize_publish_length(int qos, lwmqtt_string_t topicName, i
   return len;
 }
 
-int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup, int qos, unsigned char retained,
-                             unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload, int payload_len) {
+int lwmqtt_encode_publish(unsigned char *buf, int buf_len, unsigned char dup, int qos, unsigned char retained,
+                          unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload, int payload_len) {
   unsigned char *ptr = buf;
 
-  int rem_len = lwmqtt_serialize_publish_length(qos, topic, payload_len);
+  int rem_len = lwmqtt_encode_publish_length(qos, topic, payload_len);
 
   if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT_ERROR;
@@ -96,18 +96,18 @@ int lwmqtt_serialize_publish(unsigned char *buf, int buf_len, unsigned char dup,
   return (int)(ptr - buf);
 }
 
-int lwmqtt_serialize_puback(unsigned char *buf, int buf_len, unsigned short packet_id) {
-  return lwmqtt_serialize_identified(buf, buf_len, LWMQTT_PUBACK_PACKET, 0, packet_id);
+int lwmqtt_encode_puback(unsigned char *buf, int buf_len, unsigned short packet_id) {
+  return lwmqtt_encode_identified(buf, buf_len, LWMQTT_PUBACK_PACKET, 0, packet_id);
 }
 
-int lwmqtt_serialize_pubrec(unsigned char *buf, int buf_len, unsigned short packet_id) {
-  return lwmqtt_serialize_identified(buf, buf_len, LWMQTT_PUBREC_PACKET, 0, packet_id);
+int lwmqtt_encode_pubrec(unsigned char *buf, int buf_len, unsigned short packet_id) {
+  return lwmqtt_encode_identified(buf, buf_len, LWMQTT_PUBREC_PACKET, 0, packet_id);
 }
 
-int lwmqtt_serialize_pubrel(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id) {
-  return lwmqtt_serialize_identified(buf, buf_len, LWMQTT_PUBREL_PACKET, dup, packet_id);
+int lwmqtt_encode_pubrel(unsigned char *buf, int buf_len, unsigned char dup, unsigned short packet_id) {
+  return lwmqtt_encode_identified(buf, buf_len, LWMQTT_PUBREL_PACKET, dup, packet_id);
 }
 
-int lwmqtt_serialize_pubcomp(unsigned char *buf, int buf_len, unsigned short packet_id) {
-  return lwmqtt_serialize_identified(buf, buf_len, LWMQTT_PUBCOMP_PACKET, 0, packet_id);
+int lwmqtt_encode_pubcomp(unsigned char *buf, int buf_len, unsigned short packet_id) {
+  return lwmqtt_encode_identified(buf, buf_len, LWMQTT_PUBCOMP_PACKET, 0, packet_id);
 }
