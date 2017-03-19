@@ -14,6 +14,8 @@
 #ifndef LWMQTT_PACKET_H
 #define LWMQTT_PACKET_H
 
+// TODO: Generally rename serialize to encode and deserialize to decode.
+
 // TODO: What to do with those?
 enum { LWMQTT_BUFFER_TOO_SHORT_ERROR = -2, LWMQTT_HEADER_DECODE_ERROR = -1 };
 

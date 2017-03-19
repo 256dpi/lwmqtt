@@ -72,6 +72,8 @@ int lwmqtt_serialize_connect(unsigned char *buf, int buf_len, lwmqtt_options_t *
     return LWMQTT_BUFFER_TOO_SHORT_ERROR;
   }
 
+  /* serialize packet */
+
   // write header
   lwmqtt_header_t header = {0};
   header.bits.type = LWMQTT_CONNECT_PACKET;
