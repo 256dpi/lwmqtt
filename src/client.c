@@ -368,8 +368,10 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
   }
 
   if (lwmqtt_cycle_until(c, LWMQTT_UNSUBACK_PACKET) == LWMQTT_UNSUBACK_PACKET) {
+    lwmqtt_packet_t type;
+    bool dup;
     unsigned short packet_id;  // should be the same as the packet id above
-    if (lwmqtt_decode_unsuback(&packet_id, c->read_buf, c->read_buf_size) == LWMQTT_SUCCESS) {
+    if (lwmqtt_decode_ack(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) == LWMQTT_SUCCESS) {
       rc = 0;
     }
   } else {

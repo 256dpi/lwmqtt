@@ -31,21 +31,3 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len
 
   return LWMQTT_SUCCESS;
 }
-
-lwmqtt_err_t lwmqtt_decode_unsuback(unsigned short *packet_id, unsigned char *buf, int buf_len) {
-  lwmqtt_packet_t type;
-  bool dup;
-
-  // decode packet
-  lwmqtt_err_t err = lwmqtt_decode_ack(&type, &dup, packet_id, buf, buf_len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
-  }
-
-  // check type
-  if (type != LWMQTT_UNSUBACK_PACKET) {
-    return LWMQTT_FAILURE;
-  }
-
-  return LWMQTT_SUCCESS;
-}
