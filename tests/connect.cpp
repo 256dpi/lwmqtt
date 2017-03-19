@@ -96,15 +96,18 @@ TEST(ConnectTest, ConnectPacketSerialize2) {
   unsigned char pkt[14] = {
       LWMQTT_CONNECT_PACKET << 4,
       12,
-      0, // Protocol String MSB
-      4, // Protocol String LSB
-      'M', 'Q', 'T', 'T',
-      4,  // Protocol level 4
-      2,  // Connect Flags
-      0,  // Keep Alive MSB
-      60, // Keep Alive LSB
-      0,  // Client ID MSB
-      0,  // Client ID LSB
+      0,  // Protocol String MSB
+      4,  // Protocol String LSB
+      'M',
+      'Q',
+      'T',
+      'T',
+      4,   // Protocol level 4
+      2,   // Connect Flags
+      0,   // Keep Alive MSB
+      60,  // Keep Alive LSB
+      0,   // Client ID MSB
+      0,   // Client ID LSB
   };
 
   unsigned char buf[14];
@@ -114,4 +117,14 @@ TEST(ConnectTest, ConnectPacketSerialize2) {
   int l = lwmqtt_serialize_connect(buf, 14, &opts, NULL);
 
   EXPECT_ARRAY_EQ(unsigned char, pkt, buf, l);
+}
+
+TEST(ConnectTest, ConnectPacketSerializeError1) {
+  unsigned char buf[4];  // <- too small buffer
+
+  lwmqtt_options_t opts = lwmqtt_default_options;
+
+  int l = lwmqtt_serialize_connect(buf, 4, &opts, NULL);
+
+  EXPECT_EQ(l, LWMQTT_BUFFER_TOO_SHORT);
 }
