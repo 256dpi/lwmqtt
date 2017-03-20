@@ -205,13 +205,13 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
+  // advance pointer
+  ptr++;
+
   // check lengths
   if (rem_len != 2 || buf_len < rem_len + 2) {
     return LWMQTT_LENGTH_MISMATCH;
   }
-
-  // advance pointer
-  ptr++;
 
   // read flags
   lwmqtt_connack_flags_t flags;
@@ -263,13 +263,13 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
+  // advance pointer
+  ptr++;
+
   // check lengths
   if (rem_len != 2 || buf_len < rem_len + 2) {
     return LWMQTT_LENGTH_MISMATCH;
   }
-
-  // advance pointer
-  ptr++;
 
   // read packet id
   *packet_id = (unsigned short)lwmqtt_read_int(&ptr);
@@ -334,6 +334,8 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
+
+  // advance pointer
   ptr += rc;
 
   // check lengths
@@ -471,6 +473,8 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
   if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
+
+  // advance pointer
   ptr += rc;
 
   unsigned char *end_ptr = ptr + rem_len;
