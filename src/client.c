@@ -1,5 +1,7 @@
 #include "client.h"
 
+// TODO: Cleanup code.
+
 static int lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packet_id = (c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1;
 }
@@ -263,7 +265,7 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_
   c->keep_alive_interval = options->keep_alive;
 
   // set keep alive timer
-  // TODO: Skip that is keep alive is zero?
+  // TODO: Skip that if keep alive is zero?
   c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
 
   // encode connect packet

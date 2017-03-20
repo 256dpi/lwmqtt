@@ -1,8 +1,6 @@
 #ifndef LWMQTT_PACKET_H
 #define LWMQTT_PACKET_H
 
-// TODO: Make sure all functions properly propagate the errors.
-
 #include <stdbool.h>
 
 #include "helpers.h"
