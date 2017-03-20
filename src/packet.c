@@ -39,8 +39,7 @@ int lwmqtt_total_header_length(int rem_len) {
   }
 }
 
-// TODO: Increment pointer directly?
-int lwmqtt_decode_remaining_length(unsigned char *buf, int *rem_len) {
+static int lwmqtt_decode_remaining_length(unsigned char **buf, int *rem_len) {
   unsigned char c;
   int multiplier = 1;
   int len = 0;
@@ -53,11 +52,13 @@ int lwmqtt_decode_remaining_length(unsigned char *buf, int *rem_len) {
       return LWMQTT_REMAINING_LENGTH_OVERFLOW;
     }
 
-    c = buf[len - 1];
+    c = (*buf)[len - 1];
 
     *rem_len += (c & 127) * multiplier;
     multiplier *= 128;
   } while ((c & 128) != 0);
+
+  *buf += len;
 
   return len;
 }
@@ -200,13 +201,10 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
 
   // read remaining length
   int rem_len;
-  int err = lwmqtt_decode_remaining_length(ptr, &rem_len);
+  int err = lwmqtt_decode_remaining_length(&ptr, &rem_len);
   if (err == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
-
-  // advance pointer
-  ptr += err;
 
   // check lengths
   if (rem_len != 2 || buf_len < rem_len + 2) {
@@ -258,13 +256,10 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned
 
   // read remaining length
   int rem_len;
-  int err = lwmqtt_decode_remaining_length(ptr, &rem_len);
+  int err = lwmqtt_decode_remaining_length(&ptr, &rem_len);
   if (err == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
-
-  // advance pointer
-  ptr += err;
 
   // check lengths
   if (rem_len != 2 || buf_len < rem_len + 2) {
@@ -330,13 +325,10 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
 
   // read remaining length
   int rem_len = 0;
-  int rc = lwmqtt_decode_remaining_length(ptr, &rem_len);
+  int rc = lwmqtt_decode_remaining_length(&ptr, &rem_len);
   if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
-
-  // advance pointer
-  ptr += rc;
 
   // check lengths
   if (buf_len < rem_len + 2) {
@@ -469,13 +461,10 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
 
   // read remaining length
   int rem_len;
-  int rc = lwmqtt_decode_remaining_length(ptr, &rem_len);
+  int rc = lwmqtt_decode_remaining_length(&ptr, &rem_len);
   if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
-
-  // advance pointer
-  ptr += rc;
 
   unsigned char *end_ptr = ptr + rem_len;
 
