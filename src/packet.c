@@ -200,7 +200,8 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
 
   // read remaining length
   int len;
-  if (lwmqtt_decode_remaining_length(ptr, &len) == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
+  int err = lwmqtt_decode_remaining_length(ptr, &len);
+  if (err == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
@@ -257,7 +258,8 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned
 
   // read remaining length
   int rem_len;
-  if (lwmqtt_decode_remaining_length(cur_ptr, &rem_len) == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
+  int err = lwmqtt_decode_remaining_length(cur_ptr, &rem_len);
+  if (err == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
@@ -329,6 +331,9 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   // read remaining length
   int rem_len = 0;
   int rc = lwmqtt_decode_remaining_length(ptr, &rem_len);
+  if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
   ptr += rc;
 
   // check lengths
@@ -463,6 +468,9 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
   // read remaining length
   int rem_len;
   int rc = lwmqtt_decode_remaining_length(ptr, &rem_len);
+  if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
   ptr += rc;
 
   unsigned char *end_ptr = ptr + rem_len;
