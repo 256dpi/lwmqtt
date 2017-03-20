@@ -199,14 +199,14 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
   }
 
   // read remaining length
-  int len;
-  int err = lwmqtt_decode_remaining_length(ptr, &len);
+  int rem_len;
+  int err = lwmqtt_decode_remaining_length(ptr, &rem_len);
   if (err == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
   // check lengths
-  if (len != 2 || buf_len < len + 2) {
+  if (rem_len != 2 || buf_len < rem_len + 2) {
     return LWMQTT_LENGTH_MISMATCH;
   }
 
