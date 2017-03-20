@@ -206,7 +206,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
   }
 
   // advance pointer
-  ptr++;
+  ptr += err;
 
   // check lengths
   if (rem_len != 2 || buf_len < rem_len + 2) {
@@ -264,7 +264,7 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned
   }
 
   // advance pointer
-  ptr++;
+  ptr += err;
 
   // check lengths
   if (rem_len != 2 || buf_len < rem_len + 2) {
