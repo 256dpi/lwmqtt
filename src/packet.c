@@ -39,7 +39,7 @@ int lwmqtt_total_header_length(int rem_len) {
   }
 }
 
-static int lwmqtt_decode_remaining_length(unsigned char **buf, int *rem_len) {
+static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int *rem_len) {
   unsigned char c;
   int multiplier = 1;
   int len = 0;
@@ -60,7 +60,7 @@ static int lwmqtt_decode_remaining_length(unsigned char **buf, int *rem_len) {
 
   *buf += len;
 
-  return len;
+  return LWMQTT_SUCCESS;
 }
 
 typedef union {
@@ -201,9 +201,9 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
 
   // read remaining length
   int rem_len;
-  int err = lwmqtt_decode_remaining_length(&ptr, &rem_len);
-  if (err == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
-    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, &rem_len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // check lengths
@@ -256,9 +256,9 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned
 
   // read remaining length
   int rem_len;
-  int err = lwmqtt_decode_remaining_length(&ptr, &rem_len);
-  if (err == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
-    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, &rem_len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // check lengths
@@ -324,10 +324,10 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   *retained = header.bits.retain == 1;
 
   // read remaining length
-  int rem_len = 0;
-  int rc = lwmqtt_decode_remaining_length(&ptr, &rem_len);
-  if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
-    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  int rem_len;
+  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, &rem_len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // check lengths
@@ -461,9 +461,9 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
 
   // read remaining length
   int rem_len;
-  int rc = lwmqtt_decode_remaining_length(&ptr, &rem_len);
-  if (rc == LWMQTT_REMAINING_LENGTH_OVERFLOW) {
-    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, &rem_len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   unsigned char *end_ptr = ptr + rem_len;
