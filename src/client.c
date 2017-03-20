@@ -1,9 +1,11 @@
+#include <string.h>
+
 #include "client.h"
 
 // TODO: Cleanup code.
 
-static int lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
-  return c->next_packet_id = (c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1;
+static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
+  return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
 }
 
 static int lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
@@ -342,7 +344,6 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
       rc = 0;
     }
   } else {
-    printf("ok\n");
     rc = LWMQTT_FAILURE;
   }
 

@@ -1,8 +1,6 @@
 #ifndef LWMQTT_CLIENT_H
 #define LWMQTT_CLIENT_H
 
-#include <stdio.h>
-
 #include "helpers.h"
 #include "packet.h"
 
@@ -31,7 +29,8 @@ typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
 typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_message_t *);
 
 struct lwmqtt_client_t {
-  unsigned int next_packet_id, command_timeout;
+  unsigned short next_packet_id;
+  unsigned int command_timeout;
   int write_buf_size, read_buf_size;
   unsigned char *write_buf, *read_buf;
   unsigned int keep_alive_interval;
