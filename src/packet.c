@@ -69,6 +69,32 @@ static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int buf_
   return LWMQTT_SUCCESS;
 }
 
+lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf) {
+  // prepare pointer
+  unsigned char *ptr = buf;
+
+  // read header
+  lwmqtt_header_t header;
+  header.byte = lwmqtt_read_char(&ptr);
+
+  // check if packet type is correct and can be received
+  switch((lwmqtt_packet_t)header.bits.type) {
+    case LWMQTT_CONNACK_PACKET:
+    case LWMQTT_PUBLISH_PACKET:
+    case LWMQTT_PUBACK_PACKET:
+    case LWMQTT_PUBREC_PACKET:
+    case LWMQTT_PUBREL_PACKET:
+    case LWMQTT_PUBCOMP_PACKET:
+    case LWMQTT_SUBACK_PACKET:
+    case LWMQTT_UNSUBACK_PACKET:
+    case LWMQTT_PINGRESP_PACKET:
+    case LWMQTT_INVALID_PACKET:
+      return (lwmqtt_packet_t)header.bits.type;
+    default:
+      return LWMQTT_INVALID_PACKET;
+  }
+}
+
 typedef union {
   unsigned char byte;
 

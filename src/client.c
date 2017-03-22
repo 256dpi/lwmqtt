@@ -92,17 +92,20 @@ static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
 }
 
 static int lwmqtt_read_packet(lwmqtt_client_t *c) {
-  lwmqtt_header_t header = {0};
-  int len = 0;
-  int rem_len = 0;
-
-  // 1. read the header byte.  This has the src type in it
+  // read header byte
   int rc = c->network_read(c, c->network_ref, c->read_buf, 1, c->timer_get(c, c->timer_network_ref));
   if (rc != 1) {
     return rc;
   }
 
-  len = 1;
+  // detect packet type
+  lwmqtt_packet_t packet = lwmqtt_detect_packet_type(c->read_buf);
+  if (packet == LWMQTT_INVALID_PACKET) {
+    return LWMQTT_FAILURE;
+  }
+
+  int len = 1;
+  int rem_len = 0;
 
   // 2. read the remaining length.  This is variable in itself
   len += lwmqtt_decode_packet(c, &rem_len, c->timer_get(c, c->timer_network_ref));
@@ -116,9 +119,7 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
     return rc;
   }
 
-  header.byte = c->read_buf[0];
-
-  return header.bits.type;
+  return packet;
 }
 
 static int lwmqtt_keep_alive(lwmqtt_client_t *c) {

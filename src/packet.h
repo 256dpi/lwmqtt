@@ -39,6 +39,7 @@ typedef enum {
   LWMQTT_PINGREQ_PACKET,
   LWMQTT_PINGRESP_PACKET,
   LWMQTT_DISCONNECT_PACKET,
+  LWMQTT_INVALID_PACKET
 } lwmqtt_packet_t;
 
 /**
@@ -54,7 +55,18 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
+// Remove:
 int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len);
+
+/**
+ * Will detect the packet type from the at least one byte long buffer.
+ *
+ * If the packet cannot be received by a client, LWMQTT_INVALID_PACKET is returned instead.
+ *
+ * @param buf
+ * @return
+ */
+lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf);
 
 /**
  * Defines the MQTT "Last Will and Testament" (LWT) settings for
