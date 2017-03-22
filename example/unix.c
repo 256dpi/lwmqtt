@@ -42,10 +42,7 @@ int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref) {
 
 int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) {
   // close any open socket
-  if (n->socket) {
-    close(n->socket);
-    n->socket = 0;
-  }
+  lwmqtt_unix_network_disconnect(n);
 
   // prepare resolver data
   struct sockaddr_in address;
@@ -95,19 +92,12 @@ int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *addr, int port) 
 
   // connect socket
   rc = connect(n->socket, (struct sockaddr *)&address, sizeof(address));
-  if (rc >= 0) {
-    return LWMQTT_SUCCESS;
-  }
-
-  // close obtained socket
-  rc = close(n->socket);
   if (rc < 0) {
+    printf("lwmqtt_unix_network_connect: %d\n", errno);
     return LWMQTT_FAILURE;
   }
 
-  printf("lwmqtt_unix_network_connect: %d\n", errno);
-
-  return LWMQTT_FAILURE;
+  return LWMQTT_SUCCESS;
 }
 
 void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n) {
@@ -172,11 +162,10 @@ int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buff
 
   // write to socket
   int bytes = (int)send(n->socket, buffer, (size_t)len, 0);
-  if (bytes >= 0) {
-    return bytes;
+  if (bytes < 0) {
+    printf("lwmqtt_unix_network_write: %d\n", errno);
+    return LWMQTT_FAILURE;
   }
 
-  printf("lwmqtt_unix_network_write: %d\n", errno);
-
-  return LWMQTT_FAILURE;
+  return bytes;
 }
