@@ -5,6 +5,9 @@
 
 #include "helpers.h"
 
+/**
+ * The used error codes.
+ */
 typedef enum {
   LWMQTT_SUCCESS = 0,
   LWMQTT_FAILURE = -1,
@@ -13,8 +16,14 @@ typedef enum {
   LWMQTT_LENGTH_MISMATCH = -4
 } lwmqtt_err_t;
 
+/**
+ * The available QOS levels.
+ */
 typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2 } lwmqtt_qos_t;
 
+/**
+ * The available packet types.
+ */
 typedef enum {
   LWMQTT_CONNECT_PACKET = 1,
   LWMQTT_CONNACK_PACKET,
