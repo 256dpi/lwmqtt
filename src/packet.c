@@ -49,7 +49,7 @@ static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int buf_
     len++;
 
     // return error if the passed buffer is to short
-    if(buf_len < len) {
+    if (buf_len < len) {
       return LWMQTT_BUFFER_TOO_SHORT_ERROR;
     }
 
@@ -78,7 +78,7 @@ lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf) {
   header.byte = lwmqtt_read_char(&ptr);
 
   // check if packet type is correct and can be received
-  switch((lwmqtt_packet_t)header.bits.type) {
+  switch ((lwmqtt_packet_t)header.bits.type) {
     case LWMQTT_CONNACK_PACKET:
     case LWMQTT_PUBLISH_PACKET:
     case LWMQTT_PUBACK_PACKET:
@@ -93,6 +93,14 @@ lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf) {
     default:
       return LWMQTT_INVALID_PACKET;
   }
+}
+
+lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int *rem_len) {
+  // prepare pointer
+  unsigned char *ptr = buf;
+
+  // attempt to decode remaining length
+  return lwmqtt_decode_remaining_length(&ptr, buf_len, rem_len);
 }
 
 typedef union {
@@ -233,7 +241,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
 
   // read remaining length
   int rem_len;
-  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len-1, &rem_len);
+  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len - 1, &rem_len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -288,7 +296,7 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned
 
   // read remaining length
   int rem_len;
-  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len-1 ,&rem_len);
+  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len - 1, &rem_len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -357,7 +365,7 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
 
   // read remaining length
   int rem_len;
-  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len-1, &rem_len);
+  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len - 1, &rem_len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -493,7 +501,7 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
 
   // read remaining length
   int rem_len;
-  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len-1, &rem_len);
+  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len - 1, &rem_len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }

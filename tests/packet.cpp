@@ -6,6 +6,40 @@ extern "C" {
 
 #include "macros.h"
 
+TEST(DetectPacketType, Valid) {
+  unsigned char h = LWMQTT_CONNACK_PACKET << 4;
+  lwmqtt_packet_t p = lwmqtt_detect_packet_type(&h);
+  EXPECT_EQ(p, LWMQTT_CONNACK_PACKET);
+}
+
+TEST(DetectPacketType, Invalid) {
+  unsigned char h = 255;
+  lwmqtt_packet_t p = lwmqtt_detect_packet_type(&h);
+  EXPECT_EQ(p, LWMQTT_INVALID_PACKET);
+}
+
+TEST(DetectRemainingLength, Valid) {
+  unsigned char h = 60;
+  int rem_len = 0;
+  lwmqtt_err_t err = lwmqtt_detect_remaining_length(&h, 1, &rem_len);
+  EXPECT_EQ(rem_len, 60);
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+}
+
+TEST(DetectRemainingLength, ToShort) {
+  unsigned char h = 255;
+  int rem_len = 0;
+  lwmqtt_err_t err = lwmqtt_detect_remaining_length(&h, 1, &rem_len);
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+}
+
+TEST(DetectRemainingLength, Overflow) {
+  unsigned char h[5] = {255, 255, 255, 255, 255};
+  int rem_len = 0;
+  lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, 5, &rem_len);
+  EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_OVERFLOW);
+}
+
 TEST(ConnectTest, Encode1) {
   unsigned char pkt[62] = {
       LWMQTT_CONNECT_PACKET << 4,

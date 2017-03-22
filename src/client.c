@@ -66,31 +66,6 @@ void lwmqtt_client_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *ne
 
 void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb) { c->callback = cb; }
 
-// TODO: Duplicate code...
-static int lwmqtt_decode_packet(lwmqtt_client_t *c, int *value, int timeout) {
-  unsigned char i;
-  int multiplier = 1;
-  int len = 0;
-
-  *value = 0;
-  do {
-    len++;
-    if (len > 4) {
-      return LWMQTT_REMAINING_LENGTH_OVERFLOW;  // bad data
-    }
-
-    int rc = c->network_read(c, c->network_ref, &i, 1, timeout);
-    if (rc != 1) {
-      return len;
-    }
-
-    *value += (i & 127) * multiplier;
-    multiplier *= 128;
-  } while ((i & 128) != 0);
-
-  return len;
-}
-
 static int lwmqtt_read_packet(lwmqtt_client_t *c) {
   // read header byte
   int rc = c->network_read(c, c->network_ref, c->read_buf, 1, c->timer_get(c, c->timer_network_ref));
@@ -104,19 +79,36 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
     return LWMQTT_FAILURE;
   }
 
-  int len = 1;
+  // prepare variables
+  int len = 0;
   int rem_len = 0;
+  lwmqtt_err_t err;
 
-  // 2. read the remaining length.  This is variable in itself
-  len += lwmqtt_decode_packet(c, &rem_len, c->timer_get(c, c->timer_network_ref));
+  do {
+    // adjust len
+    len++;
 
-  // TODO: Can we remove this unnecessary call?
-  lwmqtt_encode_remaining_length(c->read_buf + 1, rem_len);  // put the original remaining length back into the buffer
+    // read next byte
+    rc = c->network_read(c, c->network_ref, c->read_buf + len, 1, c->timer_get(c, c->timer_network_ref));
+    if (rc != 1) {
+      return rc;
+    }
 
-  // 3. read the rest of the buffer using a callback to supply the rest of the data
-  if (rem_len > 0 && (rc = c->network_read(c, c->network_ref, c->read_buf + len, rem_len,
-                                           c->timer_get(c, c->timer_network_ref)) != rem_len)) {
-    return rc;
+    // attempt to detect remaining length
+    err = lwmqtt_detect_remaining_length(c->read_buf + 1, len, &rem_len);
+  } while (err == LWMQTT_BUFFER_TOO_SHORT_ERROR);
+
+  // check final error
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  // read the rest of the buffer if needed
+  if (rem_len > 0) {
+    rc = c->network_read(c, c->network_ref, c->read_buf + 1 + len, rem_len, c->timer_get(c, c->timer_network_ref));
+    if (rc != rem_len) {
+      return rc;
+    }
   }
 
   return packet;

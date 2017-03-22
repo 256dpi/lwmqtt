@@ -69,6 +69,18 @@ int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len);
 lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf);
 
 /**
+ * Will detect the remaining length form the at least on byte long buffer.
+ *
+ * It will return LWMQTT_BUFFER_TOO_SHORT_ERROR if the buffer is to short and an additional byte should be read from the
+ * network. In case the remaining length is overflowed it will return LWMQTT_REMAINING_LENGTH_OVERFLOW.
+ *
+ * @param buf
+ * @param buf_len
+ * @return
+ */
+lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int *rem_len);
+
+/**
  * Defines the MQTT "Last Will and Testament" (LWT) settings for
  * the connect packet.
  */
