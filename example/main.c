@@ -42,7 +42,7 @@ static void test(lwmqtt_qos_t qos) {
 
   int rc = lwmqtt_unix_network_connect(&n, "127.0.0.1", 1883);
   if (rc != LWMQTT_SUCCESS) {
-    printf("failed lwmqtt_unix_network_connect\n");
+    printf("failed lwmqtt_unix_network_connect: %d\n", rc);
     exit(1);
   }
 
@@ -51,13 +51,13 @@ static void test(lwmqtt_qos_t qos) {
 
   rc = lwmqtt_client_connect(&c, &data, NULL, NULL);
   if (rc != LWMQTT_SUCCESS) {
-    printf("failed lwmqtt_client_connect\n");
+    printf("failed lwmqtt_client_connect: %d\n", rc);
     exit(1);
   }
 
   rc = lwmqtt_client_subscribe(&c, "hello", qos);
   if (rc != LWMQTT_SUCCESS) {
-    printf("failed lwmqtt_client_subscribe\n");
+    printf("failed lwmqtt_client_subscribe: %d\n", rc);
     exit(1);
   }
 
@@ -71,20 +71,20 @@ static void test(lwmqtt_qos_t qos) {
 
     rc = lwmqtt_client_publish(&c, "hello", &msg);
     if (rc != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_client_publish\n");
+      printf("failed lwmqtt_client_publish: %d\n", rc);
       exit(1);
     }
 
     rc = lwmqtt_client_yield(&c, 10);
     if (rc != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_client_yield\n");
+      printf("failed lwmqtt_client_yield: %d\n", rc);
       exit(1);
     }
   }
 
   rc = lwmqtt_client_disconnect(&c);
   if (rc != LWMQTT_SUCCESS) {
-    printf("failed lwmqtt_client_disconnect\n");
+    printf("failed lwmqtt_client_disconnect: %d\n", rc);
     exit(1);
   }
 
