@@ -1,16 +1,20 @@
 #ifndef LWMQTT_HELPERS_H
 #define LWMQTT_HELPERS_H
 
-typedef struct {
-  int len;
-  char *data;
-} lwmqtt_lp_string_t;
-
+/**
+ * A multi value string. Can be either a c string or a length prefixed string.
+ */
 typedef struct {
   char *c_string;
-  lwmqtt_lp_string_t lp_string;
+  struct {
+    int len;
+    char *data;
+  } lp_string;
 } lwmqtt_string_t;
 
+/**
+ * The initializer for string structs.
+ */
 #define lwmqtt_default_string \
   {                           \
     NULL, { 0, NULL }         \
