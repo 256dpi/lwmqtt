@@ -71,13 +71,13 @@ static void test(lwmqtt_qos_t qos) {
 
     rc = lwmqtt_client_publish(&c, "hello", &msg);
     if (rc != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_client_publish: %d\n", rc);
+      printf("failed lwmqtt_client_publish: %d (%d)\n", rc, counter);
       exit(1);
     }
 
     rc = lwmqtt_client_yield(&c, 10);
     if (rc != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_client_yield: %d\n", rc);
+      printf("failed lwmqtt_client_yield: %d (%d)\n", rc, counter);
       exit(1);
     }
   }
