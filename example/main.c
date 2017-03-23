@@ -82,6 +82,12 @@ static void test(lwmqtt_qos_t qos) {
     }
   }
 
+  rc = lwmqtt_client_unsubscribe(&c, "hello");
+  if (rc != LWMQTT_SUCCESS) {
+    printf("failed lwmqtt_client_unsubscribe: %d\n", rc);
+    exit(1);
+  }
+
   rc = lwmqtt_client_disconnect(&c);
   if (rc != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_client_disconnect: %d\n", rc);
