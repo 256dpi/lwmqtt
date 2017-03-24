@@ -2,8 +2,8 @@
 
 #include "client.h"
 
-void lwmqtt_client_init(lwmqtt_client_t *c, unsigned int command_timeout, unsigned char *write_buf, int write_buf_size,
-                        unsigned char *read_buf, int read_buf_size) {
+void lwmqtt_init(lwmqtt_client_t *c, unsigned int command_timeout, unsigned char *write_buf, int write_buf_size,
+                 unsigned char *read_buf, int read_buf_size) {
   c->command_timeout = command_timeout;
   c->write_buf = write_buf;
   c->write_buf_size = write_buf_size;
@@ -15,15 +15,14 @@ void lwmqtt_client_init(lwmqtt_client_t *c, unsigned int command_timeout, unsign
   c->next_packet_id = 1;
 }
 
-void lwmqtt_client_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_read_t read,
-                               lwmqtt_network_write_t write) {
+void lwmqtt_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write) {
   c->network_ref = ref;
   c->network_read = read;
   c->networked_write = write;
 }
 
-void lwmqtt_client_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
-                              lwmqtt_timer_get_t get) {
+void lwmqtt_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
+                       lwmqtt_timer_get_t get) {
   c->timer_keep_alive_ref = keep_alive_ref;
   c->timer_network_ref = network_ref;
   c->timer_set = set;
@@ -33,7 +32,7 @@ void lwmqtt_client_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *ne
   c->timer_set(c, c->timer_network_ref, 0);
 }
 
-void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb) { c->callback = cb; }
+void lwmqtt_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb) { c->callback = cb; }
 
 static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
@@ -310,7 +309,7 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_t *pack
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_client_yield(lwmqtt_client_t *c, unsigned int timeout) {
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *c, unsigned int timeout) {
   // set timeout
   c->timer_set(c, c->timer_network_ref, timeout);
 
@@ -327,8 +326,8 @@ lwmqtt_err_t lwmqtt_client_yield(lwmqtt_client_t *c, unsigned int timeout) {
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
-                                   lwmqtt_connack_t *connack) {
+lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
+                            lwmqtt_connack_t *connack) {
   // return immediately if already connected
   if (c->is_connected) {
     return LWMQTT_FAILURE;
@@ -389,7 +388,7 @@ lwmqtt_err_t lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos) {
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos) {
   // immediately return error if not connected
   if (!c->is_connected) {
     return LWMQTT_FAILURE;
@@ -437,7 +436,7 @@ lwmqtt_err_t lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filte
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic) {
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *c, const char *topic) {
   // immediately return error if not connected
   if (!c->is_connected) {
     return LWMQTT_FAILURE;
@@ -484,7 +483,7 @@ lwmqtt_err_t lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic) {
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_message_t *message) {
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_message_t *message) {
   // immediately return error if not connected
   if (!c->is_connected) {
     return LWMQTT_FAILURE;
@@ -558,7 +557,7 @@ lwmqtt_err_t lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lw
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_client_disconnect(lwmqtt_client_t *c) {
+lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *c) {
   // set timer
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
 
