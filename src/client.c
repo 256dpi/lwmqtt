@@ -4,20 +4,31 @@
 
 void lwmqtt_init(lwmqtt_client_t *c, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
                  int read_buf_size) {
+  c->next_packet_id = 1;
+  c->keep_alive_interval = 0;
+  c->ping_outstanding = false;
+  c->is_connected = false;
+
   c->write_buf = write_buf;
   c->write_buf_size = write_buf_size;
   c->read_buf = read_buf;
   c->read_buf_size = read_buf_size;
-  c->is_connected = 0;
-  c->ping_outstanding = 0;
   c->callback = NULL;
-  c->next_packet_id = 1;
+
+  c->network_ref = NULL;
+  c->network_read = NULL;
+  c->network_write = NULL;
+
+  c->timer_keep_alive_ref = NULL;
+  c->timer_network_ref = NULL;
+  c->timer_set = NULL;
+  c->timer_get = NULL;
 }
 
 void lwmqtt_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write) {
   c->network_ref = ref;
   c->network_read = read;
-  c->networked_write = write;
+  c->network_write = write;
 }
 
 void lwmqtt_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
@@ -105,7 +116,7 @@ static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
   // write until all data is sent or an error is returned
   while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
     // write to network
-    lwmqtt_err_t err = c->networked_write(c, c->network_ref, &c->write_buf[sent], length, &sent,
+    lwmqtt_err_t err = c->network_write(c, c->network_ref, &c->write_buf[sent], length, &sent,
                                           c->timer_get(c, c->timer_network_ref));
     if (err != LWMQTT_SUCCESS) {
       return err;
@@ -153,7 +164,7 @@ static lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *c) {
   }
 
   // set flag
-  c->ping_outstanding = 1;
+  c->ping_outstanding = true;
 
   return LWMQTT_SUCCESS;
 }
@@ -266,7 +277,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_t *packet) {
     // handle pingresp packets
     case LWMQTT_PINGRESP_PACKET: {
       // set flag
-      c->ping_outstanding = 0;
+      c->ping_outstanding = false;
 
       break;
     }
@@ -373,7 +384,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqt
   }
 
   // set connected flag
-  c->is_connected = 1;
+  c->is_connected = true;
 
   return LWMQTT_SUCCESS;
 }
@@ -559,7 +570,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *c, unsigned int timeout) {
   }
 
   // set connected flag
-  c->is_connected = 0;
+  c->is_connected = false;
 
   // send disconnected packet
   lwmqtt_err_t err = lwmqtt_send_packet(c, len);

@@ -31,8 +31,8 @@ typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_m
 struct lwmqtt_client_t {
   unsigned short next_packet_id;
   unsigned int keep_alive_interval;
-  char ping_outstanding;
-  int is_connected;
+  bool ping_outstanding;
+  bool is_connected;
 
   int write_buf_size, read_buf_size;
   unsigned char *write_buf, *read_buf;
@@ -41,16 +41,13 @@ struct lwmqtt_client_t {
 
   void *network_ref;
   lwmqtt_network_read_t network_read;
-  lwmqtt_network_write_t networked_write;
+  lwmqtt_network_write_t network_write;
 
   void *timer_keep_alive_ref;
   void *timer_network_ref;
   lwmqtt_timer_set_t timer_set;
   lwmqtt_timer_get_t timer_get;
 };
-
-#define lwmqtt_default_client \
-  { 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 /**
  * Create an MQTT client object.
