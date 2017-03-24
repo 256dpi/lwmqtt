@@ -2,6 +2,16 @@
 
 #include "packet.h"
 
+typedef union {
+    unsigned char byte;
+    struct {
+        unsigned int retain : 1;
+        unsigned int qos : 2;
+        unsigned int dup : 1;
+        unsigned int type : 4;
+    } bits;
+} lwmqtt_header_t;
+
 static int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
   // init len counter
   int len = 0;

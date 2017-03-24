@@ -6,7 +6,7 @@
 #include "helpers.h"
 
 /**
- * The used error codes.
+ * The error type used by all exposed APIs.
  */
 typedef enum {
   LWMQTT_SUCCESS = 0,
@@ -26,8 +26,8 @@ typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2 } lwmqtt_qos_t;
  * The available packet types.
  */
 typedef enum {
-  LWMQTT_NO_PACKET = -1,
-  LWMQTT_INVALID_PACKET = 0,
+  LWMQTT_INVALID_PACKET = -1,
+  LWMQTT_NO_PACKET = 0,
   LWMQTT_CONNECT_PACKET = 1,
   LWMQTT_CONNACK_PACKET,
   LWMQTT_PUBLISH_PACKET,
@@ -43,19 +43,6 @@ typedef enum {
   LWMQTT_PINGRESP_PACKET,
   LWMQTT_DISCONNECT_PACKET
 } lwmqtt_packet_t;
-
-/**
- * Bitfields for the MQTT header byte.
- */
-typedef union {
-  unsigned char byte;
-  struct {
-    unsigned int retain : 1;
-    unsigned int qos : 2;
-    unsigned int dup : 1;
-    unsigned int type : 4;
-  } bits;
-} lwmqtt_header_t;
 
 /**
  * Will detect the packet type from the at least one byte long buffer.
