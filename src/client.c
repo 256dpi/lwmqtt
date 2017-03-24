@@ -195,28 +195,30 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_t *packet) {
         c->callback(c, &topic, &msg);
       }
 
+      // break early of qos zero
+      if (msg.qos == LWMQTT_QOS0) {
+        break;
+      }
+
+      // define ack packet
+      lwmqtt_packet_t ack = LWMQTT_NO_PACKET;
+      if (msg.qos == LWMQTT_QOS1) {
+        ack = LWMQTT_PUBREC_PACKET;
+      } else if (msg.qos == LWMQTT_QOS2) {
+        ack = LWMQTT_PUBREL_PACKET;
+      }
+
+      // encode ack packet
       int len;
+      err = lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, ack, false, msg.id);
+      if (err != LWMQTT_SUCCESS) {
+        return err;
+      }
 
-      if (msg.qos == LWMQTT_QOS1 || msg.qos == LWMQTT_QOS2) {
-        if (msg.qos == LWMQTT_QOS1) {
-          // encode puback packet
-          err = lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, LWMQTT_PUBACK_PACKET, false, msg.id);
-          if (err != LWMQTT_SUCCESS) {
-            return err;
-          }
-        } else if (msg.qos == LWMQTT_QOS2) {
-          // encode pubrec packet
-          err = lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, LWMQTT_PUBREC_PACKET, false, msg.id);
-          if (err != LWMQTT_SUCCESS) {
-            return err;
-          }
-        }
-
-        // send puback or pubrec packet
-        err = lwmqtt_send_packet(c, len);
-        if (err != LWMQTT_SUCCESS) {
-          return err;
-        }
+      // send ack packet
+      err = lwmqtt_send_packet(c, len);
+      if (err != LWMQTT_SUCCESS) {
+        return err;
       }
 
       break;
