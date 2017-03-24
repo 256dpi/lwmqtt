@@ -127,13 +127,12 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned ch
     // read from socket
     rc = (int)recv(n->socket, &buffer[*read], (size_t)(len - *read), 0);
     if (rc == -1) {
-      // immediately return if connection has been lost
-      if (errno != ENOTCONN && errno != ECONNRESET) {
-        return LWMQTT_FAILURE;
+      // finish current loop on timeout
+      if (errno == EAGAIN) {
+        break;
       }
 
-      // stop reading
-      break;
+      return LWMQTT_FAILURE;
     } else if (rc == 0) {
       // finish if no more data
       break;

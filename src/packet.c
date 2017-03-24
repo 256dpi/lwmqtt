@@ -50,7 +50,7 @@ static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int buf_
 
     // return error if the passed buffer is to short
     if (buf_len < len) {
-      return LWMQTT_BUFFER_TOO_SHORT_ERROR;
+      return LWMQTT_BUFFER_TOO_SHORT;
     }
 
     // return error if the length has overflowed
@@ -156,7 +156,7 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
 
   // check buffer capacity
   if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
-    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
+    return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   /* encode packet */
@@ -266,7 +266,7 @@ lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqt
 
   // check buffer length
   if (buf_len < 2) {
-    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
+    return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   // write header
@@ -319,7 +319,7 @@ lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt
 
   // check buffer size
   if (buf_len < 4) {
-    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
+    return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   // write header
@@ -413,7 +413,7 @@ lwmqtt_err_t lwmqtt_encode_publish(unsigned char *buf, int buf_len, int *len, bo
 
   // check buffer size
   if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
-    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
+    return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   // write header
@@ -460,7 +460,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, int *len, 
 
   // check buffer size
   if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
-    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
+    return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   // write header
@@ -543,7 +543,7 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len
 
   // check buffer size
   if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
-    return LWMQTT_BUFFER_TOO_SHORT_ERROR;
+    return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   // write header

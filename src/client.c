@@ -66,22 +66,23 @@ static int lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
   return rc;
 }
 
-static int lwmqtt_read_packet(lwmqtt_client_t *c) {
+static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_t *packet) {
   // prepare read counter
   int read = 0;
+
+  // TODO: Improve method to allow timeouts happening while reading the rest of the packet.
 
   // read header byte
   lwmqtt_err_t err = c->network_read(c, c->network_ref, c->read_buf, 1, &read, c->timer_get(c, c->timer_network_ref));
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (read != 1) {
-    // TODO: Return a more descriptive error?
-    return LWMQTT_FAILURE;
+    return LWMQTT_NO_DATA;
   }
 
   // detect packet type
-  lwmqtt_packet_t packet = lwmqtt_detect_packet_type(c->read_buf);
-  if (packet == LWMQTT_INVALID_PACKET) {
+  *packet = lwmqtt_detect_packet_type(c->read_buf);
+  if (*packet == LWMQTT_INVALID_PACKET) {
     return LWMQTT_FAILURE;
   }
 
@@ -99,13 +100,12 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
     if (err != LWMQTT_SUCCESS) {
       return err;
     } else if (read != 1) {
-      // TODO: Return a more descriptive error?
-      return LWMQTT_FAILURE;
+      return LWMQTT_NOT_ENOUGH_DATA;
     }
 
     // attempt to detect remaining length
     err = lwmqtt_detect_remaining_length(c->read_buf + 1, len, &rem_len);
-  } while (err == LWMQTT_BUFFER_TOO_SHORT_ERROR);
+  } while (err == LWMQTT_BUFFER_TOO_SHORT);
 
   // check final error
   if (err != LWMQTT_SUCCESS) {
@@ -120,12 +120,11 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
     if (err != LWMQTT_SUCCESS) {
       return err;
     } else if (read != rem_len) {
-      // TODO: Return a more descriptive error?
-      return LWMQTT_FAILURE;
+      return LWMQTT_NOT_ENOUGH_DATA;
     }
   }
 
-  return packet;
+  return LWMQTT_SUCCESS;
 }
 
 static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
@@ -158,15 +157,19 @@ static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
 // TODO: Send Pubcomp after receiving a Pubrel?
 
 static int lwmqtt_cycle(lwmqtt_client_t *c) {
-  // read the socket, see what work is due
-  int packet_type = lwmqtt_read_packet(c);
-  if (packet_type == 0) {
-    return LWMQTT_FAILURE;  // no more data to read, unrecoverable
+  // read next packet from the network
+  lwmqtt_packet_t packet;
+  lwmqtt_err_t err = lwmqtt_read_packet(c, &packet);
+  if (err == LWMQTT_NO_DATA) {
+    return 0;
+  }
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   int len = 0, rc = LWMQTT_SUCCESS;
 
-  switch (packet_type) {
+  switch (packet) {
     case LWMQTT_PUBLISH_PACKET: {
       lwmqtt_string_t topicName;
       lwmqtt_message_t msg;
@@ -228,8 +231,8 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
 
   lwmqtt_keep_alive(c);
 
-  if (rc == LWMQTT_SUCCESS && packet_type != LWMQTT_FAILURE) {
-    rc = packet_type;
+  if (rc == LWMQTT_SUCCESS) {
+    rc = packet;
   }
 
   return rc;

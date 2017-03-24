@@ -30,7 +30,7 @@ TEST(DetectRemainingLength, ToShort) {
   unsigned char h = 255;
   int rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(&h, 1, &rem_len);
-  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(DetectRemainingLength, Overflow) {
@@ -165,7 +165,7 @@ TEST(ConnectTest, EncodeError1) {
   int len;
   lwmqtt_err_t err = lwmqtt_encode_connect(buf, 4, &len, &opts, NULL);
 
-  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(ConnackTest, Decode1) {
@@ -297,7 +297,7 @@ TEST(AckTest, EncodeError1) {
   int len;
   lwmqtt_err_t err = lwmqtt_encode_ack(buf, 2, &len, LWMQTT_PUBACK_PACKET, 0, 7);
 
-  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(PublishTest, Decode1) {
@@ -503,7 +503,7 @@ TEST(PublishTest, EncodeError1) {
   int len;
   lwmqtt_err_t err = lwmqtt_encode_publish(buf, 2, &len, false, LWMQTT_QOS0, false, 0, topic, payload, 12);
 
-  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(SubackTest, Decode1) {
@@ -614,7 +614,7 @@ TEST(SubscribeTest, EncodeError1) {
   int len;
   lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 2, &len, 7, 1, topic_filters, qos_levels);
 
-  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(UnsubscribeTest, Encode1) {
@@ -679,5 +679,5 @@ TEST(UnsubscribeTest, EncodeError1) {
   int len;
   lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 2, &len, 7, 1, topic_filters);
 
-  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT_ERROR);
+  EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
