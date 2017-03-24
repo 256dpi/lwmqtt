@@ -14,8 +14,7 @@ typedef enum {
   LWMQTT_BUFFER_TOO_SHORT = -2,
   LWMQTT_REMAINING_LENGTH_OVERFLOW = -3,
   LWMQTT_LENGTH_MISMATCH = -4,
-  LWMQTT_NO_DATA = -5,
-  LWMQTT_NOT_ENOUGH_DATA = -6
+  LWMQTT_NOT_ENOUGH_DATA = -5
 } lwmqtt_err_t;
 
 /**
@@ -71,7 +70,7 @@ lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf);
 /**
  * Will detect the remaining length form the at least on byte long buffer.
  *
- * It will return LWMQTT_BUFFER_TOO_SHORT_ERROR if the buffer is to short and an additional byte should be read from the
+ * It will return LWMQTT_BUFFER_TOO_SHORT if the buffer is to short and an additional byte should be read from the
  * network. In case the remaining length is overflowed it will return LWMQTT_REMAINING_LENGTH_OVERFLOW.
  *
  * @param buf

@@ -59,7 +59,8 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_t *pack
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (read != 1) {
-    return LWMQTT_NO_DATA;
+    *packet = LWMQTT_NO_PACKET;
+    return LWMQTT_SUCCESS;
   }
 
   // detect packet type
@@ -172,10 +173,10 @@ static lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *c) {
 static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_t *packet) {
   // read next packet from the network
   lwmqtt_err_t err = lwmqtt_read_packet(c, packet);
-  if (err == LWMQTT_NO_DATA) {
-    return LWMQTT_SUCCESS;
-  } else if (err != LWMQTT_SUCCESS) {
+  if (err != LWMQTT_SUCCESS) {
     return err;
+  } else if (*packet == LWMQTT_NO_PACKET) {
+    return LWMQTT_SUCCESS;
   }
 
   switch (*packet) {
