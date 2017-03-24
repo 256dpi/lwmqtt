@@ -42,31 +42,6 @@ static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
 }
 
-static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
-  // prepare counter
-  int sent = 0;
-
-  // write until all data is sent or an error is returned
-  while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
-    // write to network
-    lwmqtt_err_t err = c->networked_write(c, c->network_ref, &c->write_buf[sent], length, &sent,
-                                          c->timer_get(c, c->timer_network_ref));
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    }
-  }
-
-  // check length
-  if (sent != length) {
-    return LWMQTT_NOT_ENOUGH_DATA;
-  }
-
-  // reset keep alive timer
-  c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
-
-  return LWMQTT_SUCCESS;
-}
-
 static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_t *packet) {
   // prepare read counter
   int read = 0;
@@ -124,6 +99,31 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_t *pack
       return LWMQTT_NOT_ENOUGH_DATA;
     }
   }
+
+  return LWMQTT_SUCCESS;
+}
+
+static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
+  // prepare counter
+  int sent = 0;
+
+  // write until all data is sent or an error is returned
+  while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
+    // write to network
+    lwmqtt_err_t err = c->networked_write(c, c->network_ref, &c->write_buf[sent], length, &sent,
+                                          c->timer_get(c, c->timer_network_ref));
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+  }
+
+  // check length
+  if (sent != length) {
+    return LWMQTT_NOT_ENOUGH_DATA;
+  }
+
+  // reset keep alive timer
+  c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
 
   return LWMQTT_SUCCESS;
 }
