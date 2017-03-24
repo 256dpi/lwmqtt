@@ -30,12 +30,12 @@ typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_m
 
 struct lwmqtt_client_t {
   unsigned short next_packet_id;
-  unsigned int command_timeout;
-  int write_buf_size, read_buf_size;
-  unsigned char *write_buf, *read_buf;
   unsigned int keep_alive_interval;
   char ping_outstanding;
   int is_connected;
+
+  int write_buf_size, read_buf_size;
+  unsigned char *write_buf, *read_buf;
 
   lwmqtt_callback_t callback;
 
@@ -62,8 +62,8 @@ struct lwmqtt_client_t {
  * @param read_buf
  * @param read_buf_size
  */
-void lwmqtt_init(lwmqtt_client_t *c, unsigned int command_timeout, unsigned char *write_buf, int write_buf_size,
-                 unsigned char *read_buf, int read_buf_size);
+void lwmqtt_init(lwmqtt_client_t *c, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
+                 int read_buf_size);
 
 void lwmqtt_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
@@ -80,7 +80,7 @@ void lwmqtt_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
  *  @return success code
  */
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
-                            lwmqtt_connack_t *connack);
+                            lwmqtt_connack_t *connack, unsigned int timeout);
 
 /**
  * MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
@@ -89,7 +89,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqt
  *  @param message - the message to send
  *  @return success code
  */
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_message_t *msg);
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_message_t *msg, unsigned int timeout);
 
 /**
  * MQTT Subscribe - send an MQTT subscribe packet and wait for suback before returning.
@@ -99,7 +99,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_messag
  * @param qos
  * @return
  */
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos);
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos, unsigned int timeout);
 
 /**
  * MQTT Subscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
@@ -107,14 +107,14 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmq
  *  @param topic - the topic filter to unsubscribe from
  *  @return success code
  */
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *c, const char *topic);
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *c, const char *topic, unsigned int timeout);
 
 /**
  * MQTT Disconnect - send an MQTT disconnect packet and close the connection
  *  @param client - the client object to use
  *  @return success code
  */
-lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *c);
+lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *c, unsigned int timeout);
 
 /**
  * MQTT Yield - MQTT background
