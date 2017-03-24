@@ -168,18 +168,17 @@ static lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *c) {
   return LWMQTT_SUCCESS;
 }
 
-// TODO: Send Pubcomp after receiving a Pubrel?
-
 static int lwmqtt_cycle(lwmqtt_client_t *c) {
   // read next packet from the network
   lwmqtt_packet_t packet;
   lwmqtt_err_t err = lwmqtt_read_packet(c, &packet);
   if (err == LWMQTT_NO_DATA) {
     return 0;
-  }
-  if (err != LWMQTT_SUCCESS) {
+  } else if (err != LWMQTT_SUCCESS) {
     return err;
   }
+
+  // TODO: Send Pubcomp after receiving a Pubrel?
 
   int len = 0, rc = LWMQTT_SUCCESS;
 
