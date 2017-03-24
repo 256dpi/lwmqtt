@@ -26,7 +26,7 @@ static void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *t, lwmqtt_messa
   counter++;
 }
 
-static void test(lwmqtt_qos_t qos) {
+static void testSendAndReceive(lwmqtt_qos_t qos) {
   unsigned char buf1[512], buf2[512];
 
   lwmqtt_unix_network_t network;
@@ -98,6 +98,46 @@ static void test(lwmqtt_qos_t qos) {
   lwmqtt_unix_network_disconnect(&network);
 }
 
+static void testKeepAlive() {
+  unsigned char buf1[512], buf2[512];
+
+  lwmqtt_unix_network_t network;
+  lwmqtt_unix_timer_t timer1, timer2;
+
+  lwmqtt_client_t client;
+
+  lwmqtt_init(&client, buf1, 512, buf2, 512);
+
+  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_callback(&client, message_arrived);
+
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "127.0.0.1", 1883);
+  if (err != LWMQTT_SUCCESS) {
+    printf("failed lwmqtt_unix_network_connect: %d\n", err);
+    exit(1);
+  }
+
+  lwmqtt_options_t data = lwmqtt_default_options;
+  data.client_id.c_string = "lwmqtt";
+  data.keep_alive = 5;
+
+  lwmqtt_return_code_t return_code;
+  err = lwmqtt_connect(&client, &data, NULL, &return_code, 1000);
+  if (err != LWMQTT_SUCCESS) {
+    printf("failed lwmqtt_connect: %d (%d)\n", err, return_code);
+    exit(1);
+  }
+
+  while (true) {
+    err = lwmqtt_yield(&client, 10);
+    if (err != LWMQTT_SUCCESS) {
+      printf("failed lwmqtt_yield: %d (%d)\n", err, counter);
+      exit(1);
+    }
+  }
+}
+
 int main() {
   for (int i = 0; i < PAYLOAD_LEN; i++) {
     payload[i] = 'x';
@@ -106,15 +146,16 @@ int main() {
   payload[PAYLOAD_LEN] = 0;
 
   printf("Running QoS 0 tests...\n");
-  test(LWMQTT_QOS0);
+  testSendAndReceive(LWMQTT_QOS0);
 
   printf("Running QoS 1 tests...\n");
-  test(LWMQTT_QOS1);
+  testSendAndReceive(LWMQTT_QOS1);
 
   printf("Running QoS 2 tests...\n");
-  test(LWMQTT_QOS2);
+  testSendAndReceive(LWMQTT_QOS2);
 
-  printf("Finished all tests.\n");
+  printf("Running Keep Alive test...\n");
+  testKeepAlive();
 
   return 0;
 }
