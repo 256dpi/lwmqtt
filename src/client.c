@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <string.h>
 
 #include "client.h"
@@ -128,37 +127,45 @@ static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
   return LWMQTT_SUCCESS;
 }
 
-static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
-  int rc = LWMQTT_FAILURE;
-
+static lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *c) {
+  // return immediately if keep alive interval is zero
   if (c->keep_alive_interval == 0) {
+    return LWMQTT_SUCCESS;
+  }
+
+  // fail immediately if a ping is still outstanding
+  if (c->ping_outstanding) {
+    return LWMQTT_FAILURE;
+  }
+
+  // return immediately if no ping is due
+  if (c->timer_get(c, c->timer_keep_alive_ref) > 0) {
     return LWMQTT_SUCCESS;
   }
 
   // TODO: Retain global network timer and use command timeout to send the message?
 
-  // check if keep alive timer is expired
-  if (c->timer_get(c, c->timer_keep_alive_ref) <= 0) {
-    if (!c->ping_outstanding) {
-      // reset network timer
-      // TODO: Should we pass in a timeout from cycle?
-      c->timer_set(c, c->timer_network_ref, 1000);
+  // reset network timer
+  // TODO: Should we pass in a timeout from cycle?
+  c->timer_set(c, c->timer_network_ref, 1000);
 
-      int len;
-      lwmqtt_encode_zero(c->write_buf, c->write_buf_size, &len, LWMQTT_PINGREQ_PACKET);
-      if (len > 0) {
-        // send packet
-        lwmqtt_err_t err = lwmqtt_send_packet(c, len);
-        if (err != LWMQTT_SUCCESS) {
-          return err;
-        }
-
-        c->ping_outstanding = 1;
-      }
-    }
+  // encode pingreq packet
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_zero(c->write_buf, c->write_buf_size, &len, LWMQTT_PINGREQ_PACKET);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
-  return rc;
+  // send packet
+  err = lwmqtt_send_packet(c, len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  // set flag
+  c->ping_outstanding = 1;
+
+  return LWMQTT_SUCCESS;
 }
 
 // TODO: Send Pubcomp after receiving a Pubrel?
@@ -244,7 +251,11 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
     default: { break; }
   }
 
-  lwmqtt_keep_alive(c);
+  // check keep alive
+  err = lwmqtt_keep_alive(c);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
 
   if (rc == LWMQTT_SUCCESS) {
     rc = packet;
