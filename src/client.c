@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "client.h"
@@ -41,29 +42,29 @@ static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
 }
 
-static int lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
-  int rc, sent = 0;
+static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
+  // prepare counter
+  int sent = 0;
 
+  // write until all data is sent or an error is returned
   while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
-    rc = c->networked_write(c, c->network_ref, &c->write_buf[sent], length, c->timer_get(c, c->timer_network_ref));
-
-    if (rc < 0) {  // there was an error writing the data
-      break;
+    // write to network
+    lwmqtt_err_t err = c->networked_write(c, c->network_ref, &c->write_buf[sent], length, &sent,
+                                          c->timer_get(c, c->timer_network_ref));
+    if (err != LWMQTT_SUCCESS) {
+      return err;
     }
-
-    sent += rc;
   }
 
-  if (sent == length) {
-    // reset keep alive timer
-    c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
-
-    rc = LWMQTT_SUCCESS;
-  } else {
-    rc = LWMQTT_FAILURE;
+  // check length
+  if (sent != length) {
+    return LWMQTT_NOT_ENOUGH_DATA;
   }
 
-  return rc;
+  // reset keep alive timer
+  c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
+
+  return LWMQTT_SUCCESS;
 }
 
 static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_t *packet) {
@@ -145,7 +146,13 @@ static int lwmqtt_keep_alive(lwmqtt_client_t *c) {
 
       int len;
       lwmqtt_encode_zero(c->write_buf, c->write_buf_size, &len, LWMQTT_PINGREQ_PACKET);
-      if (len > 0 && (rc = lwmqtt_send_packet(c, len)) == LWMQTT_SUCCESS) {  // send the ping src
+      if (len > 0) {
+        // send packet
+        lwmqtt_err_t err = lwmqtt_send_packet(c, len);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
+
         c->ping_outstanding = 1;
       }
     }
@@ -193,7 +200,11 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
         if (len <= 0) {
           rc = LWMQTT_FAILURE;
         } else {
-          rc = lwmqtt_send_packet(c, len);
+          // send packet
+          err = lwmqtt_send_packet(c, len);
+          if (err != LWMQTT_SUCCESS) {
+            return err;
+          }
         }
 
         if (rc == LWMQTT_FAILURE) {
@@ -212,8 +223,12 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
         rc = LWMQTT_FAILURE;
       } else if (lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, LWMQTT_PUBREL_PACKET, 0, packet_id) <= 0) {
         rc = LWMQTT_FAILURE;
-      } else if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {
-        rc = LWMQTT_FAILURE;
+      } else {
+        // send packet
+        err = lwmqtt_send_packet(c, len);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
       }
 
       if (rc == LWMQTT_FAILURE) {
@@ -287,8 +302,9 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_
   }
 
   // send packet
-  if (lwmqtt_send_packet(c, len) != LWMQTT_SUCCESS) {
-    return LWMQTT_FAILURE;
+  lwmqtt_err_t err = lwmqtt_send_packet(c, len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // wait for connack packet
@@ -337,8 +353,10 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
     return LWMQTT_FAILURE;
   }
 
-  if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the subscribe src
-    return rc;                                                // there was a problem
+  // send packet
+  err = lwmqtt_send_packet(c, len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   if (lwmqtt_cycle_until(c, LWMQTT_SUBACK_PACKET) == LWMQTT_SUBACK_PACKET)  // wait for suback
@@ -376,8 +394,11 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
       LWMQTT_SUCCESS) {
     return rc;
   }
-  if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the subscribe src
-    return rc;                                                // there was a problem
+
+  // send packet
+  lwmqtt_err_t err = lwmqtt_send_packet(c, len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   if (lwmqtt_cycle_until(c, LWMQTT_UNSUBACK_PACKET) == LWMQTT_UNSUBACK_PACKET) {
@@ -395,13 +416,12 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
 }
 
 int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_message_t *message) {
-  int rc = LWMQTT_FAILURE;
   lwmqtt_string_t topic = lwmqtt_default_string;
   topic.c_string = (char *)topicName;
   int len = 0;
 
   if (!c->is_connected) {
-    return rc;
+    return LWMQTT_FAILURE;
   }
 
   c->timer_set(c, c->timer_network_ref, c->command_timeout);
@@ -417,8 +437,10 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
     return err;
   }
 
-  if ((rc = lwmqtt_send_packet(c, len)) != LWMQTT_SUCCESS) {  // send the subscribe src
-    return rc;                                                // there was a problem
+  // send packet
+  err = lwmqtt_send_packet(c, len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   if (message->qos == LWMQTT_QOS1) {
@@ -427,9 +449,9 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
       lwmqtt_packet_t packet;
       bool dup;
       if (lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS)
-        rc = LWMQTT_FAILURE;
+        return LWMQTT_FAILURE;
     } else {
-      rc = LWMQTT_FAILURE;
+      return LWMQTT_FAILURE;
     }
   } else if (message->qos == LWMQTT_QOS2) {
     if (lwmqtt_cycle_until(c, LWMQTT_PUBCOMP_PACKET) == LWMQTT_PUBCOMP_PACKET) {
@@ -437,13 +459,13 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
       lwmqtt_packet_t packet;
       bool dup;
       if (lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS)
-        rc = LWMQTT_FAILURE;
+        return LWMQTT_FAILURE;
     } else {
-      rc = LWMQTT_FAILURE;
+      return LWMQTT_FAILURE;
     }
   }
 
-  return rc;
+  return LWMQTT_SUCCESS;
 }
 
 int lwmqtt_client_disconnect(lwmqtt_client_t *c) {

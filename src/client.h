@@ -22,7 +22,8 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
 
 typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *read,
                                               int timeout);
-typedef int (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
+typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *sent,
+                                               int timeout);
 
 typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *c, void *ref, unsigned int timeout);
 typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);

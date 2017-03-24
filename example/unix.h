@@ -17,6 +17,7 @@ void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n);
 
 lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *read,
                                       int timeout);
-int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int timeout);
+lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *sent,
+                                       int timeout);
 
 #endif  // LWMQTT_PORT_H

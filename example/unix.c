@@ -122,6 +122,8 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned ch
     return LWMQTT_FAILURE;
   }
 
+  // TODO: Move loop to calling function?
+
   // loop until buffer is full
   while (*read < len) {
     // read from socket
@@ -144,7 +146,8 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned ch
   return LWMQTT_SUCCESS;
 }
 
-int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout) {
+lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int *sent,
+                                       int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
@@ -164,5 +167,8 @@ int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buff
     return LWMQTT_FAILURE;
   }
 
-  return bytes;
+  // increment counter
+  *sent += bytes;
+
+  return LWMQTT_SUCCESS;
 }
