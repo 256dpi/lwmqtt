@@ -8,13 +8,13 @@ extern "C" {
 
 TEST(DetectPacketType, Valid) {
   unsigned char h = LWMQTT_CONNACK_PACKET << 4;
-  lwmqtt_packet_t p = lwmqtt_detect_packet_type(&h);
+  lwmqtt_packet_type_t p = lwmqtt_detect_packet_type(&h);
   EXPECT_EQ(p, LWMQTT_CONNACK_PACKET);
 }
 
 TEST(DetectPacketType, Invalid) {
   unsigned char h = 255;
-  lwmqtt_packet_t p = lwmqtt_detect_packet_type(&h);
+  lwmqtt_packet_type_t p = lwmqtt_detect_packet_type(&h);
   EXPECT_EQ(p, LWMQTT_INVALID_PACKET);
 }
 
@@ -232,13 +232,13 @@ TEST(AckTest, Decode1) {
       7,  // packet ID LSB
   };
 
-  lwmqtt_packet_t type;
+  lwmqtt_packet_type_t packet_type;
   bool dup;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 4);
+  lwmqtt_err_t err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, pkt, 4);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
-  EXPECT_EQ(type, LWMQTT_PUBACK_PACKET);
+  EXPECT_EQ(packet_type, LWMQTT_PUBACK_PACKET);
   EXPECT_EQ(dup, false);
   EXPECT_EQ(packet_id, 7);
 }
@@ -251,10 +251,10 @@ TEST(AckTest, DecodeError1) {
       7,  // packet ID LSB
   };
 
-  lwmqtt_packet_t type;
+  lwmqtt_packet_type_t packet_type;
   bool dup;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 4);
+  lwmqtt_err_t err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, pkt, 4);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
@@ -267,10 +267,10 @@ TEST(AckTest, DecodeError2) {
           //  <- insufficient bytes
   };
 
-  lwmqtt_packet_t type;
+  lwmqtt_packet_type_t packet_type;
   bool dup;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 4);
+  lwmqtt_err_t err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, pkt, 4);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
@@ -537,10 +537,10 @@ TEST(SubackTest, DecodeError1) {
       0,  // return code 1
   };
 
-  lwmqtt_packet_t type;
+  lwmqtt_packet_type_t packet_type;
   bool dup;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&type, &dup, &packet_id, pkt, 5);
+  lwmqtt_err_t err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, pkt, 5);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }

@@ -3,13 +3,13 @@
 #include "packet.h"
 
 typedef union {
-    unsigned char byte;
-    struct {
-        unsigned int retain : 1;
-        unsigned int qos : 2;
-        unsigned int dup : 1;
-        unsigned int type : 4;
-    } bits;
+  unsigned char byte;
+  struct {
+    unsigned int retain : 1;
+    unsigned int qos : 2;
+    unsigned int dup : 1;
+    unsigned int type : 4;
+  } bits;
 } lwmqtt_header_t;
 
 static int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
@@ -78,7 +78,7 @@ static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int buf_
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf) {
+lwmqtt_packet_type_t lwmqtt_detect_packet_type(unsigned char *buf) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -87,7 +87,7 @@ lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf) {
   header.byte = lwmqtt_read_char(&ptr);
 
   // check if packet type is correct and can be received
-  switch ((lwmqtt_packet_t)header.bits.type) {
+  switch ((lwmqtt_packet_type_t)header.bits.type) {
     case LWMQTT_CONNACK_PACKET:
     case LWMQTT_PUBLISH_PACKET:
     case LWMQTT_PUBACK_PACKET:
@@ -98,7 +98,7 @@ lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf) {
     case LWMQTT_UNSUBACK_PACKET:
     case LWMQTT_PINGRESP_PACKET:
     case LWMQTT_INVALID_PACKET:
-      return (lwmqtt_packet_t)header.bits.type;
+      return (lwmqtt_packet_type_t)header.bits.type;
     default:
       return LWMQTT_INVALID_PACKET;
   }
@@ -114,7 +114,6 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int
 
 typedef union {
   unsigned char byte;
-
   struct {
     unsigned int _ : 1;
     unsigned int clean_session : 1;
@@ -268,7 +267,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_t packet) {
+lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -279,7 +278,7 @@ lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqt
 
   // write header
   lwmqtt_header_t header = {0};
-  header.bits.type = packet;
+  header.bits.type = packet_type;
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
@@ -291,8 +290,8 @@ lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqt
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned short *packet_id, unsigned char *buf,
-                               int buf_len) {
+lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, unsigned short *packet_id,
+                               unsigned char *buf, int buf_len) {
   // prepare pointer
   unsigned char *ptr = buf;
 
@@ -300,7 +299,7 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned
   lwmqtt_header_t header = {0};
   header.byte = lwmqtt_read_char(&ptr);
   *dup = header.bits.dup == 1;
-  *packet_type = (lwmqtt_packet_t)header.bits.type;
+  *packet_type = (lwmqtt_packet_type_t)header.bits.type;
 
   // read remaining length
   int rem_len;
@@ -320,7 +319,7 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet_type, bool *dup, unsigned
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_t packet, bool dup,
+lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type, bool dup,
                                unsigned short packet_id) {
   // prepare pointer
   unsigned char *ptr = buf;
@@ -332,9 +331,9 @@ lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt
 
   // write header
   lwmqtt_header_t header = {0};
-  header.bits.type = packet;
+  header.bits.type = packet_type;
   header.bits.dup = dup ? 1 : 0;
-  header.bits.qos = (packet == LWMQTT_PUBREL_PACKET) ? 1 : 0;
+  header.bits.qos = (packet_type == LWMQTT_PUBREL_PACKET) ? 1 : 0;
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length

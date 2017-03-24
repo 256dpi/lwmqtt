@@ -42,7 +42,7 @@ typedef enum {
   LWMQTT_PINGREQ_PACKET,
   LWMQTT_PINGRESP_PACKET,
   LWMQTT_DISCONNECT_PACKET
-} lwmqtt_packet_t;
+} lwmqtt_packet_type_t;
 
 /**
  * Will detect the packet type from the at least one byte long buffer.
@@ -52,7 +52,7 @@ typedef enum {
  * @param buf
  * @return
  */
-lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf);
+lwmqtt_packet_type_t lwmqtt_detect_packet_type(unsigned char *buf);
 
 /**
  * Will detect the remaining length form the at least on byte long buffer.
@@ -133,7 +133,8 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
   * @param len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, unsigned char *buf, int buf_len);
+lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, unsigned char *buf,
+                                   int buf_len);
 
 /**
   * Encodes a disconnect packet into the supplied buffer, ready for writing to a socket
@@ -142,7 +143,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *
   * @param buf_len The length in bytes of the supplied buffer, to avoid overruns.
   * @return Encoded length, or error if 0.
   */
-lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_t packet);
+lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type);
 
 /**
   * Decodes the supplied (wire) buffer into an ack
@@ -154,10 +155,10 @@ lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqt
   * @param buf_len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_t *packet, bool *dup, unsigned short *packet_id, unsigned char *buf,
-                               int buf_len);
+lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, unsigned short *packet_id,
+                               unsigned char *buf, int buf_len);
 
-lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_t packet, bool dup,
+lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type, bool dup,
                                unsigned short packet_id);
 
 /**
