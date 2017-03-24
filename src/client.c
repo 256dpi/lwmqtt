@@ -49,8 +49,6 @@ static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
 }
 
 static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
-  // TODO: Improve method to allow timeouts happening while reading the rest of the packet.
-
   // read header byte
   int read = 0;
   lwmqtt_err_t err = c->network_read(c, c->network_ref, c->read_buf, 1, &read, c->timer_get(c, c->timer_network_ref));
