@@ -168,21 +168,20 @@ static lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *c) {
   return LWMQTT_SUCCESS;
 }
 
-static int lwmqtt_cycle(lwmqtt_client_t *c) {
+static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_t *packet) {
   // read next packet from the network
-  lwmqtt_packet_t packet;
-  lwmqtt_err_t err = lwmqtt_read_packet(c, &packet);
+  lwmqtt_err_t err = lwmqtt_read_packet(c, packet);
   if (err == LWMQTT_NO_DATA) {
-    return 0;
+    return LWMQTT_SUCCESS;
   } else if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
   // TODO: Send Pubcomp after receiving a Pubrel?
 
-  int len = 0, rc = LWMQTT_SUCCESS;
+  int len = 0;
 
-  switch (packet) {
+  switch (*packet) {
     case LWMQTT_PUBLISH_PACKET: {
       lwmqtt_string_t topicName;
       lwmqtt_message_t msg;
@@ -204,7 +203,7 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
         }
 
         if (len <= 0) {
-          rc = LWMQTT_FAILURE;
+          return LWMQTT_FAILURE;
         } else {
           // send packet
           err = lwmqtt_send_packet(c, len);
@@ -212,23 +211,20 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
             return err;
           }
         }
-
-        if (rc == LWMQTT_FAILURE) {
-          return LWMQTT_FAILURE;
-        }
       }
 
       break;
     }
+
     case LWMQTT_PUBREC_PACKET: {
       unsigned short packet_id;
       lwmqtt_packet_t packet;
       bool dup;
 
       if (lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS) {
-        rc = LWMQTT_FAILURE;
+        return LWMQTT_FAILURE;
       } else if (lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, LWMQTT_PUBREL_PACKET, 0, packet_id) <= 0) {
-        rc = LWMQTT_FAILURE;
+        return LWMQTT_FAILURE;
       } else {
         // send packet
         err = lwmqtt_send_packet(c, len);
@@ -237,16 +233,14 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
         }
       }
 
-      if (rc == LWMQTT_FAILURE) {
-        return LWMQTT_FAILURE;
-      }
-
       break;
     }
+
     case LWMQTT_PINGRESP_PACKET: {
       c->ping_outstanding = 0;
       break;
     }
+
     default: { break; }
   }
 
@@ -256,36 +250,42 @@ static int lwmqtt_cycle(lwmqtt_client_t *c) {
     return err;
   }
 
-  if (rc == LWMQTT_SUCCESS) {
-    rc = packet;
-  }
-
-  return rc;
+  return LWMQTT_SUCCESS;
 }
 
-int rc = LWMQTT_SUCCESS;
-
-int lwmqtt_client_yield(lwmqtt_client_t *c, unsigned int timeout_ms) {
-  c->timer_set(c, c->timer_network_ref, timeout_ms);
-
+static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_t *packet, lwmqtt_packet_t needle) {
+  // loop until timeout has been reached
   do {
-    if (lwmqtt_cycle(c) == LWMQTT_FAILURE) {
-      rc = LWMQTT_FAILURE;
-      break;
+    // do one cycle
+    lwmqtt_err_t err = lwmqtt_cycle(c, packet);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+
+    // check if needle has been found
+    if (needle != LWMQTT_NO_PACKET && *packet == needle) {
+      return LWMQTT_SUCCESS;
     }
   } while (c->timer_get(c, c->timer_network_ref) > 0);
 
-  return rc;
+  return LWMQTT_SUCCESS;
 }
 
-static int lwmqtt_cycle_until(lwmqtt_client_t *c, int packet_type) {
-  int rc = LWMQTT_FAILURE;
+lwmqtt_err_t lwmqtt_client_yield(lwmqtt_client_t *c, unsigned int timeout) {
+  // set timeout
+  c->timer_set(c, c->timer_network_ref, timeout);
 
-  do {
-    if (c->timer_get(c, c->timer_network_ref) <= 0) break;  // we timed out
-  } while ((rc = lwmqtt_cycle(c)) != packet_type);
+  // cycle until timeout has been reached
+  lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
+  lwmqtt_err_t err = lwmqtt_cycle_until(c, &packet, LWMQTT_NO_PACKET);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
 
-  return rc;
+  // set timeout
+  c->timer_set(c, c->timer_network_ref, timeout);
+
+  return LWMQTT_SUCCESS;
 }
 
 int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
@@ -318,7 +318,11 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_
   }
 
   // wait for connack packet
-  if (lwmqtt_cycle_until(c, LWMQTT_CONNACK_PACKET) != LWMQTT_CONNACK_PACKET) {
+  lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
+  err = lwmqtt_cycle_until(c, &packet, LWMQTT_CONNACK_PACKET);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  } else if (packet != LWMQTT_CONNACK_PACKET) {
     return LWMQTT_FAILURE;
   }
 
@@ -369,23 +373,25 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
     return err;
   }
 
-  if (lwmqtt_cycle_until(c, LWMQTT_SUBACK_PACKET) == LWMQTT_SUBACK_PACKET)  // wait for suback
-  {
-    int count = 0;
-    lwmqtt_qos_t grantedQoS;
-    unsigned short packet_id;
-    if (lwmqtt_decode_suback(&packet_id, 1, &count, &grantedQoS, c->read_buf, c->read_buf_size) == LWMQTT_SUCCESS) {
-      rc = grantedQoS;  // 0, 1, 2 or 0x80
-    }
-
-    if (rc != 0x80) {
-      rc = 0;
-    }
-  } else {
-    rc = LWMQTT_FAILURE;
+  // wait for suback packet
+  lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
+  err = lwmqtt_cycle_until(c, &packet, LWMQTT_SUBACK_PACKET);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  } else if (packet != LWMQTT_SUBACK_PACKET) {
+    return LWMQTT_FAILURE;
   }
 
-  return rc;
+  // decode packet
+  int count = 0;
+  lwmqtt_qos_t grantedQoS;
+  unsigned short packet_id;
+  err = lwmqtt_decode_suback(&packet_id, 1, &count, &grantedQoS, c->read_buf, c->read_buf_size);
+  if (err == LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  return LWMQTT_SUCCESS;
 }
 
 int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
@@ -411,18 +417,24 @@ int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter) {
     return err;
   }
 
-  if (lwmqtt_cycle_until(c, LWMQTT_UNSUBACK_PACKET) == LWMQTT_UNSUBACK_PACKET) {
-    lwmqtt_packet_t type;
-    bool dup;
-    unsigned short packet_id;  // should be the same as the packet id above
-    if (lwmqtt_decode_ack(&type, &dup, &packet_id, c->read_buf, c->read_buf_size) == LWMQTT_SUCCESS) {
-      rc = 0;
-    }
-  } else {
-    rc = LWMQTT_FAILURE;
+  // wait for unsuback packet
+  lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
+  err = lwmqtt_cycle_until(c, &packet, LWMQTT_UNSUBACK_PACKET);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  } else if (packet != LWMQTT_UNSUBACK_PACKET) {
+    return LWMQTT_FAILURE;
   }
 
-  return rc;
+  // decode packet
+  bool dup;
+  unsigned short packet_id;
+  err = lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  return LWMQTT_SUCCESS;
 }
 
 int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_message_t *message) {
@@ -454,24 +466,38 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_mess
   }
 
   if (message->qos == LWMQTT_QOS1) {
-    if (lwmqtt_cycle_until(c, LWMQTT_PUBACK_PACKET) == LWMQTT_PUBACK_PACKET) {
-      unsigned short packet_id;
-      lwmqtt_packet_t packet;
-      bool dup;
-      if (lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS)
-        return LWMQTT_FAILURE;
-    } else {
+    // wait for connack packet
+    lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
+    err = lwmqtt_cycle_until(c, &packet, LWMQTT_PUBACK_PACKET);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    } else if (packet != LWMQTT_PUBACK_PACKET) {
       return LWMQTT_FAILURE;
     }
+
+    // decode packet
+    bool dup;
+    unsigned short packet_id;
+    err = lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
   } else if (message->qos == LWMQTT_QOS2) {
-    if (lwmqtt_cycle_until(c, LWMQTT_PUBCOMP_PACKET) == LWMQTT_PUBCOMP_PACKET) {
-      unsigned short packet_id;
-      lwmqtt_packet_t packet;
-      bool dup;
-      if (lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS)
-        return LWMQTT_FAILURE;
-    } else {
+    // wait for connack packet
+    lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
+    err = lwmqtt_cycle_until(c, &packet, LWMQTT_PUBCOMP_PACKET);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    } else if (packet != LWMQTT_PUBCOMP_PACKET) {
       return LWMQTT_FAILURE;
+    }
+
+    // decode packet
+    bool dup;
+    unsigned short packet_id;
+    err = lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
     }
   }
 
