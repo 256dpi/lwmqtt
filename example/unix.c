@@ -122,8 +122,6 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned ch
     return LWMQTT_FAILURE;
   }
 
-  // TODO: Move loop to calling function?
-
   // loop until buffer is full
   while (*read < len) {
     // read from socket

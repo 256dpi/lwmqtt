@@ -111,17 +111,12 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t 
 }
 
 static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
-  // prepare counter
+  // write to network
   int sent = 0;
-
-  // write until all data is sent or an error is returned
-  while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
-    // write to network
-    lwmqtt_err_t err =
-        c->network_write(c, c->network_ref, &c->write_buf[sent], length, &sent, c->timer_get(c, c->timer_network_ref));
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    }
+  lwmqtt_err_t err =
+      c->network_write(c, c->network_ref, c->write_buf, length, &sent, c->timer_get(c, c->timer_network_ref));
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // check length
