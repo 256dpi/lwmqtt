@@ -62,10 +62,10 @@ void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
   lwmqtt_write_int(pptr, 0);
 }
 
-int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr) {
+bool lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr) {
   // check if at lest 2 bytes
   if (end_ptr - (*pptr) <= 1) {
-    return 0;
+    return false;
   }
 
   // read length
@@ -73,7 +73,7 @@ int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned c
 
   // check if string end is overflowing the end pointer
   if (&(*pptr)[len] > end_ptr) {
-    return 0;
+    return false;
   }
 
   // set string
@@ -84,7 +84,7 @@ int lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned c
   // advance pointer
   *pptr += str->lp_string.len;
 
-  return 1;
+  return true;
 }
 
 int lwmqtt_read_int(unsigned char **pptr) {
