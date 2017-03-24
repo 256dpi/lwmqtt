@@ -333,7 +333,7 @@ TEST(PublishTest, Decode1) {
   lwmqtt_qos_t qos;
   bool retained;
   unsigned short packet_id;
-  lwmqtt_string_t topic;
+  lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
   lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 25);
@@ -378,7 +378,7 @@ TEST(PublishTest, Decode2) {
   lwmqtt_qos_t qos;
   bool retained;
   unsigned short packet_id;
-  lwmqtt_string_t topic;
+  lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
   lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 23);
@@ -402,7 +402,7 @@ TEST(PublishTest, DecodeError1) {
   lwmqtt_qos_t qos;
   bool retained;
   unsigned short packet_id;
-  lwmqtt_string_t topic;
+  lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
   lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 2);
