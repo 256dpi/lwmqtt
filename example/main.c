@@ -132,7 +132,7 @@ static void testKeepAlive() {
   while (true) {
     err = lwmqtt_yield(&client, 10);
     if (err != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_yield: %d (%d)\n", err, counter);
+      printf("failed lwmqtt_yield: %d\n", err);
       exit(1);
     }
   }
