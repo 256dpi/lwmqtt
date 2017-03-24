@@ -81,6 +81,12 @@ static void testSendAndReceive(lwmqtt_qos_t qos) {
       printf("failed lwmqtt_yield: %d (%d)\n", err, counter);
       exit(1);
     }
+
+    err = lwmqtt_keep_alive(&client, 10);
+    if (err != LWMQTT_SUCCESS) {
+      printf("failed lwmqtt_keep_alive: %d (%d)\n", err, counter);
+      exit(1);
+    }
   }
 
   err = lwmqtt_unsubscribe(&client, "hello", 1000);
@@ -133,6 +139,12 @@ static void testKeepAlive() {
     err = lwmqtt_yield(&client, 10);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_yield: %d\n", err);
+      exit(1);
+    }
+
+    err = lwmqtt_keep_alive(&client, 10);
+    if (err != LWMQTT_SUCCESS) {
+      printf("failed lwmqtt_keep_alive: %d (%d)\n", err, counter);
       exit(1);
     }
   }

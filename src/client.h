@@ -187,4 +187,13 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
  */
 lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout);
 
+/**
+ * Will yield control to the client to keep the connection alive.
+ *
+ * @param client - The client object.
+ * @param timeout - The command timeout.
+ * @return An error value.
+ */
+lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout);
+
 #endif  // LWMQTT_CLIENT_H

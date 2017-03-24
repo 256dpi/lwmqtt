@@ -125,41 +125,6 @@ static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *c) {
-  // return immediately if keep alive interval is zero
-  if (c->keep_alive_interval == 0) {
-    return LWMQTT_SUCCESS;
-  }
-
-  // fail immediately if a ping is still outstanding
-  if (c->ping_outstanding) {
-    return LWMQTT_FAILURE;
-  }
-
-  // return immediately if no ping is due
-  if (c->timer_get(c, c->timer_keep_alive_ref) > 0) {
-    return LWMQTT_SUCCESS;
-  }
-
-  // encode pingreq packet
-  int len;
-  lwmqtt_err_t err = lwmqtt_encode_zero(c->write_buf, c->write_buf_size, &len, LWMQTT_PINGREQ_PACKET);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
-  }
-
-  // send packet
-  err = lwmqtt_send_packet(c, len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
-  }
-
-  // set flag
-  c->ping_outstanding = true;
-
-  return LWMQTT_SUCCESS;
-}
-
 static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
   // read next packet from the network
   lwmqtt_err_t err = lwmqtt_read_packet(c, packet_type);
@@ -279,12 +244,6 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packe
 
     // handle all other packets
     default: { break; }
-  }
-
-  // check keep alive
-  err = lwmqtt_keep_alive(c);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
   }
 
   return LWMQTT_SUCCESS;
@@ -534,6 +493,44 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout) {
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
+
+  return LWMQTT_SUCCESS;
+}
+
+lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout) {
+  // set timer
+  client->timer_set(client, client->timer_network_ref, timeout);
+
+  // return immediately if keep alive interval is zero
+  if (client->keep_alive_interval == 0) {
+    return LWMQTT_SUCCESS;
+  }
+
+  // fail immediately if a ping is still outstanding
+  if (client->ping_outstanding) {
+    return LWMQTT_FAILURE;
+  }
+
+  // return immediately if no ping is due
+  if (client->timer_get(client, client->timer_keep_alive_ref) > 0) {
+    return LWMQTT_SUCCESS;
+  }
+
+  // encode pingreq packet
+  int len;
+  lwmqtt_err_t err = lwmqtt_encode_zero(client->write_buf, client->write_buf_size, &len, LWMQTT_PINGREQ_PACKET);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  // send packet
+  err = lwmqtt_send_packet(client, len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  // set flag
+  client->ping_outstanding = true;
 
   return LWMQTT_SUCCESS;
 }
