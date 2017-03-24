@@ -26,7 +26,7 @@ static int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
   return len;
 }
 
-int lwmqtt_total_header_length(int rem_len) {
+static int lwmqtt_total_header_length(int rem_len) {
   if (rem_len < 128) {
     return 1 + 1;
   } else if (rem_len < 16384) {
