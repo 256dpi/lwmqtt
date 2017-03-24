@@ -23,7 +23,7 @@ typedef struct {
 /**
  * Returns the length of the string object.
  *
- * @param str - The string to return the length of.
+ * @param str The string to return the length of.
  * @return The length of the string.
  */
 int lwmqtt_strlen(lwmqtt_string_t str);

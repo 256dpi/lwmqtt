@@ -4,6 +4,8 @@
 #include "helpers.h"
 #include "packet.h"
 
+// TODO: Finish docs.
+
 typedef struct {
   lwmqtt_qos_t qos;
   bool retained;
@@ -50,10 +52,9 @@ struct lwmqtt_client_t {
 };
 
 /**
- * Create an MQTT client object.
+ * Initialize the client object.
  *
  * @param client
- * @param command_timeout
  * @param write_buf
  * @param write_buf_size
  * @param read_buf
@@ -72,6 +73,7 @@ void lwmqtt_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
 /**
  * MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
  *  The network object must be connected to the network endpoint before calling this
+ *
  *  @param options - connect options
  *  @param will - the will message
  *  @return success code
@@ -81,6 +83,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqt
 
 /**
  * MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
+ *
  *  @param client - the client object to use
  *  @param topic - the topic to publish to
  *  @param message - the message to send
@@ -99,7 +102,8 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_messag
 lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos, unsigned int timeout);
 
 /**
- * MQTT Subscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
+ * MQTT Unsubscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
+ *
  *  @param client - the client object to use
  *  @param topic - the topic filter to unsubscribe from
  *  @return success code
@@ -108,6 +112,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *c, const char *topic, unsigned 
 
 /**
  * MQTT Disconnect - send an MQTT disconnect packet and close the connection
+ *
  *  @param client - the client object to use
  *  @return success code
  */
@@ -115,6 +120,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *c, unsigned int timeout);
 
 /**
  * MQTT Yield - MQTT background
+ *
  *  @param client - the client object to use
  *  @param time - the time, in milliseconds, to yield for
  *  @return success code

@@ -118,9 +118,10 @@ typedef enum {
 /**
   * Encodes the connect options into the buffer.
   *
-  * @param buf the buffer into which the packet will be encoded
-  * @param len the length in bytes of the supplied buffer
-  * @param options the options to be used to build the connect packet
+  * @param buf The buffer into which the packet will be encoded.
+  * @param buf_len The length in bytes of the supplied buffer.
+  * @param options The options to be used to build the connect packet.
+  * @param will The last will and testament.
   * @return encoded length, or error if 0
   */
 lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lwmqtt_options_t *options,
