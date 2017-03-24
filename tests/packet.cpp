@@ -537,10 +537,10 @@ TEST(SubackTest, DecodeError1) {
       0,  // return code 1
   };
 
-  lwmqtt_packet_type_t packet_type;
-  bool dup;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, pkt, 5);
+  int count;
+  lwmqtt_qos_t granted_qos_levels[2];
+  lwmqtt_err_t err = lwmqtt_decode_suback(&packet_id, 2, &count, granted_qos_levels, pkt, 5);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
