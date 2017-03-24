@@ -34,7 +34,7 @@ static void test(lwmqtt_qos_t qos) {
 
   lwmqtt_client_t c = lwmqtt_default_client;
 
-  lwmqtt_init(&c, 1000, buf1, 512, buf2, 512);
+  lwmqtt_init(&c, buf1, 512, buf2, 512);
 
   lwmqtt_set_network(&c, &n, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&c, &t1, &t2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
@@ -49,13 +49,13 @@ static void test(lwmqtt_qos_t qos) {
   lwmqtt_options_t data = lwmqtt_default_options;
   data.client_id.c_string = "lwmqtt";
 
-  rc = lwmqtt_connect(&c, &data, NULL, NULL);
+  rc = lwmqtt_connect(&c, &data, NULL, NULL, 1000);
   if (rc != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_connect: %d\n", rc);
     exit(1);
   }
 
-  rc = lwmqtt_subscribe(&c, "hello", qos);
+  rc = lwmqtt_subscribe(&c, "hello", qos, 1000);
   if (rc != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_subscribe: %d\n", rc);
     exit(1);
@@ -69,7 +69,7 @@ static void test(lwmqtt_qos_t qos) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    rc = lwmqtt_publish(&c, "hello", &msg);
+    rc = lwmqtt_publish(&c, "hello", &msg, 1000);
     if (rc != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_publish: %d (%d)\n", rc, counter);
       exit(1);
@@ -82,13 +82,13 @@ static void test(lwmqtt_qos_t qos) {
     }
   }
 
-  rc = lwmqtt_unsubscribe(&c, "hello");
+  rc = lwmqtt_unsubscribe(&c, "hello", 1000);
   if (rc != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_unsubscribe: %d\n", rc);
     exit(1);
   }
 
-  rc = lwmqtt_disconnect(&c);
+  rc = lwmqtt_disconnect(&c, 1000);
   if (rc != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_disconnect: %d\n", rc);
     exit(1);

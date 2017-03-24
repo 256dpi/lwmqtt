@@ -50,7 +50,7 @@ struct lwmqtt_client_t {
 };
 
 #define lwmqtt_default_client \
-  { 0, 0, 0, 0, NULL, NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+  { 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 
 /**
  * Create an MQTT client object.
