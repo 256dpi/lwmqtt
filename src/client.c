@@ -4,35 +4,6 @@
 
 // TODO: Cleanup code.
 
-static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
-  return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
-}
-
-static int lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
-  int rc, sent = 0;
-
-  while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
-    rc = c->networked_write(c, c->network_ref, &c->write_buf[sent], length, c->timer_get(c, c->timer_network_ref));
-
-    if (rc < 0) {  // there was an error writing the data
-      break;
-    }
-
-    sent += rc;
-  }
-
-  if (sent == length) {
-    // reset keep alive timer
-    c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
-
-    rc = LWMQTT_SUCCESS;
-  } else {
-    rc = LWMQTT_FAILURE;
-  }
-
-  return rc;
-}
-
 void lwmqtt_client_init(lwmqtt_client_t *c, unsigned int command_timeout, unsigned char *write_buf, int write_buf_size,
                         unsigned char *read_buf, int read_buf_size) {
   c->command_timeout = command_timeout;
@@ -65,6 +36,35 @@ void lwmqtt_client_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *ne
 }
 
 void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb) { c->callback = cb; }
+
+static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
+  return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
+}
+
+static int lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
+  int rc, sent = 0;
+
+  while (sent < length && c->timer_get(c, c->timer_network_ref) > 0) {
+    rc = c->networked_write(c, c->network_ref, &c->write_buf[sent], length, c->timer_get(c, c->timer_network_ref));
+
+    if (rc < 0) {  // there was an error writing the data
+      break;
+    }
+
+    sent += rc;
+  }
+
+  if (sent == length) {
+    // reset keep alive timer
+    c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
+
+    rc = LWMQTT_SUCCESS;
+  } else {
+    rc = LWMQTT_FAILURE;
+  }
+
+  return rc;
+}
 
 static int lwmqtt_read_packet(lwmqtt_client_t *c) {
   // read header byte
