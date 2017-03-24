@@ -2,8 +2,7 @@
 
 #include "packet.h"
 
-// TODO: Make static.
-int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
+static int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
   // init len counter
   int len = 0;
 

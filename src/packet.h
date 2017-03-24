@@ -58,9 +58,6 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-// Remove:
-int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len);
-
 /**
  * Will detect the packet type from the at least one byte long buffer.
  *
