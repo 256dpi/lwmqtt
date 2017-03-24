@@ -518,42 +518,34 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_me
     return err;
   }
 
-  // TODO: Improved the following.
+  // immediately return on qos zero
+  if(message->qos == LWMQTT_QOS0) {
+    return LWMQTT_SUCCESS;
+  }
 
+  // define needle
+  lwmqtt_packet_t needle = LWMQTT_NO_PACKET;
   if (message->qos == LWMQTT_QOS1) {
-    // wait for connack packet
-    lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
-    err = lwmqtt_cycle_until(c, &packet, LWMQTT_PUBACK_PACKET);
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    } else if (packet != LWMQTT_PUBACK_PACKET) {
-      return LWMQTT_FAILURE;
-    }
-
-    // decode packet
-    bool dup;
-    unsigned short packet_id;
-    err = lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size);
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    }
+    needle = LWMQTT_PUBACK_PACKET;
   } else if (message->qos == LWMQTT_QOS2) {
-    // wait for connack packet
-    lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
-    err = lwmqtt_cycle_until(c, &packet, LWMQTT_PUBCOMP_PACKET);
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    } else if (packet != LWMQTT_PUBCOMP_PACKET) {
-      return LWMQTT_FAILURE;
-    }
+    needle = LWMQTT_PUBCOMP_PACKET;
+  }
 
-    // decode packet
-    bool dup;
-    unsigned short packet_id;
-    err = lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size);
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    }
+  // wait for packet
+  lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
+  err = lwmqtt_cycle_until(c, &packet, needle);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  } else if (packet != needle) {
+    return LWMQTT_FAILURE;
+  }
+
+  // decode packet
+  bool dup;
+  unsigned short packet_id;
+  err = lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   return LWMQTT_SUCCESS;
