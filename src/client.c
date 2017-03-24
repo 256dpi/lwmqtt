@@ -525,24 +525,24 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_me
     return LWMQTT_SUCCESS;
   }
 
-  // define needle
-  lwmqtt_packet_t needle = LWMQTT_NO_PACKET;
+  // define ack packet
+  lwmqtt_packet_t ack = LWMQTT_NO_PACKET;
   if (message->qos == LWMQTT_QOS1) {
-    needle = LWMQTT_PUBACK_PACKET;
+    ack = LWMQTT_PUBACK_PACKET;
   } else if (message->qos == LWMQTT_QOS2) {
-    needle = LWMQTT_PUBCOMP_PACKET;
+    ack = LWMQTT_PUBCOMP_PACKET;
   }
 
-  // wait for packet
+  // wait for ack packet
   lwmqtt_packet_t packet = LWMQTT_NO_PACKET;
-  err = lwmqtt_cycle_until(c, &packet, needle);
+  err = lwmqtt_cycle_until(c, &packet, ack);
   if (err != LWMQTT_SUCCESS) {
     return err;
-  } else if (packet != needle) {
+  } else if (packet != ack) {
     return LWMQTT_FAILURE;
   }
 
-  // decode packet
+  // decode ack packet
   bool dup;
   unsigned short packet_id;
   err = lwmqtt_decode_ack(&packet, &dup, &packet_id, c->read_buf, c->read_buf_size);
