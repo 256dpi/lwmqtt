@@ -438,7 +438,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic, unsigned int timeout) {
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, unsigned int timeout) {
   // immediately return error if not connected
   if (!client->is_connected) {
     return LWMQTT_FAILURE;
@@ -449,7 +449,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic, unsi
 
   // prepare string
   lwmqtt_string_t str = lwmqtt_default_string;
-  str.c_string = (char *)topic;
+  str.c_string = (char *)topic_filter;
 
   // encode unsubscribe packet
   int len;

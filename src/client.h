@@ -4,8 +4,6 @@
 #include "helpers.h"
 #include "packet.h"
 
-// TODO: Finish docs.
-
 /**
  * The message structure used to publish and receive messages.
  */
@@ -81,7 +79,7 @@ struct lwmqtt_client_t {
 /**
  * Will initialize the specified client object.
  *
- * @param client
+ * @param client - The client object.
  * @param write_buf
  * @param write_buf_size
  * @param read_buf
@@ -93,21 +91,21 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
 /**
  * Will set the network reference and callbacks for this client object.
  *
- * @param client
- * @param ref
- * @param read
- * @param write
+ * @param client - The client object.
+ * @param ref - The reference to the network object.
+ * @param read The read callback.
+ * @param write The write callback.
  */
 void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
 /**
  * Will set the timer references and callbacks for this client objects.
  *
- * @param client
- * @param keep_alive_ref
- * @param network_ref
- * @param set
- * @param get
+ * @param client - The client object.
+ * @param keep_alive_ref - The reference to the keep alive timer.
+ * @param network_ref - The reference to the network timer.
+ * @param set - The set callback.
+ * @param get - The get callback.
  */
 void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
                        lwmqtt_timer_get_t get);
@@ -115,8 +113,8 @@ void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_ref, void *netw
 /**
  * Will set the callback used to receive incoming messages.
  *
- * @param client
- * @param cb
+ * @param client - The client object.
+ * @param cb - The callback to be called.
  */
 void lwmqtt_set_callback(lwmqtt_client_t *client, lwmqtt_callback_t cb);
 
@@ -126,11 +124,11 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, lwmqtt_callback_t cb);
  * Note: The network object must already be connected to the server. An error is returned if the broker rejects the
  * connection.
  *
- * @param client
- * @param options
- * @param will
- * @param timeout
- * @return
+ * @param client - The client object.
+ * @param options - The options structure.
+ * @param will - The will structure.
+ * @param timeout - The command timeout.
+ * @return An error value.
  */
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, unsigned int timeout);
@@ -138,22 +136,22 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 /**
  * Will send a publish packet and wait for all acks to complete.
  *
- * @param client
- * @param topic
- * @param message
- * @param timeout
- * @return
+ * @param client - The client object.
+ * @param topic - The topic.
+ * @param message - The message.
+ * @param timeout - The command timeout.
+ * @return An error value.
  */
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *msg, unsigned int timeout);
 
 /**
  * Will send a subscribe packet with a single topic filter - qos level pair and wait for the suback to complete.
  *
- * @param client
- * @param topic_filter
- * @param qos
- * @param timeout
- * @return
+ * @param client - The client object.
+ * @param topic_filter - The topic filter.
+ * @param qos - The QoS level.
+ * @param timeout - The command timeout.
+ * @return An error value.
  */
 lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos,
                               unsigned int timeout);
@@ -161,28 +159,28 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
 /**
  * Will send an unsubscribe packet and wait for the unsuback to complete.
  *
- * @param client
- * @param topic
- * @param timeout
- * @return
+ * @param client - The client object.
+ * @param topic_filter - The topic filter.
+ * @param timeout - The command timeout.
+ * @return An error value.
  */
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic, unsigned int timeout);
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, unsigned int timeout);
 
 /**
  * Will send a disconnect packet and finish the client.
  *
- * @param client
- * @param timeout
- * @return
+ * @param client - The client object.
+ * @param timeout - The command timeout.
+ * @return An error value.
  */
 lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
 
 /**
  * Will yield control to the client and read from the network and keep the connection alive.
  *
- * @param client
- * @param timeout
- * @return
+ * @param client - The client object.
+ * @param timeout - The command timeout.
+ * @return An error value.
  */
 lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout);
 
