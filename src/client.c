@@ -185,7 +185,9 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packe
       // decode publish packet
       lwmqtt_string_t topic = lwmqtt_default_string;
       lwmqtt_message_t msg;
-      err = lwmqtt_decode_publish(&msg.dup, &msg.qos, &msg.retained, &msg.id, &topic, (unsigned char **)&msg.payload,
+      bool dup;
+      unsigned short packet_id;
+      err = lwmqtt_decode_publish(&dup, &msg.qos, &msg.retained, &packet_id, &topic, (unsigned char **)&msg.payload,
                                   &msg.payload_len, c->read_buf, c->read_buf_size);
       if (err != LWMQTT_SUCCESS) {
         return err;
@@ -211,7 +213,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packe
 
       // encode ack packet
       int len;
-      err = lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, ack_type, false, msg.id);
+      err = lwmqtt_encode_ack(c->write_buf, c->write_buf_size, &len, ack_type, false, packet_id);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -497,15 +499,16 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_me
   c->timer_set(c, c->timer_network_ref, timeout);
 
   // add packet id if at least qos 1
+  unsigned short packet_id;
   if (message->qos == LWMQTT_QOS1 || message->qos == LWMQTT_QOS2) {
-    message->id = lwmqtt_get_next_packet_id(c);
+    packet_id = lwmqtt_get_next_packet_id(c);
   }
 
   // encode publish packet
   int len = 0;
   lwmqtt_err_t err =
       lwmqtt_encode_publish(c->write_buf, c->write_buf_size, &len, 0, message->qos, (char)(message->retained ? 1 : 0),
-                            message->id, str, (unsigned char *)message->payload, message->payload_len);
+                            packet_id, str, (unsigned char *)message->payload, message->payload_len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -540,7 +543,6 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topicName, lwmqtt_me
 
   // decode ack packet
   bool dup;
-  unsigned short packet_id;
   err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, c->read_buf, c->read_buf_size);
   if (err != LWMQTT_SUCCESS) {
     return err;

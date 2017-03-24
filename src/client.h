@@ -9,14 +9,12 @@
 typedef struct {
   lwmqtt_qos_t qos;
   bool retained;
-  bool dup;
-  unsigned short id;
   void *payload;
   int payload_len;
 } lwmqtt_message_t;
 
 #define lwmqtt_default_message \
-  { LWMQTT_QOS0, 0, 0, 0, NULL, 0 }
+  { LWMQTT_QOS0, false, NULL, 0 }
 
 typedef struct lwmqtt_client_t lwmqtt_client_t;
 
