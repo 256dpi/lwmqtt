@@ -123,20 +123,20 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsign
   // loop until buffer is full
   while (*read < len) {
     // read from socket
-    rc = (int)recv(n->socket, &buffer[*read], (size_t)(len - *read), 0);
-    if (rc == -1) {
+    int bytes = (int)recv(n->socket, &buffer[*read], (size_t)(len - *read), 0);
+    if (bytes < 0) {
       // finish current loop on timeout
       if (errno == EAGAIN) {
         break;
       }
 
       return LWMQTT_FAILURE;
-    } else if (rc == 0) {
+    } else if (bytes == 0) {
       // finish if no more data
       break;
     } else
       // increment counter
-      *read += rc;
+      *read += bytes;
   }
 
   return LWMQTT_SUCCESS;
@@ -154,15 +154,18 @@ lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, unsig
     return LWMQTT_FAILURE;
   }
 
-  // write to socket
-  int bytes = (int)send(n->socket, buffer, (size_t)len, 0);
-  if (bytes < 0) {
-    printf("lwmqtt_unix_network_write: %d\n", errno);
-    return LWMQTT_FAILURE;
+  // loop until all bytes haven been writen
+  while (*sent < len) {
+    // write to socket
+    int bytes = (int)send(n->socket, buffer, (size_t)len, 0);
+    if (bytes < 0) {
+      printf("lwmqtt_unix_network_write: %d\n", errno);
+      return LWMQTT_FAILURE;
+    } else {
+      // increment counter
+      *sent += bytes;
+    }
   }
-
-  // increment counter
-  *sent += bytes;
 
   return LWMQTT_SUCCESS;
 }
