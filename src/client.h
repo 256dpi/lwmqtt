@@ -6,6 +6,9 @@
 
 // TODO: Finish docs.
 
+/**
+ * The message structure used to publish and receive messages.
+ */
 typedef struct {
   lwmqtt_qos_t qos;
   bool retained;
@@ -13,21 +16,47 @@ typedef struct {
   int payload_len;
 } lwmqtt_message_t;
 
+/**
+ * The initializer for messages structures.
+ */
 #define lwmqtt_default_message \
   { LWMQTT_QOS0, false, NULL, 0 }
 
+/**
+ * Forward declaration of the MQTT client object.
+ */
 typedef struct lwmqtt_client_t lwmqtt_client_t;
 
+/**
+ * The callback used to read from a network object.
+ */
 typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *read,
                                               int timeout);
+
+/**
+ * The callback used to write to a network object.
+ */
 typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *sent,
                                                int timeout);
 
+/**
+ * The callback used to set a timer.
+ */
 typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *c, void *ref, unsigned int timeout);
+
+/**
+ * The callback used to get a timers value.
+ */
 typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
 
+/**
+ * The callback used to forward incoming messages.
+ */
 typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_message_t *);
 
+/**
+ * The MQTT client object.
+ */
 struct lwmqtt_client_t {
   unsigned short next_packet_id;
   unsigned int keep_alive_interval;
@@ -50,7 +79,7 @@ struct lwmqtt_client_t {
 };
 
 /**
- * Initialize the client object.
+ * Will initialize the specified client object.
  *
  * @param client
  * @param write_buf
@@ -58,71 +87,103 @@ struct lwmqtt_client_t {
  * @param read_buf
  * @param read_buf_size
  */
-void lwmqtt_init(lwmqtt_client_t *c, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
+void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
                  int read_buf_size);
 
-void lwmqtt_set_network(lwmqtt_client_t *c, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
-
-void lwmqtt_set_timers(lwmqtt_client_t *c, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
-                       lwmqtt_timer_get_t get);
-
-void lwmqtt_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
+/**
+ * Will set the network reference and callbacks for this client object.
+ *
+ * @param client
+ * @param ref
+ * @param read
+ * @param write
+ */
+void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
 /**
- * MQTT Connect - send an MQTT connect packet down the network and wait for a Connack
- *  The network object must be connected to the network endpoint before calling this
+ * Will set the timer references and callbacks for this client objects.
  *
- *  @param options - connect options
- *  @param will - the will message
- *  @return success code
+ * @param client
+ * @param keep_alive_ref
+ * @param network_ref
+ * @param set
+ * @param get
  */
-lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
+void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
+                       lwmqtt_timer_get_t get);
+
+/**
+ * Will set the callback used to receive incoming messages.
+ *
+ * @param client
+ * @param cb
+ */
+void lwmqtt_set_callback(lwmqtt_client_t *client, lwmqtt_callback_t cb);
+
+/**
+ * Will send a connect packet and wait for a connack response and set the return code.
+ *
+ * Note: The network object must already be connected to the server. An error is returned if the broker rejects the
+ * connection.
+ *
+ * @param client
+ * @param options
+ * @param will
+ * @param timeout
+ * @return
+ */
+lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, unsigned int timeout);
 
 /**
- * MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
+ * Will send a publish packet and wait for all acks to complete.
  *
- *  @param client - the client object to use
- *  @param topic - the topic to publish to
- *  @param message - the message to send
- *  @return success code
- */
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_message_t *msg, unsigned int timeout);
-
-/**
- * MQTT Subscribe - send an MQTT subscribe packet and wait for suback before returning.
- *
- * @param c - the client object to use
- * @param topic_filter  - the topic filter to subscribe to
- * @param qos
+ * @param client
+ * @param topic
+ * @param message
+ * @param timeout
  * @return
  */
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos, unsigned int timeout);
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *msg, unsigned int timeout);
 
 /**
- * MQTT Unsubscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
+ * Will send a subscribe packet with a single topic filter - qos level pair and wait for the suback to complete.
  *
- *  @param client - the client object to use
- *  @param topic - the topic filter to unsubscribe from
- *  @return success code
+ * @param client
+ * @param topic_filter
+ * @param qos
+ * @param timeout
+ * @return
  */
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *c, const char *topic, unsigned int timeout);
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos,
+                              unsigned int timeout);
 
 /**
- * MQTT Disconnect - send an MQTT disconnect packet and close the connection
+ * Will send an unsubscribe packet and wait for the unsuback to complete.
  *
- *  @param client - the client object to use
- *  @return success code
+ * @param client
+ * @param topic
+ * @param timeout
+ * @return
  */
-lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *c, unsigned int timeout);
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic, unsigned int timeout);
 
 /**
- * MQTT Yield - MQTT background
+ * Will send a disconnect packet and finish the client.
  *
- *  @param client - the client object to use
- *  @param time - the time, in milliseconds, to yield for
- *  @return success code
+ * @param client
+ * @param timeout
+ * @return
  */
-lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *c, unsigned int timeout);
+lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
+
+/**
+ * Will yield control to the client and read from the network and keep the connection alive.
+ *
+ * @param client
+ * @param timeout
+ * @return
+ */
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout);
 
 #endif  // LWMQTT_CLIENT_H

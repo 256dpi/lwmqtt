@@ -15,7 +15,7 @@ typedef struct {
 } lwmqtt_string_t;
 
 /**
- * The initializer for string structs.
+ * The initializer for string structures.
  */
 #define lwmqtt_default_string \
   {                           \
