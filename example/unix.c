@@ -8,7 +8,7 @@
 #include "../src/client.h"
 #include "unix.h"
 
-void lwmqtt_unix_timer_set(lwmqtt_client_t *c, void *ref, unsigned int timeout) {
+void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, unsigned int timeout) {
   // cast timer reference
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
@@ -24,7 +24,7 @@ void lwmqtt_unix_timer_set(lwmqtt_client_t *c, void *ref, unsigned int timeout) 
   timeradd(&now, &interval, &t->end);
 }
 
-int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref) {
+int lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref) {
   // cast timer reference
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
@@ -40,9 +40,9 @@ int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref) {
   return res.tv_sec < 0 ? 0 : (int)(res.tv_sec * 1000 + res.tv_usec / 1000);
 }
 
-lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *host, int port) {
+lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *host, int port) {
   // close any open socket
-  lwmqtt_unix_network_disconnect(n);
+  lwmqtt_unix_network_disconnect(network);
 
   // prepare resolver data
   struct sockaddr_in address;
@@ -85,13 +85,13 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *host, i
   address.sin_addr = ((struct sockaddr_in *)(selected->ai_addr))->sin_addr;
 
   // create new socket
-  n->socket = socket(AF_INET, SOCK_STREAM, 0);
-  if (n->socket < 0) {
+  network->socket = socket(AF_INET, SOCK_STREAM, 0);
+  if (network->socket < 0) {
     return LWMQTT_FAILURE;
   }
 
   // connect socket
-  rc = connect(n->socket, (struct sockaddr *)&address, sizeof(address));
+  rc = connect(network->socket, (struct sockaddr *)&address, sizeof(address));
   if (rc < 0) {
     printf("lwmqtt_unix_network_connect: %d\n", errno);
     return LWMQTT_FAILURE;
@@ -100,15 +100,15 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *host, i
   return LWMQTT_SUCCESS;
 }
 
-void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n) {
+void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *network) {
   // close socket if present
-  if (n->socket) {
-    close(n->socket);
-    n->socket = 0;
+  if (network->socket) {
+    close(network->socket);
+    network->socket = 0;
   }
 }
 
-lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int *read,
+lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsigned char *buffer, int len, int *read,
                                       int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
@@ -144,7 +144,7 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned ch
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int *sent,
+lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, unsigned char *buffer, int len, int *sent,
                                        int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
