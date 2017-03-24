@@ -81,8 +81,8 @@ void lwmqtt_client_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
  *  @param will - the will message
  *  @return success code
  */
-int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
-                          lwmqtt_connack_t *connack);
+lwmqtt_err_t lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
+                                   lwmqtt_connack_t *connack);
 
 /**
  * MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
@@ -91,7 +91,7 @@ int lwmqtt_client_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_
  *  @param message - the message to send
  *  @return success code
  */
-int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_message_t *msg);
+lwmqtt_err_t lwmqtt_client_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_message_t *msg);
 
 /**
  * MQTT Subscribe - send an MQTT subscribe packet and wait for suback before returning.
@@ -106,10 +106,10 @@ lwmqtt_err_t lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filte
 /**
  * MQTT Subscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
  *  @param client - the client object to use
- *  @param topic_filter - the topic filter to unsubscribe from
+ *  @param topic - the topic filter to unsubscribe from
  *  @return success code
  */
-lwmqtt_err_t lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter);
+lwmqtt_err_t lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic);
 
 /**
  * MQTT Disconnect - send an MQTT disconnect packet and close the connection
