@@ -108,7 +108,8 @@ void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *n) {
   }
 }
 
-int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout) {
+lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int *read,
+                                      int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
@@ -118,16 +119,13 @@ int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffe
   // set timeout
   int rc = setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&t, sizeof(t));
   if (rc < 0) {
-    return -1;
+    return LWMQTT_FAILURE;
   }
 
-  // prepare counter
-  int bytes = 0;
-
   // loop until buffer is full
-  while (bytes < len) {
+  while (*read < len) {
     // read from socket
-    rc = (int)recv(n->socket, &buffer[bytes], (size_t)(len - bytes), 0);
+    rc = (int)recv(n->socket, &buffer[*read], (size_t)(len - *read), 0);
     if (rc == -1) {
       // immediately return if connection has been lost
       if (errno != ENOTCONN && errno != ECONNRESET) {
@@ -141,10 +139,10 @@ int lwmqtt_unix_network_read(lwmqtt_client_t *c, void *ref, unsigned char *buffe
       break;
     } else
       // increment counter
-      bytes += rc;
+      *read += rc;
   }
 
-  return bytes;
+  return LWMQTT_SUCCESS;
 }
 
 int lwmqtt_unix_network_write(lwmqtt_client_t *c, void *ref, unsigned char *buffer, int len, int timeout) {

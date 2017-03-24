@@ -67,10 +67,16 @@ static int lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
 }
 
 static int lwmqtt_read_packet(lwmqtt_client_t *c) {
+  // prepare read counter
+  int read = 0;
+
   // read header byte
-  int rc = c->network_read(c, c->network_ref, c->read_buf, 1, c->timer_get(c, c->timer_network_ref));
-  if (rc != 1) {
-    return rc;
+  lwmqtt_err_t err = c->network_read(c, c->network_ref, c->read_buf, 1, &read, c->timer_get(c, c->timer_network_ref));
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  } else if (read != 1) {
+    // TODO: Return a more descriptive error?
+    return LWMQTT_FAILURE;
   }
 
   // detect packet type
@@ -82,16 +88,19 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
   // prepare variables
   int len = 0;
   int rem_len = 0;
-  lwmqtt_err_t err;
 
   do {
     // adjust len
     len++;
 
     // read next byte
-    rc = c->network_read(c, c->network_ref, c->read_buf + len, 1, c->timer_get(c, c->timer_network_ref));
-    if (rc != 1) {
-      return rc;
+    read = 0;
+    err = c->network_read(c, c->network_ref, c->read_buf + len, 1, &read, c->timer_get(c, c->timer_network_ref));
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    } else if (read != 1) {
+      // TODO: Return a more descriptive error?
+      return LWMQTT_FAILURE;
     }
 
     // attempt to detect remaining length
@@ -105,9 +114,14 @@ static int lwmqtt_read_packet(lwmqtt_client_t *c) {
 
   // read the rest of the buffer if needed
   if (rem_len > 0) {
-    rc = c->network_read(c, c->network_ref, c->read_buf + 1 + len, rem_len, c->timer_get(c, c->timer_network_ref));
-    if (rc != rem_len) {
-      return rc;
+    read = 0;
+    err = c->network_read(c, c->network_ref, c->read_buf + 1 + len, rem_len, &read,
+                          c->timer_get(c, c->timer_network_ref));
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    } else if (read != rem_len) {
+      // TODO: Return a more descriptive error?
+      return LWMQTT_FAILURE;
     }
   }
 
