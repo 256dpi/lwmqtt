@@ -67,8 +67,7 @@ lwmqtt_packet_t lwmqtt_detect_packet_type(unsigned char *buf);
 lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int *rem_len);
 
 /**
- * Defines the MQTT "Last Will and Testament" (LWT) settings for
- * the connect packet.
+ * The structure definint the last will of a MQTT client.
  */
 typedef struct {
   lwmqtt_string_t topic;
@@ -78,9 +77,15 @@ typedef struct {
   lwmqtt_qos_t qos;
 } lwmqtt_will_t;
 
+/**
+ * The default initializer for the will structure.
+ */
 #define lwmqtt_default_will \
   { lwmqtt_default_string, NULL, 0, false, LWMQTT_QOS0 }
 
+/**
+ * The structure containing the connections options for a MQTT client.
+ */
 typedef struct {
   lwmqtt_string_t client_id;
   unsigned short keep_alive;
@@ -89,9 +94,15 @@ typedef struct {
   lwmqtt_string_t password;
 } lwmqtt_options_t;
 
+/**
+ * The default initializer for the options structure.
+ */
 #define lwmqtt_default_options \
   { lwmqtt_default_string, 60, 1, lwmqtt_default_string, lwmqtt_default_string }
 
+/**
+ * The available return codes transported by the connack packet.
+ */
 typedef enum {
   LWMQTT_CONNACK_CONNECTION_ACCEPTED = 0,
   LWMQTT_CONNACK_UNACCEPTABLE_PROTOCOL = 1,
@@ -99,7 +110,7 @@ typedef enum {
   LWMQTT_CONNACK_SERVER_UNAVAILABLE = 3,
   LWMQTT_CONNACK_BAD_USERNAME_OR_PASSWORD = 4,
   LWMQTT_CONNACK_NOT_AUTHORIZED = 5
-} lwmqtt_connack_t;
+} lwmqtt_return_code_t;
 
 /**
   * Encodes the connect options into the buffer.
@@ -122,7 +133,7 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
   * @param len the length in bytes of the data in the supplied buffer
   * @return error code.  1 is success, 0 is failure
   */
-lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *connack, unsigned char *buf, int buf_len);
+lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, unsigned char *buf, int buf_len);
 
 /**
   * Encodes a disconnect packet into the supplied buffer, ready for writing to a socket

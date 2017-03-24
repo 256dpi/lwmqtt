@@ -128,7 +128,6 @@ typedef union {
 
 typedef union {
   unsigned char byte;
-
   struct {
     unsigned int _ : 7;
     unsigned int session_present : 1;
@@ -236,7 +235,7 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *connack_rc, unsigned char *buf,
+lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, unsigned char *buf,
                                    int buf_len) {
   // prepare pointer
   unsigned char *ptr = buf;
@@ -264,7 +263,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_connack_t *conn
   lwmqtt_connack_flags_t flags;
   flags.byte = lwmqtt_read_char(&ptr);
   *session_present = flags.bits.session_present == 1;
-  *connack_rc = (lwmqtt_connack_t)lwmqtt_read_char(&ptr);
+  *return_code = (lwmqtt_return_code_t)lwmqtt_read_char(&ptr);
 
   return LWMQTT_SUCCESS;
 }

@@ -176,12 +176,12 @@ TEST(ConnackTest, Decode1) {
   };
 
   bool session_present;
-  lwmqtt_connack_t connack;
-  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &connack, pkt, 4);
+  lwmqtt_return_code_t return_code;
+  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &return_code, pkt, 4);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(session_present, 0);
-  EXPECT_EQ(connack, 0);
+  EXPECT_EQ(return_code, 0);
 }
 
 TEST(ConnackTest, DecodeError1) {
@@ -193,8 +193,8 @@ TEST(ConnackTest, DecodeError1) {
   };
 
   bool session_present;
-  lwmqtt_connack_t connack;
-  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &connack, pkt, 4);
+  lwmqtt_return_code_t return_code;
+  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &return_code, pkt, 4);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
@@ -207,8 +207,8 @@ TEST(ConnackTest, DecodeError2) {
   };
 
   bool session_present;
-  lwmqtt_connack_t connack;
-  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &connack, pkt, 3);
+  lwmqtt_return_code_t return_code;
+  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &return_code, pkt, 3);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }

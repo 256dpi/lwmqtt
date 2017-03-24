@@ -40,7 +40,7 @@ int lwmqtt_unix_timer_get(lwmqtt_client_t *c, void *ref) {
   return res.tv_sec < 0 ? 0 : (int)(res.tv_sec * 1000 + res.tv_usec / 1000);
 }
 
-int lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *host, int port) {
+lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *n, char *host, int port) {
   // close any open socket
   lwmqtt_unix_network_disconnect(n);
 

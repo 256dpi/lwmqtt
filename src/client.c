@@ -331,7 +331,7 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *c, unsigned int timeout) {
 }
 
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
-                            lwmqtt_connack_t *connack, unsigned int timeout) {
+                            lwmqtt_return_code_t *return_code, unsigned int timeout) {
   // return immediately if already connected
   if (c->is_connected) {
     return LWMQTT_FAILURE;
@@ -371,18 +371,12 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqt
 
   // decode connack packet
   bool session_present;
-  lwmqtt_connack_t return_code;
-  if (lwmqtt_decode_connack(&session_present, &return_code, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS) {
+  if (lwmqtt_decode_connack(&session_present, return_code, c->read_buf, c->read_buf_size) != LWMQTT_SUCCESS) {
     return LWMQTT_FAILURE;
   }
 
-  // set return code if pointer is present
-  if (connack != NULL) {
-    *connack = return_code;
-  }
-
   // return error if connection was not accepted
-  if (return_code != LWMQTT_CONNACK_CONNECTION_ACCEPTED) {
+  if (*return_code != LWMQTT_CONNACK_CONNECTION_ACCEPTED) {
     return LWMQTT_FAILURE;
   }
 

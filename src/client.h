@@ -79,7 +79,7 @@ void lwmqtt_set_callback(lwmqtt_client_t *c, lwmqtt_callback_t cb);
  *  @return success code
  */
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *c, lwmqtt_options_t *options, lwmqtt_will_t *will,
-                            lwmqtt_connack_t *connack, unsigned int timeout);
+                            lwmqtt_return_code_t *return_code, unsigned int timeout);
 
 /**
  * MQTT Publish - send an MQTT publish packet and wait for all acks to complete for all QoSs
