@@ -101,7 +101,7 @@ int lwmqtt_client_publish(lwmqtt_client_t *c, const char *topic, lwmqtt_message_
  * @param qos
  * @return
  */
-int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos);
+lwmqtt_err_t lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt_qos_t qos);
 
 /**
  * MQTT Subscribe - send an MQTT unsubscribe packet and wait for unsuback before returning.
@@ -109,14 +109,14 @@ int lwmqtt_client_subscribe(lwmqtt_client_t *c, const char *topic_filter, lwmqtt
  *  @param topic_filter - the topic filter to unsubscribe from
  *  @return success code
  */
-int lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter);
+lwmqtt_err_t lwmqtt_client_unsubscribe(lwmqtt_client_t *c, const char *topic_filter);
 
 /**
  * MQTT Disconnect - send an MQTT disconnect packet and close the connection
  *  @param client - the client object to use
  *  @return success code
  */
-int lwmqtt_client_disconnect(lwmqtt_client_t *c);
+lwmqtt_err_t lwmqtt_client_disconnect(lwmqtt_client_t *c);
 
 /**
  * MQTT Yield - MQTT background
