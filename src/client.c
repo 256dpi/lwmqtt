@@ -7,7 +7,6 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
   client->next_packet_id = 1;
   client->keep_alive_interval = 0;
   client->ping_outstanding = false;
-  client->is_connected = false;
 
   client->write_buf = write_buf;
   client->write_buf_size = write_buf_size;
@@ -326,11 +325,6 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout) {
 
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, unsigned int timeout) {
-  // return immediately if already connected
-  if (client->is_connected) {
-    return LWMQTT_FAILURE;
-  }
-
   // set timer to command timeout
   client->timer_set(client, client->timer_network_ref, timeout);
 
@@ -374,19 +368,11 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
     return LWMQTT_FAILURE;
   }
 
-  // set connected flag
-  client->is_connected = true;
-
   return LWMQTT_SUCCESS;
 }
 
 lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos,
                               unsigned int timeout) {
-  // immediately return error if not connected
-  if (!client->is_connected) {
-    return LWMQTT_FAILURE;
-  }
-
   // set timeout
   client->timer_set(client, client->timer_network_ref, timeout);
 
@@ -430,11 +416,6 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
 }
 
 lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, unsigned int timeout) {
-  // immediately return error if not connected
-  if (!client->is_connected) {
-    return LWMQTT_FAILURE;
-  }
-
   // set timer
   client->timer_set(client, client->timer_network_ref, timeout);
 
@@ -478,11 +459,6 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
 
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topicName, lwmqtt_message_t *message,
                             unsigned int timeout) {
-  // immediately return error if not connected
-  if (!client->is_connected) {
-    return LWMQTT_FAILURE;
-  }
-
   // prepare string
   lwmqtt_string_t str = lwmqtt_default_string;
   str.c_string = (char *)topicName;
@@ -552,9 +528,6 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout) {
   if (lwmqtt_encode_zero(client->write_buf, client->write_buf_size, &len, LWMQTT_DISCONNECT_PACKET) != LWMQTT_SUCCESS) {
     return LWMQTT_FAILURE;
   }
-
-  // set connected flag
-  client->is_connected = false;
 
   // send disconnected packet
   lwmqtt_err_t err = lwmqtt_send_packet(client, len);

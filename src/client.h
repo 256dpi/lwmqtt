@@ -63,7 +63,6 @@ struct lwmqtt_client_t {
   unsigned short next_packet_id;
   unsigned int keep_alive_interval;
   bool ping_outstanding;
-  bool is_connected;
 
   int write_buf_size, read_buf_size;
   unsigned char *write_buf, *read_buf;
