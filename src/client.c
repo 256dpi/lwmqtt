@@ -140,12 +140,6 @@ static lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *c) {
     return LWMQTT_SUCCESS;
   }
 
-  // TODO: Retain global network timer and use command timeout to send the message?
-
-  // reset network timer
-  // TODO: Should we pass in a timeout from cycle?
-  c->timer_set(c, c->timer_network_ref, 1000);
-
   // encode pingreq packet
   int len;
   lwmqtt_err_t err = lwmqtt_encode_zero(c->write_buf, c->write_buf_size, &len, LWMQTT_PINGREQ_PACKET);
@@ -319,9 +313,6 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *c, unsigned int timeout) {
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
-
-  // set timeout
-  c->timer_set(c, c->timer_network_ref, timeout);
 
   return LWMQTT_SUCCESS;
 }
