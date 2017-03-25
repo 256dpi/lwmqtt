@@ -506,14 +506,16 @@ lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout) {
     return LWMQTT_SUCCESS;
   }
 
-  // fail immediately if a ping is still outstanding
-  if (client->ping_outstanding) {
-    return LWMQTT_FAILURE;
-  }
-
   // return immediately if no ping is due
   if (client->timer_get(client, client->timer_keep_alive_ref) > 0) {
     return LWMQTT_SUCCESS;
+  }
+
+  // a ping is due
+
+  // fail immediately if a ping is still outstanding
+  if (client->ping_outstanding) {
+    return LWMQTT_FAILURE;
   }
 
   // encode pingreq packet
