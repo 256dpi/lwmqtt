@@ -3,41 +3,7 @@
 
 #include <stdbool.h>
 
-/**
- * A multi value string. Can be either a c string or a length prefixed string.
- */
-typedef struct {
-  char *c_string;
-  struct {
-    int len;
-    char *data;
-  } lp_string;
-} lwmqtt_string_t;
-
-/**
- * The initializer for string structures.
- */
-#define lwmqtt_default_string \
-  {                           \
-    NULL, { 0, NULL }         \
-  }
-
-/**
- * Returns the length of the string object.
- *
- * @param str - The string to return the length of.
- * @return The length of the string.
- */
-int lwmqtt_strlen(lwmqtt_string_t str);
-
-/**
- * Compares a string object to a c-string.
- *
- * @param a - The string object to compare.
- * @param b - The c string to compare.
- * @return Similarity e.g. strcmp().
- */
-int lwmqtt_strcmp(lwmqtt_string_t *a, char *b);
+#include <lwmqtt.h>
 
 /**
  * Reads a string object from the buffer and populates the passed structure.

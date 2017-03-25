@@ -5,11 +5,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Werror")
 
 add_subdirectory(lib/gtest/googletest)
 
+include_directories(include)
 include_directories(lib/gtest/googletest/include)
 
 set(SOURCE_FILES
+        include/lwmqtt.h
         src/client.c
-        src/client.h
         src/helpers.c
         src/helpers.h
         src/packet.c

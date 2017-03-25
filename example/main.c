@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../src/client.h"
+#include <lwmqtt.h>
+
 #include "unix.h"
 
 char *topic = "hello";

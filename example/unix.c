@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "../src/client.h"
 #include "unix.h"
 
 void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, unsigned int timeout) {

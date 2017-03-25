@@ -3,24 +3,9 @@
 
 #include <stdbool.h>
 
+#include <lwmqtt.h>
+
 #include "helpers.h"
-
-/**
- * The error type used by all exposed APIs.
- */
-typedef enum {
-  LWMQTT_SUCCESS = 0,
-  LWMQTT_FAILURE = -1,
-  LWMQTT_BUFFER_TOO_SHORT = -2,
-  LWMQTT_REMAINING_LENGTH_OVERFLOW = -3,
-  LWMQTT_LENGTH_MISMATCH = -4,
-  LWMQTT_NOT_ENOUGH_DATA = -5
-} lwmqtt_err_t;
-
-/**
- * The available QOS levels.
- */
-typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2 } lwmqtt_qos_t;
 
 /**
  * The available packet types.
@@ -65,52 +50,6 @@ lwmqtt_packet_type_t lwmqtt_detect_packet_type(unsigned char *buf);
  * @return
  */
 lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int *rem_len);
-
-/**
- * The structure defining the last will of a MQTT client.
- */
-typedef struct {
-  lwmqtt_string_t topic;
-  void *payload;
-  int payload_len;
-  bool retained;
-  lwmqtt_qos_t qos;
-} lwmqtt_will_t;
-
-/**
- * The default initializer for the will structure.
- */
-#define lwmqtt_default_will \
-  { lwmqtt_default_string, NULL, 0, false, LWMQTT_QOS0 }
-
-/**
- * The structure containing the connections options for a MQTT client.
- */
-typedef struct {
-  lwmqtt_string_t client_id;
-  unsigned short keep_alive;
-  bool clean_session;
-  lwmqtt_string_t username;
-  lwmqtt_string_t password;
-} lwmqtt_options_t;
-
-/**
- * The default initializer for the options structure.
- */
-#define lwmqtt_default_options \
-  { lwmqtt_default_string, 60, 1, lwmqtt_default_string, lwmqtt_default_string }
-
-/**
- * The available return codes transported by the connack packet.
- */
-typedef enum {
-  LWMQTT_CONNACK_CONNECTION_ACCEPTED = 0,
-  LWMQTT_CONNACK_UNACCEPTABLE_PROTOCOL = 1,
-  LWMQTT_CONNACK_IDENTIFIER_REJECTED = 2,
-  LWMQTT_CONNACK_SERVER_UNAVAILABLE = 3,
-  LWMQTT_CONNACK_BAD_USERNAME_OR_PASSWORD = 4,
-  LWMQTT_CONNACK_NOT_AUTHORIZED = 5
-} lwmqtt_return_code_t;
 
 /**
   * Encodes a connect packet into the supplied buffer.

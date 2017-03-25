@@ -3,7 +3,7 @@
 
 #include <sys/time.h>
 
-#include "../src/client.h"
+#include <lwmqtt.h>
 
 typedef struct { struct timeval end; } lwmqtt_unix_timer_t;
 

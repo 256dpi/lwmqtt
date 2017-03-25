@@ -1,6 +1,8 @@
 #include <string.h>
 
-#include "client.h"
+#include <lwmqtt.h>
+
+#include "packet.h"
 
 void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
                  int read_buf_size) {
