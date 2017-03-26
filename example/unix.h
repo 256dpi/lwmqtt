@@ -9,7 +9,7 @@ typedef struct { struct timeval end; } lwmqtt_unix_timer_t;
 
 void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, unsigned int timeout);
 
-int lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref);
+unsigned int lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref);
 
 typedef struct { int socket; } lwmqtt_unix_network_t;
 

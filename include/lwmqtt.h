@@ -103,7 +103,7 @@ typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *c, void *ref, unsigned int t
 /**
  * The callback used to get a timers value.
  */
-typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
+typedef unsigned int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
 
 /**
  * The callback used to forward incoming messages.
