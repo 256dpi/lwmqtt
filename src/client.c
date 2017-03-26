@@ -445,7 +445,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topicName, lwmq
   client->timer_set(client, client->command_timer, timeout);
 
   // add packet id if at least qos 1
-  unsigned short packet_id;
+  unsigned short packet_id = 0;
   if (message->qos == LWMQTT_QOS1 || message->qos == LWMQTT_QOS2) {
     packet_id = lwmqtt_get_next_packet_id(client);
   }
