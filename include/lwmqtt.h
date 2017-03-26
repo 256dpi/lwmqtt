@@ -73,7 +73,7 @@ typedef struct {
   { LWMQTT_QOS0, false, NULL, 0 }
 
 /**
- * Forward declaration of the MQTT client object.
+ * Forward declaration of the client object.
  */
 typedef struct lwmqtt_client_t lwmqtt_client_t;
 
@@ -111,7 +111,7 @@ typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
 typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_message_t *);
 
 /**
- * The MQTT client object.
+ * The client object.
  */
 struct lwmqtt_client_t {
     unsigned short next_packet_id;
@@ -176,7 +176,7 @@ void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *ne
 void lwmqtt_set_callback(lwmqtt_client_t *client, lwmqtt_callback_t cb);
 
 /**
- * The structure defining the last will of a MQTT client.
+ * The structure defining the last will of a client.
  */
 typedef struct {
     lwmqtt_string_t topic;
@@ -193,7 +193,7 @@ typedef struct {
   { lwmqtt_default_string, NULL, 0, false, LWMQTT_QOS0 }
 
 /**
- * The structure containing the connections options for a MQTT client.
+ * The structure containing the connections options for a client.
  */
 typedef struct {
     lwmqtt_string_t client_id;
