@@ -123,12 +123,12 @@ struct lwmqtt_client_t {
 
     lwmqtt_callback_t callback;
 
-    void *network_ref;
+    void *network;
     lwmqtt_network_read_t network_read;
     lwmqtt_network_write_t network_write;
 
-    void *timer_keep_alive_ref;
-    void *timer_network_ref;
+    void *keep_alive_timer;
+    void *command_timer;
     lwmqtt_timer_set_t timer_set;
     lwmqtt_timer_get_t timer_get;
 };
@@ -159,12 +159,12 @@ void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_
  * Will set the timer references and callbacks for this client objects.
  *
  * @param client - The client object.
- * @param keep_alive_ref - The reference to the keep alive timer.
- * @param network_ref - The reference to the network timer.
+ * @param keep_alive_timer - The reference to the keep alive timer.
+ * @param network_timer - The reference to the network timer.
  * @param set - The set callback.
  * @param get - The get callback.
  */
-void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
+void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *network_timer, lwmqtt_timer_set_t set,
                        lwmqtt_timer_get_t get);
 
 /**

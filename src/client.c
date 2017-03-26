@@ -16,31 +16,31 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
   client->read_buf_size = read_buf_size;
   client->callback = NULL;
 
-  client->network_ref = NULL;
+  client->network = NULL;
   client->network_read = NULL;
   client->network_write = NULL;
 
-  client->timer_keep_alive_ref = NULL;
-  client->timer_network_ref = NULL;
+  client->keep_alive_timer = NULL;
+  client->command_timer = NULL;
   client->timer_set = NULL;
   client->timer_get = NULL;
 }
 
 void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write) {
-  client->network_ref = ref;
+  client->network = ref;
   client->network_read = read;
   client->network_write = write;
 }
 
-void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_ref, void *network_ref, lwmqtt_timer_set_t set,
+void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *network_timer, lwmqtt_timer_set_t set,
                        lwmqtt_timer_get_t get) {
-  client->timer_keep_alive_ref = keep_alive_ref;
-  client->timer_network_ref = network_ref;
+  client->keep_alive_timer = keep_alive_timer;
+  client->command_timer = network_timer;
   client->timer_set = set;
   client->timer_get = get;
 
-  client->timer_set(client, client->timer_keep_alive_ref, 0);
-  client->timer_set(client, client->timer_network_ref, 0);
+  client->timer_set(client, client->keep_alive_timer, 0);
+  client->timer_set(client, client->command_timer, 0);
 }
 
 void lwmqtt_set_callback(lwmqtt_client_t *client, lwmqtt_callback_t cb) { client->callback = cb; }
@@ -52,7 +52,7 @@ static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
 static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
   // read header byte
   int read = 0;
-  lwmqtt_err_t err = c->network_read(c, c->network_ref, c->read_buf, 1, &read, c->timer_get(c, c->timer_network_ref));
+  lwmqtt_err_t err = c->network_read(c, c->network, c->read_buf, 1, &read, c->timer_get(c, c->command_timer));
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (read == 0) {
@@ -76,7 +76,7 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t 
 
     // read next byte
     read = 0;
-    err = c->network_read(c, c->network_ref, c->read_buf + len, 1, &read, c->timer_get(c, c->timer_network_ref));
+    err = c->network_read(c, c->network, c->read_buf + len, 1, &read, c->timer_get(c, c->command_timer));
     if (err != LWMQTT_SUCCESS) {
       return err;
     } else if (read != 1) {
@@ -95,8 +95,8 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t 
   // read the rest of the buffer if needed
   if (rem_len > 0) {
     read = 0;
-    err = c->network_read(c, c->network_ref, c->read_buf + 1 + len, rem_len, &read,
-                          c->timer_get(c, c->timer_network_ref));
+    err = c->network_read(c, c->network, c->read_buf + 1 + len, rem_len, &read,
+                          c->timer_get(c, c->command_timer));
     if (err != LWMQTT_SUCCESS) {
       return err;
     } else if (read != rem_len) {
@@ -111,7 +111,7 @@ static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
   // write to network
   int sent = 0;
   lwmqtt_err_t err =
-      c->network_write(c, c->network_ref, c->write_buf, length, &sent, c->timer_get(c, c->timer_network_ref));
+      c->network_write(c, c->network, c->write_buf, length, &sent, c->timer_get(c, c->command_timer));
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -122,7 +122,7 @@ static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
   }
 
   // reset keep alive timer
-  c->timer_set(c, c->timer_keep_alive_ref, c->keep_alive_interval * 1000);
+  c->timer_set(c, c->keep_alive_timer, c->keep_alive_interval * 1000);
 
   return LWMQTT_SUCCESS;
 }
@@ -265,14 +265,14 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t 
     if (needle != LWMQTT_NO_PACKET && *packet_type == needle) {
       return LWMQTT_SUCCESS;
     }
-  } while (c->timer_get(c, c->timer_network_ref) > 0);
+  } while (c->timer_get(c, c->command_timer) > 0);
 
   return LWMQTT_SUCCESS;
 }
 
 lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout) {
   // set timeout
-  client->timer_set(client, client->timer_network_ref, timeout);
+  client->timer_set(client, client->command_timer, timeout);
 
   // cycle until timeout has been reached
   lwmqtt_packet_type_t packet_type = LWMQTT_NO_PACKET;
@@ -287,14 +287,14 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout) {
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, unsigned int timeout) {
   // set timer to command timeout
-  client->timer_set(client, client->timer_network_ref, timeout);
+  client->timer_set(client, client->command_timer, timeout);
 
   // save keep alive interval
   client->keep_alive_interval = options->keep_alive;
 
   // set keep alive timer
   if (client->keep_alive_interval > 0) {
-    client->timer_set(client, client->timer_keep_alive_ref, client->keep_alive_interval * 1000);
+    client->timer_set(client, client->keep_alive_timer, client->keep_alive_interval * 1000);
   }
 
   // encode connect packet
@@ -335,7 +335,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos,
                               unsigned int timeout) {
   // set timeout
-  client->timer_set(client, client->timer_network_ref, timeout);
+  client->timer_set(client, client->command_timer, timeout);
 
   // prepare string
   lwmqtt_string_t str = lwmqtt_default_string;
@@ -378,7 +378,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
 
 lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, unsigned int timeout) {
   // set timer
-  client->timer_set(client, client->timer_network_ref, timeout);
+  client->timer_set(client, client->command_timer, timeout);
 
   // prepare string
   lwmqtt_string_t str = lwmqtt_default_string;
@@ -425,7 +425,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topicName, lwmq
   str.c_string = (char *)topicName;
 
   // set timer
-  client->timer_set(client, client->timer_network_ref, timeout);
+  client->timer_set(client, client->command_timer, timeout);
 
   // add packet id if at least qos 1
   unsigned short packet_id;
@@ -482,7 +482,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topicName, lwmq
 
 lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout) {
   // set timer
-  client->timer_set(client, client->timer_network_ref, timeout);
+  client->timer_set(client, client->command_timer, timeout);
 
   // encode disconnect packet
   int len;
@@ -501,7 +501,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout) {
 
 lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout) {
   // set timer
-  client->timer_set(client, client->timer_network_ref, timeout);
+  client->timer_set(client, client->command_timer, timeout);
 
   // return immediately if keep alive interval is zero
   if (client->keep_alive_interval == 0) {
@@ -509,7 +509,7 @@ lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout) {
   }
 
   // return immediately if no ping is due
-  if (client->timer_get(client, client->timer_keep_alive_ref) > 0) {
+  if (client->timer_get(client, client->keep_alive_timer) > 0) {
     return LWMQTT_SUCCESS;
   }
 
