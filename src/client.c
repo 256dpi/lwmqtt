@@ -52,22 +52,6 @@ static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
 }
 
-  // peek available bytes if supported
-  if (c->network_peek != NULL) {
-    // get available bytes
-    int available;
-    lwmqtt_err_t err = c->network_peek(c, c->network, &available);
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    }
-
-    // return if no bytes are available
-    if (available == 0) {
-      *packet_type = LWMQTT_NO_PACKET;
-      return LWMQTT_SUCCESS;
-    }
-  }
-
 static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
   // read header byte
   int read = 0;
@@ -288,6 +272,21 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t 
 }
 
 lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout) {
+  // peek available bytes if supported
+  if (client->network_peek != NULL) {
+    // get available bytes
+    int available;
+    lwmqtt_err_t err = client->network_peek(client, client->network, &available);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+
+    // return if no bytes are available
+    if (available == 0) {
+      return LWMQTT_SUCCESS;
+    }
+  }
+
   // set timeout
   client->timer_set(client, client->command_timer, timeout);
 
