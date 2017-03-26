@@ -84,7 +84,7 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
  * timeout to read the requested data from the network.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *read,
-                                              int timeout);
+                                              unsigned int timeout);
 
 /**
  * The callback used to write to a network object.
@@ -93,7 +93,7 @@ typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, uns
  * timeout to read write the specified data to the network.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *sent,
-                                               int timeout);
+                                               unsigned int timeout);
 
 /**
  * The callback used to set a timer.

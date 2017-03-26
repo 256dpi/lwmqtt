@@ -95,8 +95,7 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t 
   // read the rest of the buffer if needed
   if (rem_len > 0) {
     read = 0;
-    err = c->network_read(c, c->network, c->read_buf + 1 + len, rem_len, &read,
-                          c->timer_get(c, c->command_timer));
+    err = c->network_read(c, c->network, c->read_buf + 1 + len, rem_len, &read, c->timer_get(c, c->command_timer));
     if (err != LWMQTT_SUCCESS) {
       return err;
     } else if (read != rem_len) {
@@ -110,8 +109,7 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t 
 static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
   // write to network
   int sent = 0;
-  lwmqtt_err_t err =
-      c->network_write(c, c->network, c->write_buf, length, &sent, c->timer_get(c, c->command_timer));
+  lwmqtt_err_t err = c->network_write(c, c->network, c->write_buf, length, &sent, c->timer_get(c, c->command_timer));
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
