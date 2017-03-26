@@ -52,7 +52,6 @@ static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
 }
 
-static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
   // peek available bytes if supported
   if (c->network_peek != NULL) {
     // get available bytes
@@ -69,6 +68,7 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t 
     }
   }
 
+static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
   // read header byte
   int read = 0;
   lwmqtt_err_t err = c->network_read(c, c->network, c->read_buf, 1, &read, c->timer_get(c, c->command_timer));
@@ -146,7 +146,7 @@ static lwmqtt_err_t lwmqtt_send_packet_in_buffer(lwmqtt_client_t *c, int length)
 
 static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
   // read next packet from the network
-  lwmqtt_err_t err = lwmqtt_read_packet(c, packet_type);
+  lwmqtt_err_t err = lwmqtt_read_packet_in_buffer(c, packet_type);
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (*packet_type == LWMQTT_NO_PACKET) {
