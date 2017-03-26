@@ -78,6 +78,11 @@ typedef struct {
 typedef struct lwmqtt_client_t lwmqtt_client_t;
 
 /**
+ * The callback used to peek the available bytes from a network object.
+ */
+typedef lwmqtt_err_t (*lwmqtt_network_peek_t)(lwmqtt_client_t *c, void *ref, int *available);
+
+/**
  * The callback used to read from a network object. It may set read to zero if no data is available.
  *
  * Note: The callback is expected to read the exact amount of bytes requested. It should wait up to the specified
@@ -124,6 +129,7 @@ struct lwmqtt_client_t {
     lwmqtt_callback_t callback;
 
     void *network;
+    lwmqtt_network_peek_t network_peek;
     lwmqtt_network_read_t network_read;
     lwmqtt_network_write_t network_write;
 
@@ -148,12 +154,15 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
 /**
  * Will set the network reference and callbacks for this client object.
  *
+ * Note: The peek callback is optional.
+ *
  * @param client - The client object.
  * @param ref - The reference to the network object.
- * @param read The read callback.
- * @param write The write callback.
+ * @param peek - The peek callback.
+ * @param read - The read callback.
+ * @param write - The write callback.
  */
-void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
+void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_peek_t peek, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
 /**
  * Will set the timer references and callbacks for this client objects.

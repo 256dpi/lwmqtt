@@ -17,6 +17,7 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
   client->callback = NULL;
 
   client->network = NULL;
+  client->network_peek = NULL;
   client->network_read = NULL;
   client->network_write = NULL;
 
@@ -26,8 +27,10 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
   client->timer_get = NULL;
 }
 
-void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write) {
+void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_peek_t peek, lwmqtt_network_read_t read,
+                        lwmqtt_network_write_t write) {
   client->network = ref;
+  client->network_peek = peek;
   client->network_read = read;
   client->network_write = write;
 }
@@ -50,6 +53,22 @@ static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
 }
 
 static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
+  // peek available bytes if supported
+  if (c->network_peek != NULL) {
+    // get available bytes
+    int available;
+    lwmqtt_err_t err = c->network_peek(c, c->network, &available);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+
+    // return if no bytes are available
+    if (available == 0) {
+      *packet_type = LWMQTT_NO_PACKET;
+      return LWMQTT_SUCCESS;
+    }
+  }
+
   // read header byte
   int read = 0;
   lwmqtt_err_t err = c->network_read(c, c->network, c->read_buf, 1, &read, c->timer_get(c, c->command_timer));

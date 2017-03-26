@@ -3,6 +3,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include "unix.h"
@@ -105,6 +106,19 @@ void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *network) {
     close(network->socket);
     network->socket = 0;
   }
+}
+
+lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_client_t *client, void *ref, int *available) {
+  // cast network reference
+  lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
+
+  // get the available bytes on the socket
+  int rc = ioctl(n->socket, FIONREAD, available);
+  if (rc < 0) {
+    return LWMQTT_FAILURE;
+  }
+
+  return LWMQTT_SUCCESS;
 }
 
 lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsigned char *buffer, int len, int *read,

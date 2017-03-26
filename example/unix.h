@@ -17,6 +17,8 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
 
 void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *network);
 
+lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_client_t *client, void *ref, int *available);
+
 lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsigned char *buf, int len, int *read,
                                       unsigned int timeout);
 lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, unsigned char *buf, int len, int *sent,
