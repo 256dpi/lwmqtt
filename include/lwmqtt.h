@@ -292,7 +292,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
 // whole packet my block up to the specified timeout.
 
 /**
- * Will yield control to the client and read from the network and keep the connection alive.
+ * Will yield control to the client and read from the network.
  *
  * @param client - The client object.
  * @param timeout - The command timeout.
