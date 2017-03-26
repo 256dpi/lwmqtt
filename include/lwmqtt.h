@@ -287,12 +287,11 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
  */
 lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
 
-// TODO: Improve yield timeouts:
-// Calling yield to check if data is available (read one byte) should only block for a short period, while reading the
-// whole packet my block up to the specified timeout.
-
 /**
  * Will yield control to the client and read from the network.
+ *
+ * If the peek callback is available, yield will first check if there are available bytes before it potentially blocks
+ * and attempts to receive whole packets.
  *
  * @param client - The client object.
  * @param timeout - The command timeout.

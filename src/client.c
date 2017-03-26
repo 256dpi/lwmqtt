@@ -287,6 +287,8 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout) {
     }
   }
 
+  // TODO: Can we somehow guarantee that yield will not needlessly block further if there where some bytes available?
+
   // set timeout
   client->timer_set(client, client->command_timer, timeout);
 
