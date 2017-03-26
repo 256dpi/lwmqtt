@@ -125,7 +125,7 @@ static lwmqtt_err_t lwmqtt_read_packet(lwmqtt_client_t *c, lwmqtt_packet_type_t 
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_send_packet(lwmqtt_client_t *c, int length) {
+static lwmqtt_err_t lwmqtt_send_packet_in_buffer(lwmqtt_client_t *c, int length) {
   // write to network
   int sent = 0;
   lwmqtt_err_t err = c->network_write(c, c->network, c->write_buf, length, &sent, c->timer_get(c, c->command_timer));
@@ -193,7 +193,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packe
       }
 
       // send ack packet
-      err = lwmqtt_send_packet(c, len);
+      err = lwmqtt_send_packet_in_buffer(c, len);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -219,7 +219,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packe
       }
 
       // send pubrel packet
-      err = lwmqtt_send_packet(c, len);
+      err = lwmqtt_send_packet_in_buffer(c, len);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -245,7 +245,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packe
       }
 
       // send pubcomp packet
-      err = lwmqtt_send_packet(c, len);
+      err = lwmqtt_send_packet_in_buffer(c, len);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -321,7 +321,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
   }
 
   // send packet
-  lwmqtt_err_t err = lwmqtt_send_packet(client, len);
+  lwmqtt_err_t err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -367,7 +367,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
   }
 
   // send packet
-  err = lwmqtt_send_packet(client, len);
+  err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -410,7 +410,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
   }
 
   // send unsubscribe packet
-  err = lwmqtt_send_packet(client, len);
+  err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -460,7 +460,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topicName, lwmq
   }
 
   // send packet
-  err = lwmqtt_send_packet(client, len);
+  err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -508,7 +508,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout) {
   }
 
   // send disconnected packet
-  lwmqtt_err_t err = lwmqtt_send_packet(client, len);
+  lwmqtt_err_t err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -545,7 +545,7 @@ lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout) {
   }
 
   // send packet
-  err = lwmqtt_send_packet(client, len);
+  err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
