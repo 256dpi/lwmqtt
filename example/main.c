@@ -83,7 +83,7 @@ static void testSendAndReceive(lwmqtt_qos_t qos) {
       exit(1);
     }
 
-    err = lwmqtt_keep_alive(&client, 10);
+    err = lwmqtt_keep_alive(&client, 1000);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_keep_alive: %d (%d)\n", err, counter);
       exit(1);
@@ -143,7 +143,7 @@ static void testKeepAlive() {
       exit(1);
     }
 
-    err = lwmqtt_keep_alive(&client, 10);
+    err = lwmqtt_keep_alive(&client, 1000);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_keep_alive: %d (%d)\n", err, counter);
       exit(1);
