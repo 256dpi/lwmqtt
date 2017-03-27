@@ -37,7 +37,7 @@ static void testSendAndReceive(lwmqtt_qos_t qos) {
 
   lwmqtt_init(&client, buf1, 512, buf2, 512);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_peek, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
+  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, message_arrived);
 
@@ -115,7 +115,7 @@ static void testKeepAlive() {
 
   lwmqtt_init(&client, buf1, 512, buf2, 512);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_peek, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
+  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, message_arrived);
 

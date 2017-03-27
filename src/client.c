@@ -17,7 +17,6 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
   client->callback = NULL;
 
   client->network = NULL;
-  client->network_peek = NULL;
   client->network_read = NULL;
   client->network_write = NULL;
 
@@ -27,10 +26,9 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
   client->timer_get = NULL;
 }
 
-void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_peek_t peek, lwmqtt_network_read_t read,
+void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read,
                         lwmqtt_network_write_t write) {
   client->network = ref;
-  client->network_peek = peek;
   client->network_read = read;
   client->network_write = write;
 }
@@ -272,21 +270,6 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t 
 }
 
 lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout) {
-  // peek available bytes if supported
-  if (client->network_peek != NULL) {
-    // get available bytes
-    int available;
-    lwmqtt_err_t err = client->network_peek(client, client->network, &available);
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    }
-
-    // return if no bytes are available
-    if (available == 0) {
-      return LWMQTT_SUCCESS;
-    }
-  }
-
   // TODO: Can we somehow guarantee that yield will not needlessly block further if there where some bytes available?
 
   // set timeout
