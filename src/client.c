@@ -26,8 +26,7 @@ void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_bu
   client->timer_get = NULL;
 }
 
-void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read,
-                        lwmqtt_network_write_t write) {
+void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write) {
   client->network = ref;
   client->network_read = read;
   client->network_write = write;
@@ -50,13 +49,13 @@ static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
   return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
 }
 
-static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
+static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, int *read, lwmqtt_packet_type_t *packet_type) {
   // read header byte
-  int read = 0;
-  lwmqtt_err_t err = c->network_read(c, c->network, c->read_buf, 1, &read, c->timer_get(c, c->command_timer));
+  int partial_read = 0;
+  lwmqtt_err_t err = c->network_read(c, c->network, c->read_buf, 1, &partial_read, c->timer_get(c, c->command_timer));
   if (err != LWMQTT_SUCCESS) {
     return err;
-  } else if (read == 0) {
+  } else if (partial_read == 0) {
     *packet_type = LWMQTT_NO_PACKET;
     return LWMQTT_SUCCESS;
   }
@@ -76,11 +75,11 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, lwmqtt_pack
     len++;
 
     // read next byte
-    read = 0;
-    err = c->network_read(c, c->network, c->read_buf + len, 1, &read, c->timer_get(c, c->command_timer));
+    partial_read = 0;
+    err = c->network_read(c, c->network, c->read_buf + len, 1, &partial_read, c->timer_get(c, c->command_timer));
     if (err != LWMQTT_SUCCESS) {
       return err;
-    } else if (read != 1) {
+    } else if (partial_read != 1) {
       return LWMQTT_NOT_ENOUGH_DATA;
     }
 
@@ -95,14 +94,18 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, lwmqtt_pack
 
   // read the rest of the buffer if needed
   if (rem_len > 0) {
-    read = 0;
-    err = c->network_read(c, c->network, c->read_buf + 1 + len, rem_len, &read, c->timer_get(c, c->command_timer));
+    partial_read = 0;
+    err = c->network_read(c, c->network, c->read_buf + 1 + len, rem_len, &partial_read,
+                          c->timer_get(c, c->command_timer));
     if (err != LWMQTT_SUCCESS) {
       return err;
-    } else if (read != rem_len) {
+    } else if (partial_read != rem_len) {
       return LWMQTT_NOT_ENOUGH_DATA;
     }
   }
+
+  // adjust counter
+  *read += 1 + len + rem_len;
 
   return LWMQTT_SUCCESS;
 }
@@ -126,9 +129,9 @@ static lwmqtt_err_t lwmqtt_send_packet_in_buffer(lwmqtt_client_t *c, int length)
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type) {
+static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, int *read, lwmqtt_packet_type_t *packet_type) {
   // read next packet from the network
-  lwmqtt_err_t err = lwmqtt_read_packet_in_buffer(c, packet_type);
+  lwmqtt_err_t err = lwmqtt_read_packet_in_buffer(c, read, packet_type);
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (*packet_type == LWMQTT_NO_PACKET) {
@@ -250,12 +253,15 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, lwmqtt_packet_type_t *packe
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type,
+static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type, int available,
                                        lwmqtt_packet_type_t needle) {
+  // prepare counter
+  int read = 0;
+
   // loop until timeout has been reached
   do {
     // do one cycle
-    lwmqtt_err_t err = lwmqtt_cycle(c, packet_type);
+    lwmqtt_err_t err = lwmqtt_cycle(c, &read, packet_type);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
@@ -264,20 +270,18 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t 
     if (needle != LWMQTT_NO_PACKET && *packet_type == needle) {
       return LWMQTT_SUCCESS;
     }
-  } while (c->timer_get(c, c->command_timer) > 0);
+  } while (c->timer_get(c, c->command_timer) > 0 && (available == 0 || read < available));
 
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout) {
-  // TODO: Can we somehow guarantee that yield will not needlessly block further if there where some bytes available?
-
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, int available, unsigned int timeout) {
   // set timeout
   client->timer_set(client, client->command_timer, timeout);
 
   // cycle until timeout has been reached
   lwmqtt_packet_type_t packet_type = LWMQTT_NO_PACKET;
-  lwmqtt_err_t err = lwmqtt_cycle_until(client, &packet_type, LWMQTT_NO_PACKET);
+  lwmqtt_err_t err = lwmqtt_cycle_until(client, &packet_type, available, LWMQTT_NO_PACKET);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -312,7 +316,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 
   // wait for connack packet
   lwmqtt_packet_type_t packet_type = LWMQTT_NO_PACKET;
-  err = lwmqtt_cycle_until(client, &packet_type, LWMQTT_CONNACK_PACKET);
+  err = lwmqtt_cycle_until(client, &packet_type, 0, LWMQTT_CONNACK_PACKET);
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (packet_type != LWMQTT_CONNACK_PACKET) {
@@ -358,7 +362,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
 
   // wait for suback packet
   lwmqtt_packet_type_t packet_type = LWMQTT_NO_PACKET;
-  err = lwmqtt_cycle_until(client, &packet_type, LWMQTT_SUBACK_PACKET);
+  err = lwmqtt_cycle_until(client, &packet_type, 0, LWMQTT_SUBACK_PACKET);
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (packet_type != LWMQTT_SUBACK_PACKET) {
@@ -401,7 +405,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
 
   // wait for unsuback packet
   lwmqtt_packet_type_t packet_type = LWMQTT_NO_PACKET;
-  err = lwmqtt_cycle_until(client, &packet_type, LWMQTT_UNSUBACK_PACKET);
+  err = lwmqtt_cycle_until(client, &packet_type, 0, LWMQTT_UNSUBACK_PACKET);
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (packet_type != LWMQTT_UNSUBACK_PACKET) {
@@ -464,7 +468,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topicName, lwmq
 
   // wait for ack packet
   lwmqtt_packet_type_t packet_type = LWMQTT_NO_PACKET;
-  err = lwmqtt_cycle_until(client, &packet_type, ack_type);
+  err = lwmqtt_cycle_until(client, &packet_type, 0, ack_type);
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (packet_type != ack_type) {

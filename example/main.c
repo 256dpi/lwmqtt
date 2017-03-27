@@ -6,6 +6,8 @@
 
 #include "unix.h"
 
+#define COMMAND_TIMEOUT 5000
+
 char *topic = "hello";
 
 #define PAYLOAD_LEN 256
@@ -51,13 +53,13 @@ static void testSendAndReceive(lwmqtt_qos_t qos) {
   data.client_id.c_string = "lwmqtt";
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, 1000);
+  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_connect: %d (%d)\n", err, return_code);
     exit(1);
   }
 
-  err = lwmqtt_subscribe(&client, "hello", qos, 1000);
+  err = lwmqtt_subscribe(&client, "hello", qos, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_subscribe: %d\n", err);
     exit(1);
@@ -65,38 +67,43 @@ static void testSendAndReceive(lwmqtt_qos_t qos) {
 
   counter = 0;
 
-  while (counter < 5) {
+  for (int i = 0; i < 5; i++) {
     lwmqtt_message_t msg = lwmqtt_default_message;
     msg.qos = qos;
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, "hello", &msg, 1000);
+    err = lwmqtt_publish(&client, "hello", &msg, COMMAND_TIMEOUT);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_publish: %d (%d)\n", err, counter);
       exit(1);
     }
+  }
 
-    err = lwmqtt_yield(&client, 10);
+  while (counter < 5) {
+    int available = 0;
+    err = lwmqtt_unix_network_peek(&client, &network, &available);
     if (err != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_yield: %d (%d)\n", err, counter);
+      printf("failed lwmqtt_unix_network_peek: %d (%d)\n", err, counter);
       exit(1);
     }
 
-    err = lwmqtt_keep_alive(&client, 1000);
-    if (err != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_keep_alive: %d (%d)\n", err, counter);
-      exit(1);
+    if (available > 0) {
+      err = lwmqtt_yield(&client, available, COMMAND_TIMEOUT);
+      if (err != LWMQTT_SUCCESS) {
+        printf("failed lwmqtt_yield: %d (%d)\n", err, counter);
+        exit(1);
+      }
     }
   }
 
-  err = lwmqtt_unsubscribe(&client, "hello", 1000);
+  err = lwmqtt_unsubscribe(&client, "hello", COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_unsubscribe: %d\n", err);
     exit(1);
   }
 
-  err = lwmqtt_disconnect(&client, 1000);
+  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_disconnect: %d\n", err);
     exit(1);
@@ -130,20 +137,20 @@ static void testKeepAlive() {
   data.keep_alive = 5;
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, 1000);
+  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_connect: %d (%d)\n", err, return_code);
     exit(1);
   }
 
   while (true) {
-    err = lwmqtt_yield(&client, 10);
+    err = lwmqtt_yield(&client, 0, COMMAND_TIMEOUT);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_yield: %d\n", err);
       exit(1);
     }
 
-    err = lwmqtt_keep_alive(&client, 1000);
+    err = lwmqtt_keep_alive(&client, COMMAND_TIMEOUT);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_keep_alive: %d (%d)\n", err, counter);
       exit(1);

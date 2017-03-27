@@ -80,7 +80,7 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
 /**
  * The callback used to read from a network object. It may set read to zero if no data is available.
  *
- * Note: The callback is expected to read the exact amount of bytes requested. It should wait up to the specified
+ * The callback is expected to read the exact amount of bytes requested. It should wait up to the specified
  * timeout to read the requested data from the network.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *read,
@@ -89,7 +89,7 @@ typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, uns
 /**
  * The callback used to write to a network object.
  *
- * Note: The callback is expected to write the exact amount of bytes requested. If should wait up to the specified
+ * The callback is expected to write the exact amount of bytes requested. If should wait up to the specified
  * timeout to read write the specified data to the network.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *sent,
@@ -224,7 +224,7 @@ typedef enum {
 /**
  * Will send a connect packet and wait for a connack response and set the return code.
  *
- * Note: The network object must already be connected to the server. An error is returned if the broker rejects the
+ * The network object must already be connected to the server. An error is returned if the broker rejects the
  * connection.
  *
  * @param client - The client object.
@@ -279,16 +279,18 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
 lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
 
 /**
- * Will yield control to the client and read from the network.
+ * Will yield control to the client and receive incoming packets from the network.
  *
  * Applications may peek on the network if there is data available to read before calling yield and potentially block
- * until the timeout is reached.
+ * until the timeout is reached. Furthermore, applications may specify the amount of bytes available to read in order
+ * to constrain the yield to only receive packets that are already inflight.
  *
  * @param client - The client object.
+ * @param available - The available bytes to read.
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int timeout);
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, int available, unsigned int timeout);
 
 /**
  * Will yield control to the client to keep the connection alive.
