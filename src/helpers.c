@@ -17,20 +17,6 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
   return strncmp(a->data, b, (size_t)len);
 }
 
-void lwmqtt_write_c_string(unsigned char **pptr, const char *string) {
-  // get length
-  int len = (int)strlen(string);
-
-  // write prefix
-  lwmqtt_write_int(pptr, len);
-
-  // write string
-  memcpy(*pptr, string, len);
-
-  // advance pointer
-  *pptr += len;
-}
-
 void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
   // write length prefixed string if length is given
   if (string.len > 0) {

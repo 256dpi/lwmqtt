@@ -21,14 +21,6 @@ bool lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned 
  * @param pptr - Pointer to the output buffer - incremented by the number of bytes used & returned.
  * @param The c-string to write.
  */
-void lwmqtt_write_c_string(unsigned char **pptr, const char *string);
-
-/**
- * Writes a string to an output buffer.
- *
- * @param pptr - Pointer to the output buffer - incremented by the number of bytes used & returned.
- * @param The c-string to write.
- */
 void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string);
 
 /**

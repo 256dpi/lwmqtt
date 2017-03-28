@@ -177,7 +177,7 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
   ptr += lwmqtt_encode_remaining_length(ptr, rem_len);
 
   // write version
-  lwmqtt_write_c_string(&ptr, "MQTT");
+  lwmqtt_write_string(&ptr, lwmqtt_str("MQTT"));
   lwmqtt_write_char(&ptr, 4);
 
   // prepare flags
