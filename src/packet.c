@@ -1,3 +1,4 @@
+#include <lwmqtt.h>
 #include <string.h>
 
 #include "packet.h"
@@ -143,20 +144,20 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
   int rem_len = 10;
 
   // add client id
-  rem_len += lwmqtt_strlen(options->client_id) + 2;
+  rem_len += options->client_id.len + 2;
 
   // add will if present
   if (will != NULL) {
-    rem_len += lwmqtt_strlen(will->topic) + 2 + will->payload_len + 2;
+    rem_len += will->topic.len + 2 + will->payload_len + 2;
   }
 
   // add username if present
-  if (options->username.c_string || options->username.lp_string.data) {
-    rem_len += lwmqtt_strlen(options->username) + 2;
+  if (options->username.len > 0) {
+    rem_len += options->username.len + 2;
 
     // add password if present
-    if (options->password.c_string || options->password.lp_string.data) {
-      rem_len += lwmqtt_strlen(options->password) + 2;
+    if (options->password.len > 0) {
+      rem_len += options->password.len + 2;
     }
   }
 
@@ -191,11 +192,11 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
   }
 
   // set username flag if present
-  if (options->username.c_string || options->username.lp_string.data) {
+  if (options->username.len > 0) {
     flags.bits.username = 1;
 
     // set password flag if present
-    if (options->password.c_string || options->password.lp_string.data) {
+    if (options->password.len > 0) {
       flags.bits.password = 1;
     }
   }
@@ -410,7 +411,7 @@ lwmqtt_err_t lwmqtt_encode_publish(unsigned char *buf, int buf_len, int *len, bo
   unsigned char *ptr = buf;
 
   // prepare remaining length
-  int rem_len = 2 + lwmqtt_strlen(topic) + payload_len;
+  int rem_len = 2 + topic.len + payload_len;
 
   // add packet id if qos is at least 1
   if (qos > 0) {
@@ -461,7 +462,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, int *len, 
 
   // add all topics
   for (int i = 0; i < count; i++) {
-    rem_len += 2 + lwmqtt_strlen(topic_filters[i]) + 1;
+    rem_len += 2 + topic_filters[i].len + 1;
   }
 
   // check buffer size
@@ -544,7 +545,7 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len
 
   // add all topics
   for (int i = 0; i < count; i++) {
-    rem_len += 2 + lwmqtt_strlen(topic_filters[i]);
+    rem_len += 2 + topic_filters[i].len;
   }
 
   // check buffer size

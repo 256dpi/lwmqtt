@@ -2,31 +2,19 @@
 
 #include "helpers.h"
 
-int lwmqtt_strlen(lwmqtt_string_t str) {
-  // return string length id not null
-  if (str.c_string != NULL) {
-    return (int)strlen(str.c_string);
-  }
-
-  return str.lp_string.len;
-}
+lwmqtt_string_t lwmqtt_str(const char *str) { return (lwmqtt_string_t){(int)strlen(str), (char *)str}; }
 
 int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
-  // check strings directly
-  if (a->c_string != NULL) {
-    return strcmp(a->c_string, b);
-  }
-
   // get length of b
   int len = (int)strlen(b);
 
   // otherwise check if length matches
-  if (len != a->lp_string.len) {
+  if (len != a->len) {
     return -1;
   }
 
   // compare memory
-  return strncmp(a->lp_string.data, b, (size_t)len);
+  return strncmp(a->data, b, (size_t)len);
 }
 
 void lwmqtt_write_c_string(unsigned char **pptr, const char *string) {
@@ -45,16 +33,10 @@ void lwmqtt_write_c_string(unsigned char **pptr, const char *string) {
 
 void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
   // write length prefixed string if length is given
-  if (string.lp_string.len > 0) {
-    lwmqtt_write_int(pptr, string.lp_string.len);
-    memcpy(*pptr, string.lp_string.data, string.lp_string.len);
-    *pptr += string.lp_string.len;
-    return;
-  }
-
-  // write ordinary string if given
-  if (string.c_string != NULL) {
-    lwmqtt_write_c_string(pptr, string.c_string);
+  if (string.len > 0) {
+    lwmqtt_write_int(pptr, string.len);
+    memcpy(*pptr, string.data, string.len);
+    *pptr += string.len;
     return;
   }
 
@@ -77,12 +59,11 @@ bool lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned 
   }
 
   // set string
-  str->c_string = NULL;
-  str->lp_string.len = len;
-  str->lp_string.data = (char *)*pptr;
+  str->len = len;
+  str->data = (char *)*pptr;
 
   // advance pointer
-  *pptr += str->lp_string.len;
+  *pptr += str->len;
 
   return true;
 }

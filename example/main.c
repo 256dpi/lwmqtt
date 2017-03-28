@@ -50,7 +50,7 @@ static void testSendAndReceive(lwmqtt_qos_t qos) {
   }
 
   lwmqtt_options_t data = lwmqtt_default_options;
-  data.client_id.c_string = "lwmqtt";
+  data.client_id = lwmqtt_str("lwmqtt");
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
@@ -133,7 +133,7 @@ static void testKeepAlive() {
   }
 
   lwmqtt_options_t data = lwmqtt_default_options;
-  data.client_id.c_string = "lwmqtt";
+  data.client_id = lwmqtt_str("lwmqtt");
   data.keep_alive = 5;
 
   lwmqtt_return_code_t return_code;

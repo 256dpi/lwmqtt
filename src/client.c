@@ -343,8 +343,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
   client->timer_set(client, client->command_timer, timeout);
 
   // prepare string
-  lwmqtt_string_t str = lwmqtt_default_string;
-  str.c_string = (char *)topic_filter;
+  lwmqtt_string_t str = lwmqtt_str(topic_filter);
 
   // encode subscribe packet
   int len;
@@ -386,8 +385,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
   client->timer_set(client, client->command_timer, timeout);
 
   // prepare string
-  lwmqtt_string_t str = lwmqtt_default_string;
-  str.c_string = (char *)topic_filter;
+  lwmqtt_string_t str = lwmqtt_str(topic_filter);
 
   // encode unsubscribe packet
   int len;
@@ -423,11 +421,10 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topicName, lwmqtt_message_t *message,
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *message,
                             unsigned int timeout) {
   // prepare string
-  lwmqtt_string_t str = lwmqtt_default_string;
-  str.c_string = (char *)topicName;
+  lwmqtt_string_t str = lwmqtt_str(topic);
 
   // set timer
   client->timer_set(client, client->command_timer, timeout);

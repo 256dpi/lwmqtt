@@ -24,4 +24,4 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsign
 lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, unsigned char *buf, int len, int *sent,
                                        unsigned int timeout);
 
-#endif  // LWMQTT_PORT_H
+#endif  // LWMQTT_UNIX_H

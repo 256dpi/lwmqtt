@@ -19,28 +19,22 @@ typedef enum {
  * A multi value string. Can be either a c string or a length prefixed string.
  */
 typedef struct {
-    char *c_string;
-    struct {
-        int len;
-        char *data;
-    } lp_string;
+  int len;
+  char *data;
 } lwmqtt_string_t;
 
 /**
  * The initializer for string structures.
  */
-#define lwmqtt_default_string \
-  {                           \
-    NULL, { 0, NULL }         \
-  }
+#define lwmqtt_default_string { 0, NULL }
 
 /**
- * Returns the length of the string object.
+ * Return a string object for the passed c string.
  *
- * @param str - The string to return the length of.
- * @return The length of the string.
+ * @param str - The c string.
+ * @return A string object.
  */
-int lwmqtt_strlen(lwmqtt_string_t str);
+lwmqtt_string_t lwmqtt_str(const char * str);
 
 /**
  * Compares a string object to a c-string.
