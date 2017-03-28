@@ -24,7 +24,7 @@ typedef struct {
 } lwmqtt_string_t;
 
 /**
- * The initializer for string structures.
+ * The initializer for string objects.
  */
 #define lwmqtt_default_string { 0, NULL }
 
@@ -51,7 +51,7 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, char *b);
 typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2 } lwmqtt_qos_t;
 
 /**
- * The message structure used to publish and receive messages.
+ * The message object used to publish and receive messages.
  */
 typedef struct {
     lwmqtt_qos_t qos;
@@ -61,7 +61,7 @@ typedef struct {
 } lwmqtt_message_t;
 
 /**
- * The initializer for messages structures.
+ * The initializer for messages objects.
  */
 #define lwmqtt_default_message \
   { LWMQTT_QOS0, false, NULL, 0 }
@@ -170,7 +170,7 @@ void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *ne
 void lwmqtt_set_callback(lwmqtt_client_t *client, lwmqtt_callback_t cb);
 
 /**
- * The structure defining the last will of a client.
+ * The object defining the last will of a client.
  */
 typedef struct {
     lwmqtt_string_t topic;
@@ -181,13 +181,13 @@ typedef struct {
 } lwmqtt_will_t;
 
 /**
- * The default initializer for the will structure.
+ * The default initializer for the will object.
  */
 #define lwmqtt_default_will \
   { lwmqtt_default_string, NULL, 0, false, LWMQTT_QOS0 }
 
 /**
- * The structure containing the connections options for a client.
+ * The object containing the connections options for a client.
  */
 typedef struct {
     lwmqtt_string_t client_id;
@@ -198,7 +198,7 @@ typedef struct {
 } lwmqtt_options_t;
 
 /**
- * The default initializer for the options structure.
+ * The default initializer for the options object.
  */
 #define lwmqtt_default_options \
   { lwmqtt_default_string, 60, 1, lwmqtt_default_string, lwmqtt_default_string }
@@ -222,8 +222,8 @@ typedef enum {
  * connection.
  *
  * @param client - The client object.
- * @param options - The options structure.
- * @param will - The will structure.
+ * @param options - The options object.
+ * @param will - The will object.
  * @param timeout - The command timeout.
  * @return An error value.
  */

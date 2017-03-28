@@ -6,9 +6,9 @@
 #include <lwmqtt.h>
 
 /**
- * Reads a string object from the buffer and populates the passed structure.
+ * Reads a string object from the buffer and populates the passed object.
  *
- * @param str - The structure into which the data is to be read.
+ * @param str - The object into which the data is to be read.
  * @param pptr - Pointer to the output buffer - incremented by the number of bytes used & returned.
  * @param end_ptr - Pointer to the end of the data: do not read beyond.
  * @return One if successful, zero if not.
