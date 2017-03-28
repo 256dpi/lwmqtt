@@ -35,7 +35,7 @@ typedef enum {
  * If the packet cannot be received by a client, LWMQTT_INVALID_PACKET is returned instead.
  *
  * @param buf - The buffer from which the packet type will be detected.
- * @return
+ * @return An error value.
  */
 lwmqtt_packet_type_t lwmqtt_detect_packet_type(unsigned char *buf);
 
@@ -47,7 +47,7 @@ lwmqtt_packet_type_t lwmqtt_detect_packet_type(unsigned char *buf);
  *
  * @param buf - The buffer from which the remaining length will be detected.
  * @param buf_len - The length in bytes of the supplied buffer.
- * @return
+ * @return An error value.
  */
 lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int *rem_len);
 
