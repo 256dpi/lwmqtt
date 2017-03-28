@@ -6,7 +6,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include "unix.h"
+#include <lwmqtt/unix.h>
 
 void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, unsigned int timeout) {
   // cast timer reference
@@ -93,7 +93,6 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
   // connect socket
   rc = connect(network->socket, (struct sockaddr *)&address, sizeof(address));
   if (rc < 0) {
-    printf("lwmqtt_unix_network_connect: %d\n", errno);
     return LWMQTT_FAILURE;
   }
 
@@ -169,7 +168,6 @@ lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, unsig
     // write to socket
     int bytes = (int)send(n->socket, buffer, (size_t)len, 0);
     if (bytes < 0) {
-      printf("lwmqtt_unix_network_write: %d\n", errno);
       return LWMQTT_FAILURE;
     } else {
       // increment counter

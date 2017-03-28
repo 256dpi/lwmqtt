@@ -1,5 +1,5 @@
-#ifndef LWMQTT_CLIENT_H
-#define LWMQTT_CLIENT_H
+#ifndef LWMQTT_H
+#define LWMQTT_H
 
 #include <stdbool.h>
 
@@ -295,4 +295,4 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, int available, unsigned int t
  */
 lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout);
 
-#endif  // LWMQTT_CLIENT_H
+#endif  // LWMQTT_H

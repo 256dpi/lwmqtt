@@ -10,26 +10,25 @@ include_directories(lib/gtest/googletest/include)
 
 set(SOURCE_FILES
         include/lwmqtt.h
+        include/lwmqtt/unix.h
         src/client.c
         src/helpers.c
         src/helpers.h
         src/packet.c
-        src/packet.h)
+        src/packet.h
+        src/os/unix.c)
 
 add_library(lwmqtt ${SOURCE_FILES})
 
-set(EXAMPLE_FILES
-        example/main.c
-        example/unix.c
-        example/unix.h)
+set(EXAMPLE_FILES example/main.c)
 
 add_executable(example ${EXAMPLE_FILES})
 
 target_link_libraries(example lwmqtt)
 
 set(TEST_FILES
+        tests/client.cpp
         tests/packet.cpp
-        tests/macros.h
         tests/tests.cpp)
 
 add_executable(tests ${TEST_FILES})
