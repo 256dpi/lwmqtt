@@ -30,7 +30,7 @@ void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
   lwmqtt_write_int(pptr, 0);
 }
 
-bool lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr) {
+bool lwmqtt_read_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr) {
   // check if at lest 2 bytes
   if (end_ptr - (*pptr) <= 1) {
     return false;

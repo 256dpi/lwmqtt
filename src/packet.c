@@ -386,7 +386,7 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   unsigned char *end_ptr = ptr + rem_len;
 
   // do we have enough data to read the topic?
-  if (!lwmqtt_read_lp_string(topic, &ptr, end_ptr) || end_ptr - ptr < 0) {
+  if (!lwmqtt_read_string(topic, &ptr, end_ptr) || end_ptr - ptr < 0) {
     return LWMQTT_FAILURE;
   }
 

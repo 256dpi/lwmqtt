@@ -13,7 +13,7 @@
  * @param end_ptr - Pointer to the end of the data: do not read beyond.
  * @return One if successful, zero if not.
  */
-bool lwmqtt_read_lp_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr);
+bool lwmqtt_read_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr);
 
 /**
  * Writes a string to an output buffer.
