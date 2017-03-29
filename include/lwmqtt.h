@@ -7,12 +7,12 @@
  * The error type used by all exposed APIs.
  */
 typedef enum {
-    LWMQTT_SUCCESS = 0,
-    LWMQTT_FAILURE = -1,
-    LWMQTT_BUFFER_TOO_SHORT = -2,
-    LWMQTT_REMAINING_LENGTH_OVERFLOW = -3,
-    LWMQTT_LENGTH_MISMATCH = -4,
-    LWMQTT_NOT_ENOUGH_DATA = -5
+  LWMQTT_SUCCESS = 0,
+  LWMQTT_FAILURE = -1,
+  LWMQTT_BUFFER_TOO_SHORT = -2,
+  LWMQTT_REMAINING_LENGTH_OVERFLOW = -3,
+  LWMQTT_LENGTH_MISMATCH = -4,
+  LWMQTT_NOT_ENOUGH_DATA = -5
 } lwmqtt_err_t;
 
 /**
@@ -26,7 +26,8 @@ typedef struct {
 /**
  * The initializer for string objects.
  */
-#define lwmqtt_default_string { 0, NULL }
+#define lwmqtt_default_string \
+  { 0, NULL }
 
 /**
  * Return a string object for the passed c string.
@@ -34,7 +35,7 @@ typedef struct {
  * @param str - The c string.
  * @return A string object.
  */
-lwmqtt_string_t lwmqtt_str(const char * str);
+lwmqtt_string_t lwmqtt_str(const char *str);
 
 /**
  * Compares a string object to a c-string.
@@ -54,10 +55,10 @@ typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2 } lwmqtt_qos_t;
  * The message object used to publish and receive messages.
  */
 typedef struct {
-    lwmqtt_qos_t qos;
-    bool retained;
-    void *payload;
-    int payload_len;
+  lwmqtt_qos_t qos;
+  bool retained;
+  void *payload;
+  int payload_len;
 } lwmqtt_message_t;
 
 /**
@@ -108,23 +109,23 @@ typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, lwmqtt_string_t *, lwmqtt_m
  * The client object.
  */
 struct lwmqtt_client_t {
-    unsigned short next_packet_id;
-    unsigned int keep_alive_interval;
-    bool ping_outstanding;
+  unsigned short next_packet_id;
+  unsigned int keep_alive_interval;
+  bool ping_outstanding;
 
-    int write_buf_size, read_buf_size;
-    unsigned char *write_buf, *read_buf;
+  int write_buf_size, read_buf_size;
+  unsigned char *write_buf, *read_buf;
 
-    lwmqtt_callback_t callback;
+  lwmqtt_callback_t callback;
 
-    void *network;
-    lwmqtt_network_read_t network_read;
-    lwmqtt_network_write_t network_write;
+  void *network;
+  lwmqtt_network_read_t network_read;
+  lwmqtt_network_write_t network_write;
 
-    void *keep_alive_timer;
-    void *command_timer;
-    lwmqtt_timer_set_t timer_set;
-    lwmqtt_timer_get_t timer_get;
+  void *keep_alive_timer;
+  void *command_timer;
+  lwmqtt_timer_set_t timer_set;
+  lwmqtt_timer_get_t timer_get;
 };
 
 /**
@@ -173,11 +174,11 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, lwmqtt_callback_t cb);
  * The object defining the last will of a client.
  */
 typedef struct {
-    lwmqtt_string_t topic;
-    void *payload;
-    int payload_len;
-    bool retained;
-    lwmqtt_qos_t qos;
+  lwmqtt_string_t topic;
+  void *payload;
+  int payload_len;
+  bool retained;
+  lwmqtt_qos_t qos;
 } lwmqtt_will_t;
 
 /**
@@ -190,11 +191,11 @@ typedef struct {
  * The object containing the connections options for a client.
  */
 typedef struct {
-    lwmqtt_string_t client_id;
-    unsigned short keep_alive;
-    bool clean_session;
-    lwmqtt_string_t username;
-    lwmqtt_string_t password;
+  lwmqtt_string_t client_id;
+  unsigned short keep_alive;
+  bool clean_session;
+  lwmqtt_string_t username;
+  lwmqtt_string_t password;
 } lwmqtt_options_t;
 
 /**
@@ -207,12 +208,12 @@ typedef struct {
  * The available return codes transported by the connack packet.
  */
 typedef enum {
-    LWMQTT_CONNACK_CONNECTION_ACCEPTED = 0,
-    LWMQTT_CONNACK_UNACCEPTABLE_PROTOCOL = 1,
-    LWMQTT_CONNACK_IDENTIFIER_REJECTED = 2,
-    LWMQTT_CONNACK_SERVER_UNAVAILABLE = 3,
-    LWMQTT_CONNACK_BAD_USERNAME_OR_PASSWORD = 4,
-    LWMQTT_CONNACK_NOT_AUTHORIZED = 5
+  LWMQTT_CONNACK_CONNECTION_ACCEPTED = 0,
+  LWMQTT_CONNACK_UNACCEPTABLE_PROTOCOL = 1,
+  LWMQTT_CONNACK_IDENTIFIER_REJECTED = 2,
+  LWMQTT_CONNACK_SERVER_UNAVAILABLE = 3,
+  LWMQTT_CONNACK_BAD_USERNAME_OR_PASSWORD = 4,
+  LWMQTT_CONNACK_NOT_AUTHORIZED = 5
 } lwmqtt_return_code_t;
 
 /**
