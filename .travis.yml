@@ -20,7 +20,7 @@ script:
   - ./tests
 
 after_success:
-  - coveralls --root .. --exclude lib --exclude example"
+  - coveralls --root .. --exclude lib --exclude example
 
 notifications:
   email: false
