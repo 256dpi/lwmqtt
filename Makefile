@@ -1,4 +1,6 @@
 fmt:
-	clang-format -i src/* -style="{BasedOnStyle: Google, ColumnLimit: 120}"
-	clang-format -i example/* -style="{BasedOnStyle: Google, ColumnLimit: 120}"
-	clang-format -i tests/* -style="{BasedOnStyle: Google, ColumnLimit: 120}"
+	clang-format -i include/*.h include/lwmqtt/*.h -style="{BasedOnStyle: Google, ColumnLimit: 120}"
+	clang-format -i src/*.c src/*.h -style="{BasedOnStyle: Google, ColumnLimit: 120}"
+	clang-format -i src/os/*.c -style="{BasedOnStyle: Google, ColumnLimit: 120}"
+	clang-format -i example/*.c -style="{BasedOnStyle: Google, ColumnLimit: 120}"
+	clang-format -i tests/*.cpp -style="{BasedOnStyle: Google, ColumnLimit: 120}"
