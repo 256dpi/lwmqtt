@@ -20,7 +20,7 @@ script:
   - ./tests
 
 after_success:
-  - coveralls --root .. -E ".*external.*" -E ".*CMakeFiles.*" -E ".*test/.*.cpp.*"
+  - coveralls --root .. --exclude lib --exclude example"
 
 notifications:
   email: false
