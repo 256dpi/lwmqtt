@@ -20,4 +20,4 @@ script:
   - ./tests
 
 after_success:
-  - coveralls --root .. -e lib -e example -e tests -e build/CMakeFiles
+  - coveralls --root .. -e lib -e example -e tests --gcov-options '\-lp'
