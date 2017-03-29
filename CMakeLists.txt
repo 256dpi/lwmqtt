@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 2.8.7)
 project(lwmqtt)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c1x -Werror -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Werror -fprofile-arcs -ftest-coverage")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c1x -Werror -D_POSIX_C_SOURCE=200112L -D_BSD_SOURCE")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -Werror -fprofile-arcs -ftest-coverage")
+else()
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Werror")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Werror")
+endif()
 
 add_subdirectory(lib/gtest/googletest)
 
