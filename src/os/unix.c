@@ -1,5 +1,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
+#include <memory.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,12 +45,15 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
   // close any open socket
   lwmqtt_unix_network_disconnect(network);
 
-  // prepare resolver data
-  struct sockaddr_in address;
-  struct addrinfo *result = NULL;
-  struct addrinfo hints = {0, AF_UNSPEC, SOCK_STREAM, IPPROTO_TCP, 0, NULL, NULL, NULL};
+  // prepare resolver hints
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof(struct addrinfo));
+  hints.ai_family = PF_UNSPEC;
+  hints.ai_flags = AI_ADDRCONFIG;
+  hints.ai_socktype = SOCK_STREAM;
 
   // resolve address
+  struct addrinfo *result = NULL;
   int rc = getaddrinfo(host, NULL, &hints, &result);
   if (rc < 0) {
     return LWMQTT_FAILURE;
@@ -71,18 +75,19 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
     current = current->ai_next;
   }
 
-  // free result
-  freeaddrinfo(result);
-
   // return error if none found
   if (selected == NULL) {
     return LWMQTT_FAILURE;
   }
 
   // populate address struct
+  struct sockaddr_in address;
   address.sin_port = htons(port);
   address.sin_family = AF_INET;
   address.sin_addr = ((struct sockaddr_in *)(selected->ai_addr))->sin_addr;
+
+  // free result
+  freeaddrinfo(result);
 
   // create new socket
   network->socket = socket(AF_INET, SOCK_STREAM, 0);
