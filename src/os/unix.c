@@ -47,7 +47,7 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
 
   // prepare resolver hints
   struct addrinfo hints;
-  memset(&hints, 0, sizeof(struct addrinfo));
+  memset(&hints, 0, sizeof(hints));
   hints.ai_family = PF_UNSPEC;
   hints.ai_flags = AI_ADDRCONFIG;
   hints.ai_socktype = SOCK_STREAM;
