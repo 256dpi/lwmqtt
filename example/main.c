@@ -6,8 +6,8 @@
 
 #define COMMAND_TIMEOUT 5000
 
-static void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *t, lwmqtt_message_t *m) {
-  printf("message_arrived: %.*s => %.*s\n", t->len, t->data, m->payload_len, (char*)m->payload);
+static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, lwmqtt_message_t *m) {
+  printf("message_arrived: %.*s => %.*s\n", t->len, t->data, m->payload_len, (char *)m->payload);
 }
 
 int main() {
@@ -22,7 +22,7 @@ int main() {
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
-  lwmqtt_set_callback(&client, message_arrived);
+  lwmqtt_set_callback(&client, NULL, message_arrived);
 
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "broker.shiftr.io", 1883);
   if (err != LWMQTT_SUCCESS) {

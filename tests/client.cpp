@@ -12,7 +12,11 @@ char payload[PAYLOAD_LEN + 1];
 
 volatile int counter;
 
-static void message_arrived(lwmqtt_client_t *c, lwmqtt_string_t *t, lwmqtt_message_t *m) {
+const char *custom_ref = "cool";
+
+static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, lwmqtt_message_t *m) {
+  ASSERT_EQ(ref, custom_ref);
+
   int res = lwmqtt_strcmp(t, (char *)"lwmqtt");
   ASSERT_EQ(res, 0);
 
@@ -34,7 +38,7 @@ TEST(Client, PublishSubscribeQOS0) {
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
-  lwmqtt_set_callback(&client, message_arrived);
+  lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
@@ -95,7 +99,7 @@ TEST(Client, PublishSubscribeQOS1) {
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
-  lwmqtt_set_callback(&client, message_arrived);
+  lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
@@ -156,7 +160,7 @@ TEST(Client, PublishSubscribeQOS2) {
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
-  lwmqtt_set_callback(&client, message_arrived);
+  lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
