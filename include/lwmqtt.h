@@ -16,6 +16,7 @@ typedef enum {
   LWMQTT_NETWORK_CONNECT_ERROR = -6,
   LWMQTT_NETWORK_READ_ERROR = -7,
   LWMQTT_NETWORK_WRITE_ERR = -8,
+  LWMQTT_NO_OR_WRONG_PACKET = -9
 } lwmqtt_err_t;
 
 /**
