@@ -101,6 +101,7 @@ lwmqtt_err_t lwmqtt_detect_packet_type(unsigned char *buf, lwmqtt_packet_type_t 
       *packet_type = (lwmqtt_packet_type_t)header.bits.type;
       return LWMQTT_SUCCESS;
     default:
+      *packet_type = LWMQTT_NO_PACKET;
       return LWMQTT_DECODE_ERROR;
   }
 }
