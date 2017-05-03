@@ -255,7 +255,7 @@ TEST(Client, BufferOverflowProtection) {
 
     if (available > 0) {
       err = lwmqtt_yield(&client, available, COMMAND_TIMEOUT);
-      ASSERT_NE(err, LWMQTT_SUCCESS); // TODO: We should assert against LWMQTT_BUFFER_TOO_SHORT.
+      ASSERT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
       break;
     }
   }
