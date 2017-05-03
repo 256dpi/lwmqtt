@@ -79,7 +79,7 @@ static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int buf_
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_packet_type_t lwmqtt_detect_packet_type(unsigned char *buf) {
+lwmqtt_err_t lwmqtt_detect_packet_type(unsigned char *buf, lwmqtt_packet_type_t *packet_type) {
   // prepare pointer
   unsigned char *ptr = buf;
 
