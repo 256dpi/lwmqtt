@@ -336,7 +336,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 
   // return error if connection was not accepted
   if (*return_code != LWMQTT_CONNACK_CONNECTION_ACCEPTED) {
-    return LWMQTT_FAILURE;
+    return LWMQTT_CONNECTION_DENIED;
   }
 
   return LWMQTT_SUCCESS;
