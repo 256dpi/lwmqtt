@@ -97,6 +97,11 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, int *read, 
 
   // read the rest of the buffer if needed
   if (rem_len > 0) {
+    // check read buffer capacity
+    if(c->read_buf_size < 1 + len + rem_len) {
+      return LWMQTT_BUFFER_TOO_SHORT;
+    }
+
     partial_read = 0;
     err = c->network_read(c, c->network, c->read_buf + 1 + len, rem_len, &partial_read,
                           c->timer_get(c, c->command_timer));
