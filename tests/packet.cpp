@@ -14,14 +14,17 @@ extern "C" {
 
 TEST(DetectPacketType, Valid) {
   unsigned char h = LWMQTT_CONNACK_PACKET << 4;
-  lwmqtt_packet_type_t p = lwmqtt_detect_packet_type(&h);
+  lwmqtt_packet_type_t p;
+  lwmqtt_err_t err = lwmqtt_detect_packet_type(&h, &p);
   EXPECT_EQ(p, LWMQTT_CONNACK_PACKET);
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
 }
 
 TEST(DetectPacketType, Invalid) {
   unsigned char h = 255;
-  lwmqtt_packet_type_t p = lwmqtt_detect_packet_type(&h);
-  EXPECT_EQ(p, LWMQTT_INVALID_PACKET);
+  lwmqtt_packet_type_t p;
+  lwmqtt_err_t err = lwmqtt_detect_packet_type(&h, &p);
+  EXPECT_EQ(err, LWMQTT_DECODE_ERROR);
 }
 
 TEST(DetectRemainingLength, Valid) {

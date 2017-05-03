@@ -98,9 +98,10 @@ lwmqtt_packet_type_t lwmqtt_detect_packet_type(unsigned char *buf) {
     case LWMQTT_SUBACK_PACKET:
     case LWMQTT_UNSUBACK_PACKET:
     case LWMQTT_PINGRESP_PACKET:
-      return (lwmqtt_packet_type_t)header.bits.type;
+      *packet_type = (lwmqtt_packet_type_t)header.bits.type;
+      return LWMQTT_SUCCESS;
     default:
-      return LWMQTT_INVALID_PACKET;
+      return LWMQTT_DECODE_ERROR;
   }
 }
 

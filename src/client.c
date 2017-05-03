@@ -64,9 +64,9 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, int *read, 
   }
 
   // detect packet type
-  *packet_type = lwmqtt_detect_packet_type(c->read_buf);
-  if (*packet_type == LWMQTT_INVALID_PACKET) {
-    return LWMQTT_FAILURE;
+  err = lwmqtt_detect_packet_type(c->read_buf, packet_type);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // prepare variables
