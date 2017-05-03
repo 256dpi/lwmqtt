@@ -307,12 +307,13 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 
   // encode connect packet
   int len;
-  if (lwmqtt_encode_connect(client->write_buf, client->write_buf_size, &len, options, will) != LWMQTT_SUCCESS) {
-    return LWMQTT_FAILURE;
+  lwmqtt_err_t err = lwmqtt_encode_connect(client->write_buf, client->write_buf_size, &len, options, will);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // send packet
-  lwmqtt_err_t err = lwmqtt_send_packet_in_buffer(client, len);
+  err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -328,8 +329,9 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 
   // decode connack packet
   bool session_present;
-  if (lwmqtt_decode_connack(&session_present, return_code, client->read_buf, client->read_buf_size) != LWMQTT_SUCCESS) {
-    return LWMQTT_FAILURE;
+  err = lwmqtt_decode_connack(&session_present, return_code, client->read_buf, client->read_buf_size);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // return error if connection was not accepted
@@ -491,12 +493,13 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout) {
 
   // encode disconnect packet
   int len;
-  if (lwmqtt_encode_zero(client->write_buf, client->write_buf_size, &len, LWMQTT_DISCONNECT_PACKET) != LWMQTT_SUCCESS) {
-    return LWMQTT_FAILURE;
+  lwmqtt_err_t err = lwmqtt_encode_zero(client->write_buf, client->write_buf_size, &len, LWMQTT_DISCONNECT_PACKET);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
   }
 
   // send disconnected packet
-  lwmqtt_err_t err = lwmqtt_send_packet_in_buffer(client, len);
+  err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
