@@ -5,6 +5,7 @@ language:
   - cpp
 
 script:
+  - make gtest
   - mkdir build
   - cd build
   - cmake ..
