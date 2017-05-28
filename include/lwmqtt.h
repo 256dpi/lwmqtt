@@ -108,6 +108,12 @@ typedef unsigned int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
 
 /**
  * The callback used to forward incoming messages.
+ *
+ * Note: The callback is mostly executed because of a call to lwmqtt_yield() that processes incoming messages. However,
+ * it is possible that the callback is also executed during a call to lwmqtt_subscribe(), lwmqtt_publish() or
+ * lwmqtt_unsubscribe() if incoming messages are received between the required acknowledgements. It is therefore not
+ * recommended to call any further lwmqtt methods in the callback as this might result in weird call stacks. The
+ * callback should place the received messages in a queue and dispatch it after the caller has returned.
  */
 typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, void *ref, lwmqtt_string_t *, lwmqtt_message_t *);
 
@@ -242,6 +248,8 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 /**
  * Will send a publish packet and wait for all acks to complete.
  *
+ * Note: The message callback might be called with incoming messages as part of this call.
+ *
  * @param client - The client object.
  * @param topic - The topic.
  * @param message - The message.
@@ -252,6 +260,8 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_m
 
 /**
  * Will send a subscribe packet with a single topic filter plus qos level and wait for the suback to complete.
+ *
+ * Note: The message callback might be called with incoming messages as part of this call.
  *
  * @param client - The client object.
  * @param topic_filter - The topic filter.
@@ -264,6 +274,8 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
 
 /**
  * Will send an unsubscribe packet and wait for the unsuback to complete.
+ *
+ * Note: The message callback might be called with incoming messages as part of this call.
  *
  * @param client - The client object.
  * @param topic_filter - The topic filter.
@@ -287,6 +299,8 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
  * Applications may peek on the network if there is data available to read before calling yield and potentially block
  * until the timeout is reached. Furthermore, applications may specify the amount of bytes available to read in order
  * to constrain the yield to only receive packets that are already inflight.
+ *
+ * Note: The message callback might be called with incoming messages as part of this call.
  *
  * @param client - The client object.
  * @param available - The available bytes to read.
