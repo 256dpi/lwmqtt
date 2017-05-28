@@ -113,7 +113,7 @@ typedef unsigned int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
  * it is possible that the callback is also executed during a call to lwmqtt_subscribe(), lwmqtt_publish() or
  * lwmqtt_unsubscribe() if incoming messages are received between the required acknowledgements. It is therefore not
  * recommended to call any further lwmqtt methods in the callback as this might result in weird call stacks. The
- * callback should place the received messages in a queue and dispatch it after the caller has returned.
+ * callback should place the received messages in a queue and dispatch them after the caller has returned.
  */
 typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, void *ref, lwmqtt_string_t *, lwmqtt_message_t *);
 
