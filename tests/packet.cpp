@@ -119,9 +119,9 @@ TEST(ConnectTest, Encode1) {
 
   lwmqtt_will_t will = lwmqtt_default_will;
   will.topic = lwmqtt_str("will");
-  will.payload = (void*)"send me home";
-  will.payload_len = (int)strlen((const char*)will.payload);
-  will.qos = LWMQTT_QOS1;
+  will.message.payload = (void*)"send me home";
+  will.message.payload_len = (int)strlen((const char*)will.message.payload);
+  will.message.qos = LWMQTT_QOS1;
 
   lwmqtt_options_t opts = lwmqtt_default_options;
   opts.clean_session = false;

@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <memory.h>
 #include <netdb.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>

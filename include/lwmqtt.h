@@ -189,17 +189,14 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t c
  */
 typedef struct {
   lwmqtt_string_t topic;
-  void *payload;
-  int payload_len;
-  bool retained;
-  lwmqtt_qos_t qos;
+  lwmqtt_message_t message;
 } lwmqtt_will_t;
 
 /**
  * The default initializer for the will object.
  */
 #define lwmqtt_default_will \
-  { lwmqtt_default_string, NULL, 0, false, LWMQTT_QOS0 }
+  { lwmqtt_default_string, lwmqtt_default_message }
 
 /**
  * The object containing the connections options for a client.
