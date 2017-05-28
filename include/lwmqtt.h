@@ -139,10 +139,10 @@ struct lwmqtt_client_t {
  * Will initialize the specified client object.
  *
  * @param client - The client object.
- * @param write_buf
- * @param write_buf_size
- * @param read_buf
- * @param read_buf_size
+ * @param write_buf - The write buffer.
+ * @param write_buf_size - The write buffer size.
+ * @param read_buf - The read buffer.
+ * @param read_buf_size - The read buffer size.
  */
 void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
                  int read_buf_size);
@@ -251,7 +251,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *msg, unsigned int timeout);
 
 /**
- * Will send a subscribe packet with a single topic filter - qos level pair and wait for the suback to complete.
+ * Will send a subscribe packet with a single topic filter plus qos level and wait for the suback to complete.
  *
  * @param client - The client object.
  * @param topic_filter - The topic filter.
