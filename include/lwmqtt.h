@@ -22,7 +22,7 @@ typedef enum {
 } lwmqtt_err_t;
 
 /**
- * A multi value string. Can be either a c string or a length prefixed string.
+ * A multi value string. Can be either a C string or a length prefixed string.
  */
 typedef struct {
   int len;
@@ -36,18 +36,18 @@ typedef struct {
   { 0, NULL }
 
 /**
- * Return a string object for the passed c string.
+ * Return a string object for the passed C string.
  *
- * @param str - The c string.
+ * @param str - The C string.
  * @return A string object.
  */
 lwmqtt_string_t lwmqtt_str(const char *str);
 
 /**
- * Compares a string object to a c-string.
+ * Compares a string object to a C string.
  *
  * @param a - The string object to compare.
- * @param b - The c string to compare.
+ * @param b - The C string to compare.
  * @return Similarity e.g. strcmp().
  */
 int lwmqtt_strcmp(lwmqtt_string_t *a, char *b);
