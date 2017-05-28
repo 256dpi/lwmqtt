@@ -304,7 +304,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, int available, unsigned int timeout);
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int available, unsigned int timeout);
 
 /**
  * Will yield control to the client to keep the connection alive.
