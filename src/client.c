@@ -306,7 +306,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, int *read, lwmqtt_packet_ty
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type, unsigned int available,
+static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t *packet_type, int available,
                                        lwmqtt_packet_type_t needle) {
   // prepare counter
   int read = 0;
@@ -328,7 +328,7 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t 
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int available, int timeout) {
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, int available, int timeout) {
   // set timeout
   client->timer_set(client, client->command_timer, timeout);
 
