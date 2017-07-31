@@ -4,9 +4,9 @@
 
 lwmqtt_string_t lwmqtt_str(const char *str) { return (lwmqtt_string_t){(int)strlen(str), (char *)str}; }
 
-int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
+int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b) {
   // get length of b
-  int len = (int)strlen(b);
+  size_t len = strlen(b);
 
   // otherwise check if length matches
   if (len != a->len) {
@@ -14,7 +14,7 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, char *b) {
   }
 
   // compare memory
-  return strncmp(a->data, b, (size_t)len);
+  return strncmp(a->data, b, len);
 }
 
 void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {

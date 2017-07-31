@@ -50,7 +50,7 @@ lwmqtt_string_t lwmqtt_str(const char *str);
  * @param b - The C string to compare.
  * @return Similarity e.g. strcmp().
  */
-int lwmqtt_strcmp(lwmqtt_string_t *a, char *b);
+int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b);
 
 /**
  * The available QOS levels.

@@ -20,7 +20,7 @@ const char *custom_ref = "cool";
 static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, lwmqtt_message_t *m) {
   ASSERT_EQ(ref, custom_ref);
 
-  int res = lwmqtt_strcmp(t, (char *)"lwmqtt");
+  int res = lwmqtt_strcmp(t, "lwmqtt");
   ASSERT_EQ(res, 0);
 
   res = memcmp(payload, (char *)m->payload, (size_t)m->payload_len);
@@ -32,7 +32,7 @@ static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, l
 static void big_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, lwmqtt_message_t *m) {
   ASSERT_EQ(ref, custom_ref);
 
-  int res = lwmqtt_strcmp(t, (char *)"lwmqtt");
+  int res = lwmqtt_strcmp(t, "lwmqtt");
   ASSERT_EQ(res, 0);
 
   res = memcmp(big_payload, (char *)m->payload, (size_t)m->payload_len);
