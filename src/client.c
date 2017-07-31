@@ -572,7 +572,7 @@ lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout) {
 
   // fail immediately if a ping is still outstanding
   if (client->ping_outstanding) {
-    return LWMQTT_UNANSWERED_PIN;
+    return LWMQTT_UNANSWERED_PING;
   }
 
   // encode pingreq packet
