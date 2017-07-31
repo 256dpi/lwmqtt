@@ -371,7 +371,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (packet_type != LWMQTT_CONNACK_PACKET) {
-    return LWMQTT_NO_OR_WRONG_PACKET;
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // decode connack packet
@@ -417,7 +417,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (packet_type != LWMQTT_SUBACK_PACKET) {
-    return LWMQTT_NO_OR_WRONG_PACKET;
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // decode packet
@@ -459,7 +459,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (packet_type != LWMQTT_UNSUBACK_PACKET) {
-    return LWMQTT_NO_OR_WRONG_PACKET;
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // decode unsuback packet
@@ -521,7 +521,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_m
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (packet_type != ack_type) {
-    return LWMQTT_NO_OR_WRONG_PACKET;
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // decode ack packet
