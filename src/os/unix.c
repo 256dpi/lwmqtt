@@ -134,7 +134,7 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsign
   }
 
   // read from socket
-  int bytes = (int)recv(n->socket, &buffer[*read], (size_t)(len - *read), 0);
+  int bytes = (int)recv(n->socket, &buffer[0], (size_t)len, 0);
   if (bytes < 0 && errno != EAGAIN) {
     return LWMQTT_NETWORK_READ_ERROR;
   }
