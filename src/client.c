@@ -116,10 +116,14 @@ static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *c, int offset, int 
 }
 
 static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, int *read, lwmqtt_packet_type_t *packet_type) {
-  // read header byte
+  // preset packet type
+  *packet_type = LWMQTT_NO_PACKET;
+
+  // read or wait for header byte
   lwmqtt_err_t err = lwmqtt_read_from_network(c, 0, 1);
-  if (err != LWMQTT_SUCCESS) {
-    *packet_type = LWMQTT_NO_PACKET;
+  if (err == LWMQTT_NOT_ENOUGH_DATA) {
+    return LWMQTT_SUCCESS;
+  } else if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
