@@ -52,10 +52,19 @@ int main() {
   }
 
   while (true) {
-    err = lwmqtt_yield(&client, 0, COMMAND_TIMEOUT);
+    int available = 0;
+    err = lwmqtt_unix_network_peek(&client, &network, &available);
     if (err != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_yield: %d\n", err);
+      printf("failed lwmqtt_unix_network_peek: %d\n", err);
       exit(1);
+    }
+
+    if (available > 0) {
+      err = lwmqtt_yield(&client, 0, COMMAND_TIMEOUT);
+      if (err != LWMQTT_SUCCESS) {
+        printf("failed lwmqtt_yield: %d\n", err);
+        exit(1);
+      }
     }
 
     err = lwmqtt_keep_alive(&client, COMMAND_TIMEOUT);
