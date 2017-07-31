@@ -6,7 +6,7 @@
 
 void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
                  int read_buf_size) {
-  client->next_packet_id = 1;
+  client->last_packet_id = 1;
   client->keep_alive_interval = 0;
   client->ping_outstanding = false;
 
@@ -49,7 +49,7 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t c
 }
 
 static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
-  return c->next_packet_id = (unsigned short)((c->next_packet_id == 65535) ? 1 : c->next_packet_id + 1);
+  return c->last_packet_id = (unsigned short)((c->last_packet_id == 65535) ? 1 : c->last_packet_id + 1);
 }
 
 static lwmqtt_err_t lwmqtt_read_from_network(lwmqtt_client_t *c, int offset, int len) {
