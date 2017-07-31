@@ -22,7 +22,7 @@ typedef enum {
 } lwmqtt_err_t;
 
 /**
- * A multi value string. Can be either a C string or a length prefixed string.
+ * A common string object.
  */
 typedef struct {
   int len;
@@ -36,7 +36,7 @@ typedef struct {
   { 0, NULL }
 
 /**
- * Return a string object for the passed C string.
+ * Returns a string object for the passed C string.
  *
  * @param str - The C string.
  * @return A string object.
@@ -68,7 +68,7 @@ typedef struct {
 } lwmqtt_message_t;
 
 /**
- * The initializer for messages objects.
+ * The initializer for message objects.
  */
 #define lwmqtt_default_message \
   { LWMQTT_QOS0, false, NULL, 0 }
@@ -163,7 +163,7 @@ void lwmqtt_init(lwmqtt_client_t *client, void *write_buf, int write_buf_size, v
 void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
 /**
- * Will set the timer references and callbacks for this client objects.
+ * Will set the timer references and callbacks for this client object.
  *
  * @param client - The client object.
  * @param keep_alive_timer - The reference to the keep alive timer.
@@ -198,7 +198,7 @@ typedef struct {
   { lwmqtt_default_string, lwmqtt_default_message }
 
 /**
- * The object containing the connections options for a client.
+ * The object containing the connection options for a client.
  */
 typedef struct {
   lwmqtt_string_t client_id;
