@@ -154,13 +154,13 @@ lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, unsig
   struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
   int rc = setsockopt(n->socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&t, sizeof(t));
   if (rc < 0) {
-    return LWMQTT_NETWORK_WRITE_ERR;
+    return LWMQTT_NETWORK_WRITE_ERROR;
   }
 
   // write to socket
   int bytes = (int)send(n->socket, buffer, (size_t)len, 0);
   if (bytes < 0 && errno != EAGAIN) {
-    return LWMQTT_NETWORK_WRITE_ERR;
+    return LWMQTT_NETWORK_WRITE_ERROR;
   }
 
   // increment counter
