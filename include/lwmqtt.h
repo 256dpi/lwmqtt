@@ -82,7 +82,7 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
  * The callback used to read from a network object.
  *
  * The callbacks is expected to read up to the amount of bytes in to the passed buffer. It should block the specified
- * timeout and wait for more incoming data. It may set read to zero if no data is has been read.
+ * timeout and wait for more incoming data.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *read,
                                               unsigned int timeout);
