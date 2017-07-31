@@ -4,8 +4,7 @@
 
 #include "packet.h"
 
-void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
-                 int read_buf_size) {
+void lwmqtt_init(lwmqtt_client_t *client, void *write_buf, int write_buf_size, void *read_buf, int read_buf_size) {
   client->last_packet_id = 1;
   client->keep_alive_interval = 0;
   client->ping_outstanding = false;

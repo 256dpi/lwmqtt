@@ -11,14 +11,12 @@ static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, l
 }
 
 int main() {
-  unsigned char buf1[512], buf2[512];
-
   lwmqtt_unix_network_t network;
   lwmqtt_unix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
-  lwmqtt_init(&client, buf1, 512, buf2, 512);
+  lwmqtt_init(&client, malloc(512), 512, malloc(512), 512);
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);

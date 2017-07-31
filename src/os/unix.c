@@ -121,7 +121,7 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_client_t *client, lwmqtt_unix_netwo
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsigned char *buffer, int len, int *read,
+lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, void *buffer, int len, int *read,
                                       int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
@@ -145,7 +145,7 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsign
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, unsigned char *buffer, int len, int *sent,
+lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, void *buffer, int len, int *sent,
                                        int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;

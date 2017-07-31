@@ -84,7 +84,7 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
  * The callbacks is expected to read up to the amount of bytes in to the passed buffer. It should block the specified
  * timeout and wait for more incoming data.
  */
-typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *read,
+typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, void *buf, int len, int *read,
                                               int timeout);
 
 /**
@@ -93,7 +93,7 @@ typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, uns
  * The callback is expected to write up to the amount of bytes from the passed buffer. It should wait up to the
  * specified timeout to write the specified data to the network.
  */
-typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *sent,
+typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, void *buf, int len, int *sent,
                                                int timeout);
 
 /**
@@ -126,7 +126,7 @@ struct lwmqtt_client_t {
   bool ping_outstanding;
 
   int write_buf_size, read_buf_size;
-  unsigned char *write_buf, *read_buf;
+  void *write_buf, *read_buf;
 
   void *callback_ref;
   lwmqtt_callback_t callback;
@@ -150,8 +150,7 @@ struct lwmqtt_client_t {
  * @param read_buf - The read buffer.
  * @param read_buf_size - The read buffer size.
  */
-void lwmqtt_init(lwmqtt_client_t *client, unsigned char *write_buf, int write_buf_size, unsigned char *read_buf,
-                 int read_buf_size);
+void lwmqtt_init(lwmqtt_client_t *client, void *write_buf, int write_buf_size, void *read_buf, int read_buf_size);
 
 /**
  * Will set the network reference and callbacks for this client object.
