@@ -85,7 +85,7 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
  * timeout and wait for more incoming data.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *read,
-                                              unsigned int timeout);
+                                              int timeout);
 
 /**
  * The callback used to write to a network object.
@@ -94,17 +94,17 @@ typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, uns
  * specified timeout to write the specified data to the network.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, unsigned char *buf, int len, int *sent,
-                                               unsigned int timeout);
+                                               int timeout);
 
 /**
  * The callback used to set a timer.
  */
-typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *c, void *ref, unsigned int timeout);
+typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *c, void *ref, int timeout);
 
 /**
  * The callback used to get a timers value.
  */
-typedef unsigned int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
+typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
 
 /**
  * The callback used to forward incoming messages.
@@ -240,7 +240,7 @@ typedef enum {
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, lwmqtt_will_t *will,
-                            lwmqtt_return_code_t *return_code, unsigned int timeout);
+                            lwmqtt_return_code_t *return_code, int timeout);
 
 /**
  * Will send a publish packet and wait for all acks to complete.
@@ -253,7 +253,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *msg, unsigned int timeout);
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *msg, int timeout);
 
 /**
  * Will send a subscribe packet with a single topic filter plus qos level and wait for the suback to complete.
@@ -266,8 +266,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_m
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos,
-                              unsigned int timeout);
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos, int timeout);
 
 /**
  * Will send an unsubscribe packet and wait for the unsuback to complete.
@@ -279,7 +278,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, unsigned int timeout);
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, int timeout);
 
 /**
  * Will send a disconnect packet and finish the client.
@@ -288,7 +287,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
+lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, int timeout);
 
 /**
  * Will yield control to the client and receive incoming packets from the network.
@@ -304,7 +303,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout);
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int available, unsigned int timeout);
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int available, int timeout);
 
 /**
  * Will yield control to the client to keep the connection alive.
@@ -313,6 +312,6 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int available, unsig
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout);
+lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, int timeout);
 
 #endif  // LWMQTT_H

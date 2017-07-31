@@ -64,7 +64,7 @@ static lwmqtt_err_t lwmqtt_read_from_network(lwmqtt_client_t *c, int offset, int
   // read while data is missing
   while (read < len) {
     // get remaining time
-    unsigned int remaining_time = c->timer_get(c, c->command_timer);
+    int remaining_time = c->timer_get(c, c->command_timer);
 
     // check timeout
     if (remaining_time <= 0) {
@@ -93,7 +93,7 @@ static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *c, int offset, int 
   // write while data is left
   while (written < len) {
     // get remaining time
-    unsigned int remaining_time = c->timer_get(c, c->command_timer);
+    int remaining_time = c->timer_get(c, c->command_timer);
 
     // check timeout
     if (remaining_time <= 0) {
@@ -329,7 +329,7 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *c, lwmqtt_packet_type_t 
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int available, unsigned int timeout) {
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int available, int timeout) {
   // set timeout
   client->timer_set(client, client->command_timer, timeout);
 
@@ -344,7 +344,7 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, unsigned int available, unsig
 }
 
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, lwmqtt_will_t *will,
-                            lwmqtt_return_code_t *return_code, unsigned int timeout) {
+                            lwmqtt_return_code_t *return_code, int timeout) {
   // set timer to command timeout
   client->timer_set(client, client->command_timer, timeout);
 
@@ -393,8 +393,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos,
-                              unsigned int timeout) {
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos, int timeout) {
   // set timeout
   client->timer_set(client, client->command_timer, timeout);
 
@@ -436,7 +435,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, unsigned int timeout) {
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, int timeout) {
   // set timer
   client->timer_set(client, client->command_timer, timeout);
 
@@ -477,8 +476,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *message,
-                            unsigned int timeout) {
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *message, int timeout) {
   // prepare string
   lwmqtt_string_t str = lwmqtt_str(topic);
 
@@ -538,7 +536,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_m
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout) {
+lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, int timeout) {
   // set timer
   client->timer_set(client, client->command_timer, timeout);
 
@@ -558,7 +556,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, unsigned int timeout) {
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, unsigned int timeout) {
+lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, int timeout) {
   // set timer
   client->timer_set(client, client->command_timer, timeout);
 

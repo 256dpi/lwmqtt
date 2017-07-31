@@ -8,7 +8,7 @@
 
 #include <lwmqtt/unix.h>
 
-void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, unsigned int timeout) {
+void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, int timeout) {
   // cast timer reference
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
@@ -24,7 +24,7 @@ void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, unsigned int time
   timeradd(&now, &interval, &t->end);
 }
 
-unsigned int lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref) {
+int lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref) {
   // cast timer reference
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
@@ -122,7 +122,7 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_client_t *client, lwmqtt_unix_netwo
 }
 
 lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsigned char *buffer, int len, int *read,
-                                      unsigned int timeout) {
+                                      int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
@@ -146,7 +146,7 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, unsign
 }
 
 lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, unsigned char *buffer, int len, int *sent,
-                                       unsigned int timeout) {
+                                       int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
