@@ -59,7 +59,7 @@ int lwmqtt_read_int(unsigned char **pptr) {
   unsigned char *ptr = *pptr;
 
   // read two byte integer
-  int num = 256 * (*ptr) + (*(ptr + 1));
+  int num = 256 * ptr[0] + ptr[1];
 
   // adjust pointer
   *pptr += 2;
@@ -72,7 +72,7 @@ unsigned char lwmqtt_read_char(unsigned char **pptr) {
   unsigned char chr = **pptr;
 
   // adjust pointer
-  (*pptr)++;
+  *pptr += 1;
 
   return chr;
 }
@@ -82,19 +82,17 @@ void lwmqtt_write_char(unsigned char **pptr, unsigned char chr) {
   **pptr = chr;
 
   // adjust pointer
-  (*pptr)++;
+  *pptr += 1;
 }
 
 void lwmqtt_write_int(unsigned char **pptr, int num) {
-  // write first byte
-  **pptr = (unsigned char)(num / 256);
+  // get pointer
+  unsigned char *ptr = *pptr;
+
+  // write bytes
+  ptr[0] = (unsigned char)(num / 256);
+  ptr[1] = (unsigned char)(num % 256);
 
   // adjust pointer
-  (*pptr)++;
-
-  // write second byte
-  **pptr = (unsigned char)(num % 256);
-
-  // adjust pointer
-  (*pptr)++;
+  *pptr += 2;
 }
