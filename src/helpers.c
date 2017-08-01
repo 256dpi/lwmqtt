@@ -17,19 +17,6 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b) {
   return strncmp(a->data, b, len);
 }
 
-void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
-  // write length prefixed string if length is given
-  if (string.len > 0) {
-    lwmqtt_write_int(pptr, string.len);
-    memcpy(*pptr, string.data, string.len);
-    *pptr += string.len;
-    return;
-  }
-
-  // write zero
-  lwmqtt_write_int(pptr, 0);
-}
-
 bool lwmqtt_read_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr) {
   // check if at lest 2 bytes
   if (end_ptr - (*pptr) <= 1) {
@@ -54,6 +41,19 @@ bool lwmqtt_read_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned cha
   return true;
 }
 
+void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string) {
+  // write length prefixed string if length is given
+  if (string.len > 0) {
+    lwmqtt_write_int(pptr, string.len);
+    memcpy(*pptr, string.data, string.len);
+    *pptr += string.len;
+    return;
+  }
+
+  // write zero
+  lwmqtt_write_int(pptr, 0);
+}
+
 int lwmqtt_read_int(unsigned char **pptr) {
   // get pointer
   unsigned char *ptr = *pptr;
@@ -65,6 +65,18 @@ int lwmqtt_read_int(unsigned char **pptr) {
   *pptr += 2;
 
   return num;
+}
+
+void lwmqtt_write_int(unsigned char **pptr, int num) {
+  // get pointer
+  unsigned char *ptr = *pptr;
+
+  // write bytes
+  ptr[0] = (unsigned char)(num / 256);
+  ptr[1] = (unsigned char)(num % 256);
+
+  // adjust pointer
+  *pptr += 2;
 }
 
 unsigned char lwmqtt_read_char(unsigned char **pptr) {
@@ -83,16 +95,4 @@ void lwmqtt_write_char(unsigned char **pptr, unsigned char chr) {
 
   // adjust pointer
   *pptr += 1;
-}
-
-void lwmqtt_write_int(unsigned char **pptr, int num) {
-  // get pointer
-  unsigned char *ptr = *pptr;
-
-  // write bytes
-  ptr[0] = (unsigned char)(num / 256);
-  ptr[1] = (unsigned char)(num % 256);
-
-  // adjust pointer
-  *pptr += 2;
 }

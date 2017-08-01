@@ -32,6 +32,14 @@ void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string);
 int lwmqtt_read_int(unsigned char **pptr);
 
 /**
+ * Writes an integer as 2 bytes to an output buffer.
+ *
+ * @param pptr - Pointer to the output buffer - incremented by the number of bytes used & returned.
+ * @param The integer to write.
+ */
+void lwmqtt_write_int(unsigned char **pptr, int num);
+
+/**
  * Reads one character from the input buffer.
  *
  * @param pptr - Pointer to the input buffer - incremented by the number of bytes used & returned.
@@ -46,13 +54,5 @@ unsigned char lwmqtt_read_char(unsigned char **pptr);
  * @param The character to write
  */
 void lwmqtt_write_char(unsigned char **pptr, unsigned char chr);
-
-/**
- * Writes an integer as 2 bytes to an output buffer.
- *
- * @param pptr - Pointer to the output buffer - incremented by the number of bytes used & returned.
- * @param The integer to write.
- */
-void lwmqtt_write_int(unsigned char **pptr, int num);
 
 #endif
