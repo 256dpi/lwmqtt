@@ -99,3 +99,78 @@ void lwmqtt_write_char(void **pptr, unsigned char chr) {
   // adjust pointer
   *pptr += 1;
 }
+
+int lwmqtt_read_varnum(void **pptr) {
+  // get array
+  unsigned char *ary = *pptr;
+
+  // prepare last digit
+  unsigned char digit;
+
+  // prepare multiplier
+  int multiplier = 1;
+
+  // prepare length
+  int len = 0;
+
+  // initialize number
+  int num = 0;
+
+  // decode variadic number
+  do {
+    // increment length
+    len++;
+
+    // return error if the length has overflowed
+    if (len > 4) {
+      return -1;
+    }
+
+    // read digit
+    digit = ary[len - 1];
+
+    // add digit to number
+    num += (digit & 127) * multiplier;
+
+    // increase multiplier
+    multiplier *= 128;
+  } while ((digit & 128) != 0);
+
+  // adjust pointer
+  *pptr += len;
+
+  return num;
+}
+
+void lwmqtt_write_varnum(void **pptr, int num) {
+  // get array
+  unsigned char *ary = *pptr;
+
+  // init len counter
+  int len = 0;
+
+  // encode variadic number
+  do {
+    // calculate current digit
+    unsigned char digit = (unsigned char)(num % 128);
+
+    // change remaining length
+    num /= 128;
+
+    // set the top bit of this digit if there are more to encode
+    if (num > 0) {
+      digit |= 0x80;
+    }
+
+    // write digit
+    ary[len++] = digit;
+
+    // break if number is to big
+    if (len == 4) {
+      break;
+    }
+  } while (num > 0);
+
+  // adjust pointer
+  *pptr += len;
+}

@@ -34,6 +34,7 @@ target_link_libraries(example lwmqtt)
 
 set(TEST_FILES
         tests/client.cpp
+        tests/helpers.cpp
         tests/packet.cpp
         tests/tests.cpp)
 
