@@ -345,7 +345,8 @@ TEST(PublishTest, Decode1) {
   lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
-  lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 25);
+  lwmqtt_err_t err =
+      lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len, pkt, 25);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, true);
@@ -390,7 +391,8 @@ TEST(PublishTest, Decode2) {
   lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
-  lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 23);
+  lwmqtt_err_t err =
+      lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len, pkt, 23);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, false);
@@ -414,7 +416,8 @@ TEST(PublishTest, DecodeError1) {
   lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
-  lwmqtt_err_t err = lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len, pkt, 2);
+  lwmqtt_err_t err =
+      lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len, pkt, 2);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }

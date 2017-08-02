@@ -35,7 +35,7 @@ typedef enum {
  * @param packet_type - Pointer to the receiver of the packet type.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_detect_packet_type(unsigned char *buf, lwmqtt_packet_type_t *packet_type);
+lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_type);
 
 /**
  * Will detect the remaining length form the at least on byte long buffer.
@@ -47,7 +47,7 @@ lwmqtt_err_t lwmqtt_detect_packet_type(unsigned char *buf, lwmqtt_packet_type_t 
  * @param buf_len - The length in bytes of the supplied buffer.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int *rem_len);
+lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, int *rem_len);
 
 /**
   * Encodes a connect packet into the supplied buffer.
@@ -59,8 +59,7 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int
   * @param will - The last will and testament.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lwmqtt_options_t *options,
-                                   lwmqtt_will_t *will);
+lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_options_t *options, lwmqtt_will_t *will);
 
 /**
   * Decodes a connack packet from the supplied buffer.
@@ -71,8 +70,7 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
   * @param buf_len - The length in bytes of the supplied buffer.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, unsigned char *buf,
-                                   int buf_len);
+lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, void *buf, int buf_len);
 
 /**
   * Encodes a zero (disconnect) packet into the supplied buffer.
@@ -83,7 +81,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *
   * @param packet_type - The packets type.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type);
+lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type);
 
 /**
   * Decodes an ack (puback, pubrec, pubrel, pubcomp, unsuback) packet from the supplied buffer.
@@ -95,8 +93,8 @@ lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqt
   * @param buf_len - The length in bytes of the supplied buffer.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, unsigned short *packet_id,
-                               unsigned char *buf, int buf_len);
+lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, unsigned short *packet_id, void *buf,
+                               int buf_len);
 
 /**
   * Encodes an ack (puback, pubrec, pubrel, pubcomp) packet into the supplied buffer.
@@ -109,7 +107,7 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, uns
   * @param packet_id - The packet id.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type, bool dup,
+lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type, bool dup,
                                unsigned short packet_id);
 
 /**
@@ -127,8 +125,7 @@ lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt
   * @return An error value.
   */
 lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained, unsigned short *packet_id,
-                                   lwmqtt_string_t *topic, unsigned char **payload, int *payload_len,
-                                   unsigned char *buf, int buf_len);
+                                   lwmqtt_string_t *topic, void **payload, int *payload_len, void *buf, int buf_len);
 
 /**
   * Encodes a publish packet into the supplied buffer.
@@ -145,9 +142,8 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   * @param payload_len - The length of the payload.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_publish(unsigned char *buf, int buf_len, int *len, bool dup, lwmqtt_qos_t qos, bool retained,
-                                   unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload,
-                                   int payload_len);
+lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, lwmqtt_qos_t qos, bool retained,
+                                   unsigned short packet_id, lwmqtt_string_t topic, void *payload, int payload_len);
 
 /**
   * Encodes a subscribe packet into the supplied buffer.
@@ -161,7 +157,7 @@ lwmqtt_err_t lwmqtt_encode_publish(unsigned char *buf, int buf_len, int *len, bo
   * @param qos_levels - The array of requested QoS levels.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, int *len, unsigned short packet_id, int count,
+lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned short packet_id, int count,
                                      lwmqtt_string_t *topic_filters, lwmqtt_qos_t *qos_levels);
 
 /**
@@ -176,7 +172,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, int *len, 
   * @return An error value.
   */
 lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int *count,
-                                  lwmqtt_qos_t *granted_qos_levels, unsigned char *buf, int buf_len);
+                                  lwmqtt_qos_t *granted_qos_levels, void *buf, int buf_len);
 
 /**
   * Encodes the supplied unsubscribe data into the supplied buffer, ready for sending
@@ -189,7 +185,7 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
   * @param topic_filters - The array of topic filters.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len, unsigned short packet_id, int count,
+lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, unsigned short packet_id, int count,
                                        lwmqtt_string_t *topic_filters);
 
 #endif  // LWMQTT_PACKET_H

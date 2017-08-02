@@ -13,7 +13,7 @@
  * @param end_ptr - Pointer to the end of the data: do not read beyond.
  * @return One if successful, zero if not.
  */
-bool lwmqtt_read_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned char *end_ptr);
+bool lwmqtt_read_string(lwmqtt_string_t *str, void **pptr, void *end_ptr);
 
 /**
  * Writes a string to an output buffer.
@@ -21,7 +21,7 @@ bool lwmqtt_read_string(lwmqtt_string_t *str, unsigned char **pptr, unsigned cha
  * @param pptr - Pointer to the output buffer - incremented by the number of bytes used & returned.
  * @param The string to write.
  */
-void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string);
+void lwmqtt_write_string(void **pptr, lwmqtt_string_t string);
 
 /**
  * Calculates an integer from two bytes read from the input buffer.
@@ -29,7 +29,7 @@ void lwmqtt_write_string(unsigned char **pptr, lwmqtt_string_t string);
  * @param pptr - Pointer to the input buffer - incremented by the number of bytes used & returned.
  * @return The integer value calculated.
  */
-int lwmqtt_read_int(unsigned char **pptr);
+int lwmqtt_read_int(void **pptr);
 
 /**
  * Writes an integer as 2 bytes to an output buffer.
@@ -37,7 +37,7 @@ int lwmqtt_read_int(unsigned char **pptr);
  * @param pptr - Pointer to the output buffer - incremented by the number of bytes used & returned.
  * @param The integer to write.
  */
-void lwmqtt_write_int(unsigned char **pptr, int num);
+void lwmqtt_write_int(void **pptr, int num);
 
 /**
  * Reads one character from the input buffer.
@@ -45,7 +45,7 @@ void lwmqtt_write_int(unsigned char **pptr, int num);
  * @param pptr - Pointer to the input buffer - incremented by the number of bytes used & returned.
  * @return The character read.
  */
-unsigned char lwmqtt_read_char(unsigned char **pptr);
+unsigned char lwmqtt_read_char(void **pptr);
 
 /**
  * Writes one character to an output buffer.
@@ -53,6 +53,6 @@ unsigned char lwmqtt_read_char(unsigned char **pptr);
  * @param pptr - Pointer to the output buffer - incremented by the number of bytes used & returned.
  * @param The character to write
  */
-void lwmqtt_write_char(unsigned char **pptr, unsigned char chr);
+void lwmqtt_write_char(void **pptr, unsigned char chr);
 
 #endif

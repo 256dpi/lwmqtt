@@ -13,7 +13,11 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-static int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
+// TODO: Move to helpers?
+static int lwmqtt_encode_remaining_length(void *buf, int rem_len) {
+  // get array
+  unsigned char *ary = buf;
+
   // init len counter
   int len = 0;
 
@@ -31,12 +35,13 @@ static int lwmqtt_encode_remaining_length(unsigned char *buf, int rem_len) {
     }
 
     // set digit
-    buf[len++] = d;
+    ary[len++] = d;
   } while (rem_len > 0);
 
   return len;
 }
 
+// TODO: Move to helpers?
 static int lwmqtt_total_header_length(int rem_len) {
   if (rem_len < 128) {
     return 1 + 1;
@@ -49,7 +54,11 @@ static int lwmqtt_total_header_length(int rem_len) {
   }
 }
 
-static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int buf_len, int *rem_len) {
+// TODO: Move to helpers?
+static lwmqtt_err_t lwmqtt_decode_remaining_length(void **buf, int buf_len, int *rem_len) {
+  // get array
+  unsigned char *ary = *buf;
+
   unsigned char c;
   int multiplier = 1;
   int len = 0;
@@ -68,7 +77,7 @@ static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int buf_
       return LWMQTT_REMAINING_LENGTH_OVERFLOW;
     }
 
-    c = (*buf)[len - 1];
+    c = ary[len - 1];
 
     *rem_len += (c & 127) * multiplier;
     multiplier *= 128;
@@ -79,9 +88,9 @@ static lwmqtt_err_t lwmqtt_decode_remaining_length(unsigned char **buf, int buf_
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_detect_packet_type(unsigned char *buf, lwmqtt_packet_type_t *packet_type) {
+lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_type) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // read header
   lwmqtt_header_t header;
@@ -106,9 +115,9 @@ lwmqtt_err_t lwmqtt_detect_packet_type(unsigned char *buf, lwmqtt_packet_type_t 
   }
 }
 
-lwmqtt_err_t lwmqtt_detect_remaining_length(unsigned char *buf, int buf_len, int *rem_len) {
+lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, int *rem_len) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // attempt to decode remaining length
   return lwmqtt_decode_remaining_length(&ptr, buf_len, rem_len);
@@ -135,10 +144,9 @@ typedef union {
   } bits;
 } lwmqtt_connack_flags_t;
 
-lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lwmqtt_options_t *options,
-                                   lwmqtt_will_t *will) {
+lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_options_t *options, lwmqtt_will_t *will) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   /* calculate remaining length */
 
@@ -236,10 +244,9 @@ lwmqtt_err_t lwmqtt_encode_connect(unsigned char *buf, int buf_len, int *len, lw
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, unsigned char *buf,
-                                   int buf_len) {
+lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, void *buf, int buf_len) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // read header
   lwmqtt_header_t header;
@@ -269,9 +276,9 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type) {
+lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // check buffer length
   if (buf_len < 2) {
@@ -292,10 +299,10 @@ lwmqtt_err_t lwmqtt_encode_zero(unsigned char *buf, int buf_len, int *len, lwmqt
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, unsigned short *packet_id,
-                               unsigned char *buf, int buf_len) {
+lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, unsigned short *packet_id, void *buf,
+                               int buf_len) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // read header
   lwmqtt_header_t header = {0};
@@ -321,10 +328,10 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, uns
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type, bool dup,
+lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type, bool dup,
                                unsigned short packet_id) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // check buffer size
   if (buf_len < 4) {
@@ -351,10 +358,9 @@ lwmqtt_err_t lwmqtt_encode_ack(unsigned char *buf, int buf_len, int *len, lwmqtt
 }
 
 lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained, unsigned short *packet_id,
-                                   lwmqtt_string_t *topic, unsigned char **payload, int *payload_len,
-                                   unsigned char *buf, int buf_len) {
+                                   lwmqtt_string_t *topic, void **payload, int *payload_len, void *buf, int buf_len) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // read header
   lwmqtt_header_t header;
@@ -385,7 +391,7 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   }
 
   // calculate end pointer
-  unsigned char *end_ptr = ptr + rem_len;
+  void *end_ptr = ptr + rem_len;
 
   // do we have enough data to read the topic?
   if (!lwmqtt_read_string(topic, &ptr, end_ptr) || end_ptr - ptr < 0) {
@@ -406,11 +412,10 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_publish(unsigned char *buf, int buf_len, int *len, bool dup, lwmqtt_qos_t qos, bool retained,
-                                   unsigned short packet_id, lwmqtt_string_t topic, unsigned char *payload,
-                                   int payload_len) {
+lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, lwmqtt_qos_t qos, bool retained,
+                                   unsigned short packet_id, lwmqtt_string_t topic, void *payload, int payload_len) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // prepare remaining length
   int rem_len = 2 + topic.len + payload_len;
@@ -454,10 +459,10 @@ lwmqtt_err_t lwmqtt_encode_publish(unsigned char *buf, int buf_len, int *len, bo
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, int *len, unsigned short packet_id, int count,
+lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned short packet_id, int count,
                                      lwmqtt_string_t *topic_filters, lwmqtt_qos_t *qos_levels) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // prepare remaining length
   int rem_len = 2;
@@ -497,9 +502,9 @@ lwmqtt_err_t lwmqtt_encode_subscribe(unsigned char *buf, int buf_len, int *len, 
 }
 
 lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int *count,
-                                  lwmqtt_qos_t *granted_qos_levels, unsigned char *buf, int buf_len) {
+                                  lwmqtt_qos_t *granted_qos_levels, void *buf, int buf_len) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // read header
   lwmqtt_header_t header;
@@ -515,7 +520,7 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
     return err;
   }
 
-  unsigned char *end_ptr = ptr + rem_len;
+  void *end_ptr = ptr + rem_len;
 
   if (end_ptr - ptr < 2) {
     return LWMQTT_LENGTH_MISMATCH;
@@ -537,10 +542,10 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_unsubscribe(unsigned char *buf, int buf_len, int *len, unsigned short packet_id, int count,
+lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, unsigned short packet_id, int count,
                                        lwmqtt_string_t *topic_filters) {
   // prepare pointer
-  unsigned char *ptr = buf;
+  void *ptr = buf;
 
   // prepare remaining length
   int rem_len = 2;
