@@ -13,7 +13,6 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-// TODO: Move to helpers?
 static int lwmqtt_total_header_length(int rem_len) {
   if (rem_len < 128) {
     return 1 + 1;
