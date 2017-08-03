@@ -26,40 +26,6 @@ static int lwmqtt_total_header_length(int rem_len) {
   }
 }
 
-// TODO: Move to helpers?
-static lwmqtt_err_t lwmqtt_decode_remaining_length(void **buf, int buf_len, int *rem_len) {
-  // get array
-  unsigned char *ary = *buf;
-
-  unsigned char c;
-  int multiplier = 1;
-  int len = 0;
-
-  *rem_len = 0;
-  do {
-    len++;
-
-    // return error if the passed buffer is to short
-    if (buf_len < len) {
-      return LWMQTT_BUFFER_TOO_SHORT;
-    }
-
-    // return error if the length has overflowed
-    if (len > 4) {
-      return LWMQTT_REMAINING_LENGTH_OVERFLOW;
-    }
-
-    c = ary[len - 1];
-
-    *rem_len += (c & 127) * multiplier;
-    multiplier *= 128;
-  } while ((c & 128) != 0);
-
-  *buf += len;
-
-  return LWMQTT_SUCCESS;
-}
-
 lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_type) {
   // prepare pointer
   void *ptr = buf;
@@ -92,7 +58,14 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, int *rem_len
   void *ptr = buf;
 
   // attempt to decode remaining length
-  return lwmqtt_decode_remaining_length(&ptr, buf_len, rem_len);
+  *rem_len = lwmqtt_read_varnum(&ptr, buf_len);
+  if (*rem_len == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (*rem_len == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
+
+  return LWMQTT_SUCCESS;
 }
 
 typedef union {
@@ -228,10 +201,11 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *
   }
 
   // read remaining length
-  int rem_len;
-  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len - 1, &rem_len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
+  int rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
+  if (rem_len == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (rem_len == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
   // check lengths
@@ -283,10 +257,11 @@ lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, uns
   *packet_type = (lwmqtt_packet_type_t)header.bits.type;
 
   // read remaining length
-  int rem_len;
-  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len - 1, &rem_len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
+  int rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
+  if (rem_len == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (rem_len == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
   // check lengths
@@ -351,10 +326,11 @@ lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained,
   *retained = header.bits.retain == 1;
 
   // read remaining length
-  int rem_len;
-  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len - 1, &rem_len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
+  int rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
+  if (rem_len == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (rem_len == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
   // check lengths
@@ -486,10 +462,11 @@ lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int 
   }
 
   // read remaining length
-  int rem_len;
-  lwmqtt_err_t err = lwmqtt_decode_remaining_length(&ptr, buf_len - 1, &rem_len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
+  int rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
+  if (rem_len == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (rem_len == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
   void *end_ptr = ptr + rem_len;
