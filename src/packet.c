@@ -128,7 +128,12 @@ lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_opti
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  lwmqtt_write_varnum(&ptr, rem_len);
+  int ret = lwmqtt_write_varnum(&ptr, buf_len - 1, rem_len);
+  if (ret == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (ret == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
 
   // write version
   lwmqtt_write_string(&ptr, lwmqtt_str("MQTT"));
@@ -236,7 +241,12 @@ lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  lwmqtt_write_varnum(&ptr, 0);
+  int ret = lwmqtt_write_varnum(&ptr, buf_len - 1, 0);
+  if (ret == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (ret == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
 
   // set length
   *len = (int)(ptr - buf);
@@ -292,7 +302,12 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  lwmqtt_write_varnum(&ptr, 2);
+  int ret = lwmqtt_write_varnum(&ptr, buf_len - 1, 2);
+  if (ret == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (ret == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
 
   // write packet id
   lwmqtt_write_int(&ptr, packet_id);
@@ -386,7 +401,12 @@ lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, l
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  lwmqtt_write_varnum(&ptr, rem_len);
+  int ret = lwmqtt_write_varnum(&ptr, buf_len - 1, rem_len);
+  if (ret == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (ret == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
 
   // write topic
   lwmqtt_write_string(&ptr, topic);
@@ -431,7 +451,12 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned 
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  lwmqtt_write_varnum(&ptr, rem_len);
+  int ret = lwmqtt_write_varnum(&ptr, buf_len - 1, rem_len);
+  if (ret == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (ret == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
 
   // write packet id
   lwmqtt_write_int(&ptr, packet_id);
@@ -515,7 +540,12 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, unsigne
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  lwmqtt_write_varnum(&ptr, rem_len);
+  int ret = lwmqtt_write_varnum(&ptr, buf_len - 1, rem_len);
+  if (ret == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (ret == -2) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
 
   // write packet id
   lwmqtt_write_int(&ptr, packet_id);

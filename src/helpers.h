@@ -69,7 +69,8 @@ int lwmqtt_read_varnum(void **pptr, int size);
  *
  * @param pptr - Pointer to the output buffer - incremented by the number of bytes written.
  * @param num The number to write.
+ * @return Zero if successful, -1 if buffer is to short and -2 if overflowed.
  */
-void lwmqtt_write_varnum(void **pptr, int num);
+int lwmqtt_write_varnum(void **pptr, int size, int num);
 
 #endif
