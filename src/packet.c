@@ -59,8 +59,10 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, int *rem_len
   // attempt to decode remaining length
   *rem_len = lwmqtt_read_varnum(&ptr, buf_len);
   if (*rem_len == -1) {
+    *rem_len = 0;
     return LWMQTT_BUFFER_TOO_SHORT;
   } else if (*rem_len == -2) {
+    *rem_len = 0;
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
