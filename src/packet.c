@@ -14,34 +14,6 @@ typedef union {
 } lwmqtt_header_t;
 
 // TODO: Move to helpers?
-static int lwmqtt_encode_remaining_length(void *buf, int rem_len) {
-  // get array
-  unsigned char *ary = buf;
-
-  // init len counter
-  int len = 0;
-
-  // encode variadic number
-  do {
-    // calculate current digit
-    unsigned char d = (unsigned char)(rem_len % 128);
-
-    // change remaining length
-    rem_len /= 128;
-
-    // if there are more digits to encode, set the top bit of this digit
-    if (rem_len > 0) {
-      d |= 0x80;
-    }
-
-    // set digit
-    ary[len++] = d;
-  } while (rem_len > 0);
-
-  return len;
-}
-
-// TODO: Move to helpers?
 static int lwmqtt_total_header_length(int rem_len) {
   if (rem_len < 128) {
     return 1 + 1;
@@ -184,7 +156,7 @@ lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_opti
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  ptr += lwmqtt_encode_remaining_length(ptr, rem_len);
+  lwmqtt_write_varnum(&ptr, rem_len);
 
   // write version
   lwmqtt_write_string(&ptr, lwmqtt_str("MQTT"));
@@ -291,7 +263,7 @@ lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  ptr += lwmqtt_encode_remaining_length(ptr, 0);
+  lwmqtt_write_varnum(&ptr, 0);
 
   // set length
   *len = (int)(ptr - buf);
@@ -346,7 +318,7 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  ptr += lwmqtt_encode_remaining_length(ptr, 2);
+  lwmqtt_write_varnum(&ptr, 2);
 
   // write packet id
   lwmqtt_write_int(&ptr, packet_id);
@@ -439,7 +411,7 @@ lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, l
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  ptr += lwmqtt_encode_remaining_length(ptr, rem_len);
+  lwmqtt_write_varnum(&ptr, rem_len);
 
   // write topic
   lwmqtt_write_string(&ptr, topic);
@@ -484,7 +456,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned 
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  ptr += lwmqtt_encode_remaining_length(ptr, rem_len);
+  lwmqtt_write_varnum(&ptr, rem_len);
 
   // write packet id
   lwmqtt_write_int(&ptr, packet_id);
@@ -567,7 +539,7 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, unsigne
   lwmqtt_write_char(&ptr, header.byte);
 
   // write remaining length
-  ptr += lwmqtt_encode_remaining_length(ptr, rem_len);
+  lwmqtt_write_varnum(&ptr, rem_len);
 
   // write packet id
   lwmqtt_write_int(&ptr, packet_id);
