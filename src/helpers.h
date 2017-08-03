@@ -50,7 +50,7 @@ unsigned char lwmqtt_read_char(void **pptr);
 /**
  * Writes one character to an output buffer.
  *
- * @param pptr - Pointer to the output buffer - incremented by the number of written.
+ * @param pptr - Pointer to the output buffer - incremented by the number of bytes written.
  * @param The character to write
  */
 void lwmqtt_write_char(void **pptr, unsigned char chr);
