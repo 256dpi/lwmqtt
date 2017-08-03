@@ -100,7 +100,7 @@ void lwmqtt_write_char(void **pptr, unsigned char chr) {
   *pptr += 1;
 }
 
-int lwmqtt_read_varnum(void **pptr) {
+int lwmqtt_read_varnum(void **pptr, int size) {
   // get array
   unsigned char *ary = *pptr;
 
@@ -121,9 +121,14 @@ int lwmqtt_read_varnum(void **pptr) {
     // increment length
     len++;
 
+    // return error if buffer is to small
+    if (size < len) {
+      return -1;
+    }
+
     // return error if the length has overflowed
     if (len > 4) {
-      return -1;
+      return -2;
     }
 
     // read digit

@@ -56,12 +56,13 @@ unsigned char lwmqtt_read_char(void **pptr);
 void lwmqtt_write_char(void **pptr, unsigned char chr);
 
 /**
- * Reads a variable number from the input buffer. The input buffer must be at least 4 bytes in size.
+ * Reads a variable number from the input buffer.
  *
  * @param pptr - Pointer to the input buffer - incremented by the number of bytes used & returned.
- * @return Length if successful, below zero if not.
+ * @param size - The size of the referenced input buffer.
+ * @return Length if successful, -1 if buffer is to short and -2 if overflowed.
  */
-int lwmqtt_read_varnum(void **pptr);
+int lwmqtt_read_varnum(void **pptr, int size);
 
 /**
  * Writes a variable number to an output buffer. The output buffer must be at least 4 bytes in size.
