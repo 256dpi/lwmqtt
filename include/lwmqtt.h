@@ -255,6 +255,21 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *msg, int timeout);
 
 /**
+ * Will send a subscribe packet with multiple topic filters plus qos levels and wait for the suback to complete.
+ *
+ * Note: The message callback might be called with incoming messages as part of this call.
+ *
+ * @param client - The client object.
+ * @param count - The number of topic filters and qos levels.
+ * @param topic_filter - The topic filters.
+ * @param qos - The list of QoS levels.
+ * @param timeout - The command timeout.
+ * @return An error value.
+ */
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, const char **topic_filter, lwmqtt_qos_t *qos,
+                              int timeout);
+
+/**
  * Will send a subscribe packet with a single topic filter plus qos level and wait for the suback to complete.
  *
  * Note: The message callback might be called with incoming messages as part of this call.
@@ -265,10 +280,23 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_m
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos, int timeout);
+lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos, int timeout);
 
 /**
- * Will send an unsubscribe packet and wait for the unsuback to complete.
+ * Will send an unsubscribe packet with multiple topic filters and wait for the unsuback to complete.
+ *
+ * Note: The message callback might be called with incoming messages as part of this call.
+ *
+ * @param client - The client object.
+ * @param count - The number of topic filters.
+ * @param topic_filter - The topic filter.
+ * @param timeout - The command timeout.
+ * @return An error value.
+ */
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, const char **topic_filter, int timeout);
+
+/**
+ * Will send an unsubscribe packet with a single topic filter and wait for the unsuback to complete.
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
@@ -277,7 +305,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, int timeout);
+lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, const char *topic_filter, int timeout);
 
 /**
  * Will send a disconnect packet and finish the client.

@@ -392,17 +392,23 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos, int timeout) {
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, const char **topic_filter, lwmqtt_qos_t *qos,
+                              int timeout) {
   // set timeout
   client->timer_set(client, client->command_timer, timeout);
 
-  // prepare string
-  lwmqtt_string_t str = lwmqtt_str(topic_filter);
+  // prepare string objects
+  lwmqtt_string_t strings[count];
+
+  // convert strings
+  for (int i = 0; i < count; i++) {
+    strings[i] = lwmqtt_str(topic_filter[i]);
+  }
 
   // encode subscribe packet
   int len;
   lwmqtt_err_t err = lwmqtt_encode_subscribe(client->write_buf, client->write_buf_size, &len,
-                                             lwmqtt_get_next_packet_id(client), 1, &str, &qos);
+                                             lwmqtt_get_next_packet_id(client), count, strings, qos);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -423,10 +429,10 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
   }
 
   // decode packet
-  int count = 0;
-  lwmqtt_qos_t granted_qos;
+  int suback_count = 0;
+  lwmqtt_qos_t granted_qos[count];
   unsigned short packet_id;
-  err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, 1, &count, &granted_qos);
+  err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, count, &suback_count, granted_qos);
   if (err == LWMQTT_SUCCESS) {
     return err;
   }
@@ -434,17 +440,26 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filter, int timeout) {
+lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos, int timeout) {
+  return lwmqtt_subscribe(client, 1, &topic_filter, &qos, timeout);
+}
+
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, const char **topic_filter, int timeout) {
   // set timer
   client->timer_set(client, client->command_timer, timeout);
 
-  // prepare string
-  lwmqtt_string_t str = lwmqtt_str(topic_filter);
+  // prepare string objects
+  lwmqtt_string_t strings[count];
+
+  // convert strings
+  for (int i = 0; i < count; i++) {
+    strings[i] = lwmqtt_str(topic_filter[i]);
+  }
 
   // encode unsubscribe packet
   int len;
   lwmqtt_err_t err = lwmqtt_encode_unsubscribe(client->write_buf, client->write_buf_size, &len,
-                                               lwmqtt_get_next_packet_id(client), 1, &str);
+                                               lwmqtt_get_next_packet_id(client), count, strings);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -473,6 +488,10 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, const char *topic_filte
   }
 
   return LWMQTT_SUCCESS;
+}
+
+lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, const char *topic_filter, int timeout) {
+  return lwmqtt_unsubscribe(client, 1, &topic_filter, timeout);
 }
 
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *message, int timeout) {

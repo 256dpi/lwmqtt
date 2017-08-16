@@ -43,7 +43,7 @@ int main() {
 
   printf("connected!\n");
 
-  err = lwmqtt_subscribe(&client, "hello", LWMQTT_QOS0, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe_one(&client, "hello", LWMQTT_QOS0, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_subscribe: %d (%d)\n", err, return_code);
     exit(1);
