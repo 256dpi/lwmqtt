@@ -258,8 +258,7 @@ lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *packet_type, bool *dup,
-                               unsigned short *packet_id) {
+lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *packet_type, bool *dup, long *packet_id) {
   // prepare pointer
   void *ptr = buf;
 
@@ -283,13 +282,13 @@ lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *pac
   }
 
   // read packet id
-  *packet_id = (unsigned short)lwmqtt_read_num(&ptr);
+  *packet_id = lwmqtt_read_num(&ptr);
 
   return LWMQTT_SUCCESS;
 }
 
 lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type, bool dup,
-                               unsigned short packet_id) {
+                               long packet_id) {
   // prepare pointer
   void *ptr = buf;
 
@@ -323,8 +322,7 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
 }
 
 lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos_t *qos, bool *retained,
-                                   unsigned short *packet_id, lwmqtt_string_t *topic, void **payload,
-                                   int *payload_len) {
+                                   long *packet_id, lwmqtt_string_t *topic, void **payload, int *payload_len) {
   // prepare pointer
   void *ptr = buf;
 
@@ -367,7 +365,7 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
 
   // read packet id if qos is at least 1
   if (*qos > 0) {
-    *packet_id = (unsigned short)lwmqtt_read_num(&ptr);
+    *packet_id = lwmqtt_read_num(&ptr);
   } else {
     *packet_id = 0;
   }
@@ -380,7 +378,7 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
 }
 
 lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, lwmqtt_qos_t qos, bool retained,
-                                   unsigned short packet_id, lwmqtt_string_t topic, void *payload, int payload_len) {
+                                   long packet_id, lwmqtt_string_t topic, void *payload, int payload_len) {
   // prepare pointer
   void *ptr = buf;
 
@@ -431,7 +429,7 @@ lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, l
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned short packet_id, int count,
+lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, long packet_id, int count,
                                      lwmqtt_string_t *topic_filters, lwmqtt_qos_t *qos_levels) {
   // prepare pointer
   void *ptr = buf;
@@ -478,7 +476,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned 
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, unsigned short *packet_id, int max_count, int *count,
+lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, long *packet_id, int max_count, int *count,
                                   lwmqtt_qos_t *granted_qos_levels) {
   // prepare pointer
   void *ptr = buf;
@@ -505,7 +503,7 @@ lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, unsigned short *packet
   }
 
   // read packet id
-  *packet_id = (unsigned short)lwmqtt_read_num(&ptr);
+  *packet_id = lwmqtt_read_num(&ptr);
 
   // read all suback codes
   *count = 0;
@@ -520,7 +518,7 @@ lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, unsigned short *packet
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, unsigned short packet_id, int count,
+lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, long packet_id, int count,
                                        lwmqtt_string_t *topic_filters) {
   // prepare pointer
   void *ptr = buf;

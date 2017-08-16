@@ -47,8 +47,8 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t c
   client->callback = cb;
 }
 
-static unsigned short lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
-  return c->last_packet_id = (unsigned short)((c->last_packet_id == 65535) ? 1 : c->last_packet_id + 1);
+static long lwmqtt_get_next_packet_id(lwmqtt_client_t *c) {
+  return c->last_packet_id = (c->last_packet_id == 65535) ? 1 : c->last_packet_id + 1;
 }
 
 static lwmqtt_err_t lwmqtt_read_from_network(lwmqtt_client_t *c, int offset, int len) {
@@ -198,7 +198,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, int *read, lwmqtt_packet_ty
       lwmqtt_string_t topic = lwmqtt_default_string;
       lwmqtt_message_t msg;
       bool dup;
-      unsigned short packet_id;
+      long packet_id;
       err = lwmqtt_decode_publish(c->read_buf, c->read_buf_size, &dup, &msg.qos, &msg.retained, &packet_id, &topic,
                                   &msg.payload, &msg.payload_len);
       if (err != LWMQTT_SUCCESS) {
@@ -243,7 +243,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, int *read, lwmqtt_packet_ty
     case LWMQTT_PUBREC_PACKET: {
       // decode pubrec packet
       bool dup;
-      unsigned short packet_id;
+      long packet_id;
       err = lwmqtt_decode_ack(c->read_buf, c->read_buf_size, packet_type, &dup, &packet_id);
       if (err != LWMQTT_SUCCESS) {
         return err;
@@ -269,7 +269,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, int *read, lwmqtt_packet_ty
     case LWMQTT_PUBREL_PACKET: {
       // decode pubrec packet
       bool dup;
-      unsigned short packet_id;
+      long packet_id;
       err = lwmqtt_decode_ack(c->read_buf, c->read_buf_size, packet_type, &dup, &packet_id);
       if (err != LWMQTT_SUCCESS) {
         return err;
@@ -431,7 +431,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, const char **t
   // decode packet
   int suback_count = 0;
   lwmqtt_qos_t granted_qos[count];
-  unsigned short packet_id;
+  long packet_id;
   err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, count, &suback_count, granted_qos);
   if (err == LWMQTT_SUCCESS) {
     return err;
@@ -481,7 +481,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, const char *
 
   // decode unsuback packet
   bool dup;
-  unsigned short packet_id;
+  long packet_id;
   err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, &packet_type, &dup, &packet_id);
   if (err != LWMQTT_SUCCESS) {
     return err;
@@ -502,7 +502,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_m
   client->timer_set(client, client->command_timer, timeout);
 
   // add packet id if at least qos 1
-  unsigned short packet_id = 0;
+  long packet_id = 0;
   if (message->qos == LWMQTT_QOS1 || message->qos == LWMQTT_QOS2) {
     packet_id = lwmqtt_get_next_packet_id(client);
   }

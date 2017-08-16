@@ -121,8 +121,8 @@ typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, void *ref, lwmqtt_string_t 
  * The client object.
  */
 struct lwmqtt_client_t {
-  unsigned short last_packet_id;
-  unsigned int keep_alive_interval;
+  long last_packet_id;
+  int keep_alive_interval;
   bool ping_outstanding;
 
   int write_buf_size, read_buf_size;

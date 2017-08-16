@@ -24,7 +24,7 @@ int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
   }
 
   // read length
-  int len = lwmqtt_read_num(buf);
+  long len = lwmqtt_read_num(buf);
 
   // check if string end is overflowing the end pointer
   if (&(*buf)[len] > buf_end) {
@@ -32,7 +32,7 @@ int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
   }
 
   // set string
-  str->len = len;
+  str->len = (int)len;
   str->data = (char *)*buf;
 
   // advance pointer
@@ -58,12 +58,12 @@ void lwmqtt_write_string(void **buf, lwmqtt_string_t string) {
   *buf += string.len;
 }
 
-int lwmqtt_read_num(void **buf) {
+long lwmqtt_read_num(void **buf) {
   // get array
   unsigned char *ary = *buf;
 
   // read two byte integer
-  int num = 256 * ary[0] + ary[1];
+  long num = 256 * ary[0] + ary[1];
 
   // adjust pointer
   *buf += 2;
@@ -71,7 +71,7 @@ int lwmqtt_read_num(void **buf) {
   return num;
 }
 
-void lwmqtt_write_num(void **buf, int num) {
+void lwmqtt_write_num(void **buf, long num) {
   // get array
   unsigned char *ary = *buf;
 

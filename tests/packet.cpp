@@ -243,7 +243,7 @@ TEST(AckTest, Decode1) {
 
   lwmqtt_packet_type_t packet_type;
   bool dup;
-  unsigned short packet_id;
+  long packet_id;
   lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
@@ -262,7 +262,7 @@ TEST(AckTest, DecodeError1) {
 
   lwmqtt_packet_type_t packet_type;
   bool dup;
-  unsigned short packet_id;
+  long packet_id;
   lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
@@ -278,7 +278,7 @@ TEST(AckTest, DecodeError2) {
 
   lwmqtt_packet_type_t packet_type;
   bool dup;
-  unsigned short packet_id;
+  long packet_id;
   lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
@@ -341,7 +341,7 @@ TEST(PublishTest, Decode1) {
   bool dup;
   lwmqtt_qos_t qos;
   bool retained;
-  unsigned short packet_id;
+  long packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
@@ -387,7 +387,7 @@ TEST(PublishTest, Decode2) {
   bool dup;
   lwmqtt_qos_t qos;
   bool retained;
-  unsigned short packet_id;
+  long packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
@@ -412,7 +412,7 @@ TEST(PublishTest, DecodeError1) {
   bool dup;
   lwmqtt_qos_t qos;
   bool retained;
-  unsigned short packet_id;
+  long packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
   unsigned char* payload;
   int payload_len;
@@ -525,7 +525,7 @@ TEST(SubackTest, Decode1) {
       1,  // return code 2
   };
 
-  unsigned short packet_id;
+  long packet_id;
   int count;
   lwmqtt_qos_t granted_qos_levels[2];
   lwmqtt_err_t err = lwmqtt_decode_suback(pkt, 8, &packet_id, 2, &count, granted_qos_levels);
@@ -546,7 +546,7 @@ TEST(SubackTest, DecodeError1) {
       0,  // return code 1
   };
 
-  unsigned short packet_id;
+  long packet_id;
   int count;
   lwmqtt_qos_t granted_qos_levels[2];
   lwmqtt_err_t err = lwmqtt_decode_suback(pkt, 5, &packet_id, 2, &count, granted_qos_levels);

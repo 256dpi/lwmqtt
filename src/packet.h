@@ -93,8 +93,7 @@ lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_
   * @param packet_id - The packet id.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *packet_type, bool *dup,
-                               unsigned short *packet_id);
+lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *packet_type, bool *dup, long *packet_id);
 
 /**
   * Encodes an ack (puback, pubrec, pubrel, pubcomp) packet into the supplied buffer.
@@ -108,7 +107,7 @@ lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *pac
   * @return An error value.
   */
 lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_type_t packet_type, bool dup,
-                               unsigned short packet_id);
+                               long packet_id);
 
 /**
   * Decodes a publish packet from the supplied buffer.
@@ -125,7 +124,7 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
   * @return An error value.
   */
 lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos_t *qos, bool *retained,
-                                   unsigned short *packet_id, lwmqtt_string_t *topic, void **payload, int *payload_len);
+                                   long *packet_id, lwmqtt_string_t *topic, void **payload, int *payload_len);
 
 /**
   * Encodes a publish packet into the supplied buffer.
@@ -143,7 +142,7 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
   * @return An error value.
   */
 lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, lwmqtt_qos_t qos, bool retained,
-                                   unsigned short packet_id, lwmqtt_string_t topic, void *payload, int payload_len);
+                                   long packet_id, lwmqtt_string_t topic, void *payload, int payload_len);
 
 /**
   * Encodes a subscribe packet into the supplied buffer.
@@ -157,7 +156,7 @@ lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, l
   * @param qos_levels - The array of requested QoS levels.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned short packet_id, int count,
+lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, long packet_id, int count,
                                      lwmqtt_string_t *topic_filters, lwmqtt_qos_t *qos_levels);
 
 /**
@@ -171,7 +170,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned 
   * @param granted_qos_levels - The granted QoS levels.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, unsigned short *packet_id, int max_count, int *count,
+lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, long *packet_id, int max_count, int *count,
                                   lwmqtt_qos_t *granted_qos_levels);
 
 /**
@@ -185,7 +184,7 @@ lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, unsigned short *packet
   * @param topic_filters - The array of topic filters.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, unsigned short packet_id, int count,
+lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, long packet_id, int count,
                                        lwmqtt_string_t *topic_filters);
 
 #endif  // LWMQTT_PACKET_H

@@ -29,7 +29,7 @@ void lwmqtt_write_string(void **buf, lwmqtt_string_t string);
  * @param buf - Pointer to the buffer.
  * @return The read number.
  */
-int lwmqtt_read_num(void **buf);
+long lwmqtt_read_num(void **buf);
 
 /**
  * Writes a number in two bytes to the specified buffer. The pointer is incremented by two.
@@ -37,7 +37,7 @@ int lwmqtt_read_num(void **buf);
  * @param buf - Pointer to the buffer.
  * @param num - The number to write.
  */
-void lwmqtt_write_num(void **buf, int num);
+void lwmqtt_write_num(void **buf, long num);
 
 /**
  * Reads one byte from the buffer. The pointer is incremented by one.
