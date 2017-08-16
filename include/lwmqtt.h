@@ -144,6 +144,10 @@ struct lwmqtt_client_t {
 /**
  * Will initialize the specified client object.
  *
+ * Buffer sizes, sent packages and received packages are limited to the platforms maximum positive number for an int.
+ * For a 16bit platform the maximum would be around 32KB (2**15) and for a 32bit platform it would be around 2GB
+ * (2**31).
+ *
  * @param client - The client object.
  * @param write_buf - The write buffer.
  * @param write_buf_size - The write buffer size.
