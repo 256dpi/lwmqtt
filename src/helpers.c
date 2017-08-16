@@ -19,7 +19,7 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b) {
 
 int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
   // check if at least 2 bytes
-  if (buf_end - (*buf) <= 1) {
+  if (buf_end - (*buf) < 2) {
     return -1;
   }
 
@@ -41,17 +41,21 @@ int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
   return str->len;
 }
 
-void lwmqtt_write_string(void **pptr, lwmqtt_string_t string) {
-  // write length prefixed string if length is given
-  if (string.len > 0) {
-    lwmqtt_write_num(pptr, string.len);
-    memcpy(*pptr, string.data, string.len);
-    *pptr += string.len;
+void lwmqtt_write_string(void **buf, lwmqtt_string_t string) {
+  // write zero length if length is zero
+  if(string.len == 0) {
+    lwmqtt_write_num(buf, 0);
     return;
   }
 
-  // write zero
-  lwmqtt_write_num(pptr, 0);
+  // write string length
+  lwmqtt_write_num(buf, string.len);
+
+  // write string
+  memcpy(*buf, string.data, string.len);
+
+  // advance pointer
+  *buf += string.len;
 }
 
 int lwmqtt_read_num(void **buf) {
@@ -67,16 +71,16 @@ int lwmqtt_read_num(void **buf) {
   return num;
 }
 
-void lwmqtt_write_num(void **pptr, int num) {
+void lwmqtt_write_num(void **buf, int num) {
   // get array
-  unsigned char *ary = *pptr;
+  unsigned char *ary = *buf;
 
   // write bytes
   ary[0] = (unsigned char)(num / 256);
   ary[1] = (unsigned char)(num % 256);
 
   // adjust pointer
-  *pptr += 2;
+  *buf += 2;
 }
 
 unsigned char lwmqtt_read_byte(void **buf) {
@@ -89,12 +93,12 @@ unsigned char lwmqtt_read_byte(void **buf) {
   return ary[0];
 }
 
-void lwmqtt_write_byte(void **buf, unsigned char chr) {
+void lwmqtt_write_byte(void **buf, unsigned char byte) {
   // get array
   unsigned char *ary = *buf;
 
   // write single char
-  *ary = chr;
+  *ary = byte;
 
   // adjust pointer
   *buf += 1;

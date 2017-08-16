@@ -18,13 +18,13 @@ int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end);
 /**
  * Writes a string to the specified buffer. The pointer is incremented by the bytes written.
  *
- * @param pptr - Pointer to the buffer.
- * @param The string to write.
+ * @param buf - Pointer to the buffer.
+ * @param string - The string to write.
  */
-void lwmqtt_write_string(void **pptr, lwmqtt_string_t string);
+void lwmqtt_write_string(void **buf, lwmqtt_string_t string);
 
 /**
- * Reads a two bytes as a number from the specified buffer. The pointer is incremented by two.
+ * Reads two bytes as a number from the specified buffer. The pointer is incremented by two.
  *
  * @param buf - Pointer to the buffer.
  * @return The read number.
@@ -34,10 +34,10 @@ int lwmqtt_read_num(void **buf);
 /**
  * Writes a number in two bytes to the specified buffer. The pointer is incremented by two.
  *
- * @param pptr - Pointer to the buffer.
- * @param The number to write.
+ * @param buf - Pointer to the buffer.
+ * @param num - The number to write.
  */
-void lwmqtt_write_num(void **pptr, int num);
+void lwmqtt_write_num(void **buf, int num);
 
 /**
  * Reads one byte from the buffer. The pointer is incremented by one.
@@ -51,9 +51,9 @@ unsigned char lwmqtt_read_byte(void **buf);
  * Writes one byte to the specified buffer. The pointer is incremented by one.
  *
  * @param buf - Pointer to the buffer.
- * @param The byte to write.
+ * @param byte - The byte to write.
  */
-void lwmqtt_write_byte(void **buf, unsigned char chr);
+void lwmqtt_write_byte(void **buf, unsigned char byte);
 
 /**
  * Reads a variable number from the specified buffer. The pointer is incremented by the bytes read.
