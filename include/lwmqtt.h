@@ -25,7 +25,7 @@ typedef enum {
  * A common string object.
  */
 typedef struct {
-  int len;
+  long len;
   char *data;
 } lwmqtt_string_t;
 

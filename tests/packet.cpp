@@ -29,7 +29,7 @@ TEST(DetectPacketType, Invalid) {
 
 TEST(DetectRemainingLength, Valid) {
   unsigned char h = 60;
-  int rem_len = 0;
+  long rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(&h, 1, &rem_len);
   EXPECT_EQ(rem_len, 60);
   EXPECT_EQ(err, LWMQTT_SUCCESS);
@@ -37,14 +37,14 @@ TEST(DetectRemainingLength, Valid) {
 
 TEST(DetectRemainingLength, ToShort) {
   unsigned char h = 255;
-  int rem_len = 0;
+  long rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(&h, 1, &rem_len);
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(DetectRemainingLength, Overflow) {
   unsigned char h[5] = {255, 255, 255, 255, 255};
-  int rem_len = 0;
+  long rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, 5, &rem_len);
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_OVERFLOW);
 }

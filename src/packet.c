@@ -34,7 +34,7 @@ typedef union {
   } bits;
 } lwmqtt_connack_flags_t;
 
-static int lwmqtt_total_header_length(int rem_len) {
+static int lwmqtt_total_header_length(long rem_len) {
   if (rem_len < 128) {
     return 1 + 1;
   } else if (rem_len < 16384) {
@@ -75,7 +75,7 @@ lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_t
   }
 }
 
-lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, int *rem_len) {
+lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, long *rem_len) {
   // prepare pointer
   void *ptr = buf;
 
@@ -209,7 +209,7 @@ lwmqtt_err_t lwmqtt_decode_connack(void *buf, int buf_len, bool *session_present
   }
 
   // read remaining length
-  int rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
+  long rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
   if (rem_len == -1) {
     return LWMQTT_BUFFER_TOO_SHORT;
   } else if (rem_len == -2) {
@@ -269,7 +269,7 @@ lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *pac
   *packet_type = (lwmqtt_packet_type_t)header.bits.type;
 
   // read remaining length
-  int rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
+  long rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
   if (rem_len == -1) {
     return LWMQTT_BUFFER_TOO_SHORT;
   } else if (rem_len == -2) {
@@ -343,7 +343,7 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
   *retained = header.bits.retain == 1;
 
   // read remaining length
-  int rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
+  long rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
   if (rem_len == -1) {
     return LWMQTT_BUFFER_TOO_SHORT;
   } else if (rem_len == -2) {
@@ -383,7 +383,7 @@ lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, l
   void *ptr = buf;
 
   // prepare remaining length
-  int rem_len = 2 + topic.len + payload_len;
+  long rem_len = 2 + topic.len + payload_len;
 
   // add packet id if qos is at least 1
   if (qos > 0) {
@@ -489,7 +489,7 @@ lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, long *packet_id, int m
   }
 
   // read remaining length
-  int rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
+  long rem_len = lwmqtt_read_varnum(&ptr, buf_len - 1);
   if (rem_len == -1) {
     return LWMQTT_BUFFER_TOO_SHORT;
   } else if (rem_len == -2) {

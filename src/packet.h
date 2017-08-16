@@ -47,7 +47,7 @@ lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_t
  * @param buf_len - The length in bytes of the supplied buffer.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, int *rem_len);
+lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, long *rem_len);
 
 /**
   * Encodes a connect packet into the supplied buffer.

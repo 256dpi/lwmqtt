@@ -17,7 +17,7 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b) {
   return strncmp(a->data, b, len);
 }
 
-int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
+long lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
   // check if at least 2 bytes
   if (buf_end - (*buf) < 2) {
     return -1;
@@ -32,7 +32,7 @@ int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
   }
 
   // set string
-  str->len = (int)len;
+  str->len = len;
   str->data = (char *)*buf;
 
   // advance pointer
@@ -104,7 +104,7 @@ void lwmqtt_write_byte(void **buf, unsigned char byte) {
   *buf += 1;
 }
 
-int lwmqtt_read_varnum(void **buf, int buf_len) {
+long lwmqtt_read_varnum(void **buf, int buf_len) {
   // get array
   unsigned char *ary = *buf;
 
@@ -112,13 +112,13 @@ int lwmqtt_read_varnum(void **buf, int buf_len) {
   unsigned char digit;
 
   // prepare multiplier
-  int multiplier = 1;
+  long multiplier = 1;
 
   // prepare length
   int len = 0;
 
   // initialize number
-  int num = 0;
+  long num = 0;
 
   // decode variadic number
   do {
@@ -151,7 +151,7 @@ int lwmqtt_read_varnum(void **buf, int buf_len) {
   return num;
 }
 
-int lwmqtt_write_varnum(void **buf, int buf_len, int num) {
+int lwmqtt_write_varnum(void **buf, int buf_len, long num) {
   // get array
   unsigned char *ary = *buf;
 

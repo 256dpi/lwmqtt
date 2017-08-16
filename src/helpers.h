@@ -13,7 +13,7 @@
  * @param buf_end - Pointer to the end of the buffer.
  * @return Length if successful, -1 if buffer is to short and -2 if overflowed.
  */
-int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end);
+long lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end);
 
 /**
  * Writes a string to the specified buffer. The pointer is incremented by the bytes written.
@@ -62,7 +62,7 @@ void lwmqtt_write_byte(void **buf, unsigned char byte);
  * @param buf_len - The length of the buffer.
  * @return Length if successful, -1 if buffer is to short and -2 if overflowed.
  */
-int lwmqtt_read_varnum(void **buf, int buf_len);
+long lwmqtt_read_varnum(void **buf, int buf_len);
 
 /**
  * Writes a variable number to the specified buffer. The pointer is incremented by the bytes written.
@@ -72,6 +72,6 @@ int lwmqtt_read_varnum(void **buf, int buf_len);
  * @param num - The number to write.
  * @return Zero if successful, -1 if buffer is to short and -2 if overflowed.
  */
-int lwmqtt_write_varnum(void **buf, int buf_len, int num);
+int lwmqtt_write_varnum(void **buf, int buf_len, long num);
 
 #endif

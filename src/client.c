@@ -134,7 +134,7 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, int *read, 
 
   // prepare variables
   int len = 0;
-  int rem_len = 0;
+  long rem_len = 0;
 
   do {
     // adjust len
@@ -157,7 +157,7 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *c, int *read, 
 
   // read the rest of the buffer if needed
   if (rem_len > 0) {
-    err = lwmqtt_read_from_network(c, 1 + len, rem_len);
+    err = lwmqtt_read_from_network(c, 1 + len, (int)rem_len);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
