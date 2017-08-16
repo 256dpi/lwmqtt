@@ -17,26 +17,26 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b) {
   return strncmp(a->data, b, len);
 }
 
-bool lwmqtt_read_string(lwmqtt_string_t *str, void **pptr, void *end_ptr) {
+bool lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
   // check if at lest 2 bytes
-  if (end_ptr - (*pptr) <= 1) {
+  if (buf_end - (*buf) <= 1) {
     return false;
   }
 
   // read length
-  int len = lwmqtt_read_int(pptr);
+  int len = lwmqtt_read_num(buf);
 
   // check if string end is overflowing the end pointer
-  if (&(*pptr)[len] > end_ptr) {
+  if (&(*buf)[len] > buf_end) {
     return false;
   }
 
   // set string
   str->len = len;
-  str->data = (char *)*pptr;
+  str->data = (char *)*buf;
 
   // advance pointer
-  *pptr += str->len;
+  *buf += str->len;
 
   return true;
 }
@@ -44,30 +44,30 @@ bool lwmqtt_read_string(lwmqtt_string_t *str, void **pptr, void *end_ptr) {
 void lwmqtt_write_string(void **pptr, lwmqtt_string_t string) {
   // write length prefixed string if length is given
   if (string.len > 0) {
-    lwmqtt_write_int(pptr, string.len);
+    lwmqtt_write_num(pptr, string.len);
     memcpy(*pptr, string.data, string.len);
     *pptr += string.len;
     return;
   }
 
   // write zero
-  lwmqtt_write_int(pptr, 0);
+  lwmqtt_write_num(pptr, 0);
 }
 
-int lwmqtt_read_int(void **pptr) {
+int lwmqtt_read_num(void **buf) {
   // get array
-  unsigned char *ary = *pptr;
+  unsigned char *ary = *buf;
 
   // read two byte integer
   int num = 256 * ary[0] + ary[1];
 
   // adjust pointer
-  *pptr += 2;
+  *buf += 2;
 
   return num;
 }
 
-void lwmqtt_write_int(void **pptr, int num) {
+void lwmqtt_write_num(void **pptr, int num) {
   // get array
   unsigned char *ary = *pptr;
 
@@ -79,30 +79,30 @@ void lwmqtt_write_int(void **pptr, int num) {
   *pptr += 2;
 }
 
-unsigned char lwmqtt_read_char(void **pptr) {
+unsigned char lwmqtt_read_byte(void **buf) {
   // get array
-  unsigned char *ary = *pptr;
+  unsigned char *ary = *buf;
 
   // adjust pointer
-  *pptr += 1;
+  *buf += 1;
 
   return ary[0];
 }
 
-void lwmqtt_write_char(void **pptr, unsigned char chr) {
+void lwmqtt_write_byte(void **buf, unsigned char chr) {
   // get array
-  unsigned char *ary = *pptr;
+  unsigned char *ary = *buf;
 
   // write single char
   *ary = chr;
 
   // adjust pointer
-  *pptr += 1;
+  *buf += 1;
 }
 
-int lwmqtt_read_varnum(void **pptr, int size) {
+int lwmqtt_read_varnum(void **buf, int buf_len) {
   // get array
-  unsigned char *ary = *pptr;
+  unsigned char *ary = *buf;
 
   // prepare last digit
   unsigned char digit;
@@ -122,7 +122,7 @@ int lwmqtt_read_varnum(void **pptr, int size) {
     len++;
 
     // return error if buffer is to small
-    if (size < len) {
+    if (buf_len < len) {
       return -1;
     }
 
@@ -142,14 +142,14 @@ int lwmqtt_read_varnum(void **pptr, int size) {
   } while ((digit & 128) != 0);
 
   // adjust pointer
-  *pptr += len;
+  *buf += len;
 
   return num;
 }
 
-int lwmqtt_write_varnum(void **pptr, int size, int num) {
+int lwmqtt_write_varnum(void **buf, int buf_len, int num) {
   // get array
-  unsigned char *ary = *pptr;
+  unsigned char *ary = *buf;
 
   // init len counter
   int len = 0;
@@ -157,7 +157,7 @@ int lwmqtt_write_varnum(void **pptr, int size, int num) {
   // encode variadic number
   do {
     // return error if buffer is to small
-    if (size < len) {
+    if (buf_len < len) {
       return -1;
     }
 
@@ -182,7 +182,7 @@ int lwmqtt_write_varnum(void **pptr, int size, int num) {
   } while (num > 0);
 
   // adjust pointer
-  *pptr += len;
+  *buf += len;
 
   return 0;
 }

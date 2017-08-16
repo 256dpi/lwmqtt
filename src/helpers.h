@@ -6,71 +6,72 @@
 #include <lwmqtt.h>
 
 /**
- * Reads a string object from the buffer and populates the passed object.
+ * Reads a string from the specified buffer into the passed object. The pointer is incremented by the bytes read.
  *
  * @param str - The object into which the data is to be read.
- * @param pptr - Pointer to the output buffer - incremented by the number of bytes read.
- * @param end_ptr - Pointer to the end of the data: do not read beyond.
+ * @param buf - Pointer to the buffer.
+ * @param buf_end - Pointer to the end of the buffer.
  * @return One if successful, zero if not.
  */
-bool lwmqtt_read_string(lwmqtt_string_t *str, void **pptr, void *end_ptr);
+bool lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end);
 
 /**
- * Writes a string to an output buffer.
+ * Writes a string to the specified buffer. The pointer is incremented by the bytes written.
  *
- * @param pptr - Pointer to the output buffer - incremented by the number of bytes written.
+ * @param pptr - Pointer to the buffer.
  * @param The string to write.
  */
 void lwmqtt_write_string(void **pptr, lwmqtt_string_t string);
 
 /**
- * Calculates an integer from two bytes read from the input buffer.
+ * Reads a two bytes as a number from the specified buffer. The pointer is incremented by two.
  *
- * @param pptr - Pointer to the input buffer - incremented by the number of bytes read.
- * @return The integer value calculated.
+ * @param buf - Pointer to the buffer.
+ * @return The read number.
  */
-int lwmqtt_read_int(void **pptr);
+int lwmqtt_read_num(void **buf);
 
 /**
- * Writes an integer as 2 bytes to an output buffer.
+ * Writes a number in two bytes to the specified buffer. The pointer is incremented by two.
  *
- * @param pptr - Pointer to the output buffer - incremented by the number of bytes written.
- * @param The integer to write.
+ * @param pptr - Pointer to the buffer.
+ * @param The number to write.
  */
-void lwmqtt_write_int(void **pptr, int num);
+void lwmqtt_write_num(void **pptr, int num);
 
 /**
- * Reads one character from the input buffer.
+ * Reads one byte from the buffer. The pointer is incremented by one.
  *
- * @param pptr - Pointer to the input buffer - incremented by the number of bytes read.
- * @return The character read.
+ * @param buf - Pointer to the buffer.
+ * @return The read byte.
  */
-unsigned char lwmqtt_read_char(void **pptr);
+unsigned char lwmqtt_read_byte(void **buf);
 
 /**
- * Writes one character to an output buffer.
+ * Writes one byte to the specified buffer. The pointer is incremented by one.
  *
- * @param pptr - Pointer to the output buffer - incremented by the number of bytes written.
- * @param The character to write
+ * @param buf - Pointer to the buffer.
+ * @param The byte to write.
  */
-void lwmqtt_write_char(void **pptr, unsigned char chr);
+void lwmqtt_write_byte(void **buf, unsigned char chr);
 
 /**
- * Reads a variable number from the input buffer.
+ * Reads a variable number from the specified buffer. The pointer is incremented by the bytes read.
  *
- * @param pptr - Pointer to the input buffer - incremented by the number of bytes read.
- * @param size - The size of the referenced input buffer.
+ * @param buf - Pointer to the buffer.
+ * @param buf_len - The length of the buffer.
  * @return Length if successful, -1 if buffer is to short and -2 if overflowed.
  */
-int lwmqtt_read_varnum(void **pptr, int size);
+int lwmqtt_read_varnum(void **buf, int buf_len);
 
 /**
- * Writes a variable number to an output buffer. The output buffer must be at least 4 bytes in size.
+ * Writes a variable number to the specified buffer. The pointer is incremented by the bytes written.
  *
- * @param pptr - Pointer to the output buffer - incremented by the number of bytes written.
- * @param num The number to write.
+ * @param buf - Pointer to the buffer.
+ * @param buf_len - The length of the buffer.
+ * @param num - The number to write.
  * @return Zero if successful, -1 if buffer is to short and -2 if overflowed.
  */
-int lwmqtt_write_varnum(void **pptr, int size, int num);
+int lwmqtt_write_varnum(void **buf, int buf_len, int num);
 
 #endif
