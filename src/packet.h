@@ -32,7 +32,7 @@ typedef enum {
  * Will detect the packet type from the at least one byte long buffer.
  *
  * @param buf - The buffer from which the packet type will be detected.
- * @param packet_type - Pointer to the receiver of the packet type.
+ * @param packet_type - The packet type.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_type);
@@ -64,16 +64,16 @@ lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_opti
 /**
   * Decodes a connack packet from the supplied buffer.
   *
-  * @param session_present - The session present flag.
-  * @param return_code - The return code.
   * @param buf - The raw buffer data.
   * @param buf_len - The length in bytes of the supplied buffer.
+  * @param session_present - The session present flag.
+  * @param return_code - The return code.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, void *buf, int buf_len);
+lwmqtt_err_t lwmqtt_decode_connack(void *buf, int buf_len, bool *session_present, lwmqtt_return_code_t *return_code);
 
 /**
-  * Encodes a zero (disconnect) packet into the supplied buffer.
+  * Encodes a zero (disconnect, pingreq) packet into the supplied buffer.
   *
   * @param buf - The buffer into which the packet will be encoded.
   * @param buf_len - The length in bytes of the supplied buffer.
@@ -86,15 +86,15 @@ lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_
 /**
   * Decodes an ack (puback, pubrec, pubrel, pubcomp, unsuback) packet from the supplied buffer.
   *
+  * @param buf - The raw buffer data.
+  * @param buf_len - The length in bytes of the supplied buffer.
   * @param packet_type - The packet type.
   * @param dup - The dup flag.
   * @param packet_id - The packet id.
-  * @param buf - The raw buffer data.
-  * @param buf_len - The length in bytes of the supplied buffer.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, unsigned short *packet_id, void *buf,
-                               int buf_len);
+lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *packet_type, bool *dup,
+                               unsigned short *packet_id);
 
 /**
   * Encodes an ack (puback, pubrec, pubrel, pubcomp) packet into the supplied buffer.
@@ -113,6 +113,8 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
 /**
   * Decodes a publish packet from the supplied buffer.
   *
+  * @param buf - The raw buffer data.
+  * @param buf_len - The length in bytes of the supplied buffer.
   * @param dup - The dup flag.
   * @param qos - The QoS level.
   * @param retained- The retained flag.
@@ -120,12 +122,10 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
   * @param topic - The topic.
   * @param payload - The payload data.
   * @param payload_len - The length of the payload.
-  * @param buf - The raw buffer data.
-  * @param buf_len - The length in bytes of the supplied buffer.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained, unsigned short *packet_id,
-                                   lwmqtt_string_t *topic, void **payload, int *payload_len, void *buf, int buf_len);
+lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos_t *qos, bool *retained,
+                                   unsigned short *packet_id, lwmqtt_string_t *topic, void **payload, int *payload_len);
 
 /**
   * Encodes a publish packet into the supplied buffer.
@@ -163,16 +163,16 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned 
 /**
   * Decodes a suback packet from the supplied buffer.
   *
+  * @param buf - The raw buffer data.
+  * @param buf_len - The length in bytes of the supplied buffer.
   * @param packet_id - The packet id.
   * @param max_count - The maximum number of members allowed in the granted_qos_levels array.
   * @param count - The number of members in the granted_qos_levels array.
   * @param granted_qos_levels - The granted QoS levels.
-  * @param buf - The raw buffer data.
-  * @param buf_len - The length in bytes of the supplied buffer.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int *count,
-                                  lwmqtt_qos_t *granted_qos_levels, void *buf, int buf_len);
+lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, unsigned short *packet_id, int max_count, int *count,
+                                  lwmqtt_qos_t *granted_qos_levels);
 
 /**
   * Encodes the supplied unsubscribe data into the supplied buffer, ready for sending

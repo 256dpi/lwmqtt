@@ -13,62 +13,6 @@ typedef union {
   } bits;
 } lwmqtt_header_t;
 
-static int lwmqtt_total_header_length(int rem_len) {
-  if (rem_len < 128) {
-    return 1 + 1;
-  } else if (rem_len < 16384) {
-    return 1 + 2;
-  } else if (rem_len < 2097151) {
-    return 1 + 3;
-  } else {
-    return 1 + 4;
-  }
-}
-
-lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_type) {
-  // prepare pointer
-  void *ptr = buf;
-
-  // read header
-  lwmqtt_header_t header;
-  header.byte = lwmqtt_read_byte(&ptr);
-
-  // check if packet type is correct and can be received
-  switch ((lwmqtt_packet_type_t)header.bits.type) {
-    case LWMQTT_CONNACK_PACKET:
-    case LWMQTT_PUBLISH_PACKET:
-    case LWMQTT_PUBACK_PACKET:
-    case LWMQTT_PUBREC_PACKET:
-    case LWMQTT_PUBREL_PACKET:
-    case LWMQTT_PUBCOMP_PACKET:
-    case LWMQTT_SUBACK_PACKET:
-    case LWMQTT_UNSUBACK_PACKET:
-    case LWMQTT_PINGRESP_PACKET:
-      *packet_type = (lwmqtt_packet_type_t)header.bits.type;
-      return LWMQTT_SUCCESS;
-    default:
-      *packet_type = LWMQTT_NO_PACKET;
-      return LWMQTT_DECODE_ERROR;
-  }
-}
-
-lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, int *rem_len) {
-  // prepare pointer
-  void *ptr = buf;
-
-  // attempt to decode remaining length
-  *rem_len = lwmqtt_read_varnum(&ptr, buf_len);
-  if (*rem_len == -1) {
-    *rem_len = 0;
-    return LWMQTT_BUFFER_TOO_SHORT;
-  } else if (*rem_len == -2) {
-    *rem_len = 0;
-    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
-  }
-
-  return LWMQTT_SUCCESS;
-}
-
 typedef union {
   unsigned char byte;
   struct {
@@ -89,6 +33,64 @@ typedef union {
     unsigned int session_present : 1;
   } bits;
 } lwmqtt_connack_flags_t;
+
+static int lwmqtt_total_header_length(int rem_len) {
+  if (rem_len < 128) {
+    return 1 + 1;
+  } else if (rem_len < 16384) {
+    return 1 + 2;
+  } else if (rem_len < 2097151) {
+    return 1 + 3;
+  } else {
+    return 1 + 4;
+  }
+}
+
+lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_type) {
+  // prepare pointer
+  void *ptr = buf;
+
+  // read header
+  lwmqtt_header_t header;
+  header.byte = lwmqtt_read_byte(&ptr);
+
+  // set default packet type
+  *packet_type = LWMQTT_NO_PACKET;
+
+  // check if packet type is correct and can be received
+  switch ((lwmqtt_packet_type_t)header.bits.type) {
+    case LWMQTT_CONNACK_PACKET:
+    case LWMQTT_PUBLISH_PACKET:
+    case LWMQTT_PUBACK_PACKET:
+    case LWMQTT_PUBREC_PACKET:
+    case LWMQTT_PUBREL_PACKET:
+    case LWMQTT_PUBCOMP_PACKET:
+    case LWMQTT_SUBACK_PACKET:
+    case LWMQTT_UNSUBACK_PACKET:
+    case LWMQTT_PINGRESP_PACKET:
+      *packet_type = (lwmqtt_packet_type_t)header.bits.type;
+      return LWMQTT_SUCCESS;
+    default:
+      return LWMQTT_DECODE_ERROR;
+  }
+}
+
+lwmqtt_err_t lwmqtt_detect_remaining_length(void *buf, int buf_len, int *rem_len) {
+  // prepare pointer
+  void *ptr = buf;
+
+  // attempt to decode remaining length
+  *rem_len = lwmqtt_read_varnum(&ptr, buf_len);
+  if (*rem_len == -1) {
+    *rem_len = 0;
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if (*rem_len == -2) {
+    *rem_len = 0;
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
+
+  return LWMQTT_SUCCESS;
+}
 
 lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_options_t *options, lwmqtt_will_t *will) {
   // prepare pointer
@@ -195,7 +197,7 @@ lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_opti
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *return_code, void *buf, int buf_len) {
+lwmqtt_err_t lwmqtt_decode_connack(void *buf, int buf_len, bool *session_present, lwmqtt_return_code_t *return_code) {
   // prepare pointer
   void *ptr = buf;
 
@@ -214,7 +216,7 @@ lwmqtt_err_t lwmqtt_decode_connack(bool *session_present, lwmqtt_return_code_t *
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
-  // check lengths
+  // check remaining length and buffer size
   if (rem_len != 2 || buf_len < rem_len + 2) {
     return LWMQTT_LENGTH_MISMATCH;
   }
@@ -256,8 +258,8 @@ lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_ack(lwmqtt_packet_type_t *packet_type, bool *dup, unsigned short *packet_id, void *buf,
-                               int buf_len) {
+lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *packet_type, bool *dup,
+                               unsigned short *packet_id) {
   // prepare pointer
   void *ptr = buf;
 
@@ -320,8 +322,9 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_publish(bool *dup, lwmqtt_qos_t *qos, bool *retained, unsigned short *packet_id,
-                                   lwmqtt_string_t *topic, void **payload, int *payload_len, void *buf, int buf_len) {
+lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos_t *qos, bool *retained,
+                                   unsigned short *packet_id, lwmqtt_string_t *topic, void **payload,
+                                   int *payload_len) {
   // prepare pointer
   void *ptr = buf;
 
@@ -475,8 +478,8 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, unsigned 
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_suback(unsigned short *packet_id, int max_count, int *count,
-                                  lwmqtt_qos_t *granted_qos_levels, void *buf, int buf_len) {
+lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, unsigned short *packet_id, int max_count, int *count,
+                                  lwmqtt_qos_t *granted_qos_levels) {
   // prepare pointer
   void *ptr = buf;
 

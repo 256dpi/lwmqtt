@@ -43,7 +43,7 @@ int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
 
 void lwmqtt_write_string(void **buf, lwmqtt_string_t string) {
   // write zero length if length is zero
-  if(string.len == 0) {
+  if (string.len == 0) {
     lwmqtt_write_num(buf, 0);
     return;
   }

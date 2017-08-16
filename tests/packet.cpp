@@ -186,7 +186,7 @@ TEST(ConnackTest, Decode1) {
 
   bool session_present;
   lwmqtt_return_code_t return_code;
-  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &return_code, pkt, 4);
+  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 4, &session_present, &return_code);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(session_present, 0);
@@ -203,7 +203,7 @@ TEST(ConnackTest, DecodeError1) {
 
   bool session_present;
   lwmqtt_return_code_t return_code;
-  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &return_code, pkt, 4);
+  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 4, &session_present, &return_code);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
@@ -217,7 +217,7 @@ TEST(ConnackTest, DecodeError2) {
 
   bool session_present;
   lwmqtt_return_code_t return_code;
-  lwmqtt_err_t err = lwmqtt_decode_connack(&session_present, &return_code, pkt, 3);
+  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 3, &session_present, &return_code);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
@@ -244,7 +244,7 @@ TEST(AckTest, Decode1) {
   lwmqtt_packet_type_t packet_type;
   bool dup;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, pkt, 4);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(packet_type, LWMQTT_PUBACK_PACKET);
@@ -263,7 +263,7 @@ TEST(AckTest, DecodeError1) {
   lwmqtt_packet_type_t packet_type;
   bool dup;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, pkt, 4);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
@@ -279,7 +279,7 @@ TEST(AckTest, DecodeError2) {
   lwmqtt_packet_type_t packet_type;
   bool dup;
   unsigned short packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(&packet_type, &dup, &packet_id, pkt, 4);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
@@ -346,7 +346,7 @@ TEST(PublishTest, Decode1) {
   unsigned char* payload;
   int payload_len;
   lwmqtt_err_t err =
-      lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len, pkt, 25);
+      lwmqtt_decode_publish(pkt, 25, &dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, true);
@@ -392,7 +392,7 @@ TEST(PublishTest, Decode2) {
   unsigned char* payload;
   int payload_len;
   lwmqtt_err_t err =
-      lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len, pkt, 23);
+      lwmqtt_decode_publish(pkt, 23, &dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, false);
@@ -417,7 +417,7 @@ TEST(PublishTest, DecodeError1) {
   unsigned char* payload;
   int payload_len;
   lwmqtt_err_t err =
-      lwmqtt_decode_publish(&dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len, pkt, 2);
+      lwmqtt_decode_publish(pkt, 2, &dup, &qos, &retained, &packet_id, &topic, (void**)&payload, &payload_len);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
@@ -528,7 +528,7 @@ TEST(SubackTest, Decode1) {
   unsigned short packet_id;
   int count;
   lwmqtt_qos_t granted_qos_levels[2];
-  lwmqtt_err_t err = lwmqtt_decode_suback(&packet_id, 2, &count, granted_qos_levels, pkt, 8);
+  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, 8, &packet_id, 2, &count, granted_qos_levels);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(packet_id, 7);
@@ -549,7 +549,7 @@ TEST(SubackTest, DecodeError1) {
   unsigned short packet_id;
   int count;
   lwmqtt_qos_t granted_qos_levels[2];
-  lwmqtt_err_t err = lwmqtt_decode_suback(&packet_id, 2, &count, granted_qos_levels, pkt, 5);
+  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, 5, &packet_id, 2, &count, granted_qos_levels);
 
   EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
 }
