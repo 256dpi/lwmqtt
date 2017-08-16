@@ -11,9 +11,9 @@
  * @param str - The object into which the data is to be read.
  * @param buf - Pointer to the buffer.
  * @param buf_end - Pointer to the end of the buffer.
- * @return One if successful, zero if not.
+ * @return Length if successful, -1 if buffer is to short and -2 if overflowed.
  */
-bool lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end);
+int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end);
 
 /**
  * Writes a string to the specified buffer. The pointer is incremented by the bytes written.

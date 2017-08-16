@@ -17,10 +17,10 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b) {
   return strncmp(a->data, b, len);
 }
 
-bool lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
-  // check if at lest 2 bytes
+int lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
+  // check if at least 2 bytes
   if (buf_end - (*buf) <= 1) {
-    return false;
+    return -1;
   }
 
   // read length
@@ -28,7 +28,7 @@ bool lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
 
   // check if string end is overflowing the end pointer
   if (&(*buf)[len] > buf_end) {
-    return false;
+    return -2;
   }
 
   // set string
@@ -38,7 +38,7 @@ bool lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
   // advance pointer
   *buf += str->len;
 
-  return true;
+  return str->len;
 }
 
 void lwmqtt_write_string(void **pptr, lwmqtt_string_t string) {
