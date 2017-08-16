@@ -424,9 +424,9 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, const char *topic_filter,
 
   // decode packet
   int count = 0;
-  lwmqtt_qos_t grantedQoS;
+  lwmqtt_qos_t granted_qos;
   unsigned short packet_id;
-  err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, 1, &count, &grantedQoS);
+  err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, 1, &count, &granted_qos);
   if (err == LWMQTT_SUCCESS) {
     return err;
   }
