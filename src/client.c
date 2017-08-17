@@ -210,7 +210,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *c, int *read, lwmqtt_packet_ty
         c->callback(c, c->callback_ref, &topic, &msg);
       }
 
-      // break early if qos zero
+      // break early on qos zero
       if (msg.qos == LWMQTT_QOS0) {
         break;
       }

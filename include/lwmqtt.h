@@ -260,14 +260,14 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *msg, int timeout);
 
 /**
- * Will send a subscribe packet with multiple topic filters plus qos levels and wait for the suback to complete.
+ * Will send a subscribe packet with multiple topic filters plus QOS levels and wait for the suback to complete.
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
  * @param client - The client object.
- * @param count - The number of topic filters and qos levels.
+ * @param count - The number of topic filters and QOS levels.
  * @param topic_filter - The topic filters.
- * @param qos - The list of QoS levels.
+ * @param qos - The list of QOS levels.
  * @param timeout - The command timeout.
  * @return An error value.
  */
@@ -275,13 +275,13 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, const char **t
                               int timeout);
 
 /**
- * Will send a subscribe packet with a single topic filter plus qos level and wait for the suback to complete.
+ * Will send a subscribe packet with a single topic filter plus QOS level and wait for the suback to complete.
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
  * @param client - The client object.
  * @param topic_filter - The topic filter.
- * @param qos - The QoS level.
+ * @param qos - The QOS level.
  * @param timeout - The command timeout.
  * @return An error value.
  */

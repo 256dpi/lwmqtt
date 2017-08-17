@@ -115,7 +115,7 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
   * @param buf - The raw buffer data.
   * @param buf_len - The length in bytes of the supplied buffer.
   * @param dup - The dup flag.
-  * @param qos - The QoS level.
+  * @param qos - The QOS level.
   * @param retained- The retained flag.
   * @param packet_id  - The packet id.
   * @param topic - The topic.
@@ -133,7 +133,7 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
   * @param buf_len - The length in bytes of the supplied buffer.
   * @param len - The encoded length of the packet.
   * @param dup - The dup flag.
-  * @param qos - The QoS level.
+  * @param qos - The QOS level.
   * @param retained- The retained flag.
   * @param packet_id  - The packet id.
   * @param topic - The topic.
