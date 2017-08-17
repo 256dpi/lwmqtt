@@ -84,8 +84,6 @@ lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_opti
   // prepare pointer
   void *ptr = buf;
 
-  /* calculate remaining length */
-
   // fixed header is 10
   int rem_len = 10;
 
@@ -117,8 +115,6 @@ lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_opti
   if (1 + rem_len_len + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
-
-  /* encode packet */
 
   // write header
   lwmqtt_header_t header = {0};
@@ -228,7 +224,7 @@ lwmqtt_err_t lwmqtt_encode_zero(void *buf, int buf_len, int *len, lwmqtt_packet_
   // prepare pointer
   void *ptr = buf;
 
-  // check buffer length
+  // check buffer capacity
   if (buf_len < 2) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
@@ -286,7 +282,7 @@ lwmqtt_err_t lwmqtt_encode_ack(void *buf, int buf_len, int *len, lwmqtt_packet_t
   // prepare pointer
   void *ptr = buf;
 
-  // check buffer size
+  // check buffer capacity
   if (buf_len < 4) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
@@ -390,7 +386,7 @@ lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, l
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
-  // check buffer size
+  // check buffer capacity
   if (1 + rem_len_len + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
@@ -448,7 +444,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, long pack
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
-  // check buffer size
+  // check buffer capacity
   if (1 + rem_len_len + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
@@ -543,7 +539,7 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, long pa
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
-  // check buffer size
+  // check buffer capacity
   if (1 + rem_len_len + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
