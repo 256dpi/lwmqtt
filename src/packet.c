@@ -333,8 +333,11 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
   // calculate end pointer
   void *end_ptr = ptr + rem_len;
 
-  // do we have enough data to read the topic?
-  if (lwmqtt_read_string(topic, &ptr, end_ptr) < 0 || end_ptr - ptr < 0) {
+  // read topic
+  long ret = lwmqtt_read_string(topic, &ptr, end_ptr);
+  if (ret == -1) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  } else if(ret == -2) {
     return LWMQTT_DECODE_ERROR;
   }
 
