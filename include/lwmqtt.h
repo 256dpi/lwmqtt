@@ -85,7 +85,7 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
  * The callbacks is expected to read up to the amount of bytes in to the passed buffer. It should block the specified
  * timeout and wait for more incoming data.
  */
-typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, void *buf, int len, int *read,
+typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *client, void *ref, void *buf, int len, int *read,
                                               int timeout);
 
 /**
@@ -94,18 +94,18 @@ typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *c, void *ref, voi
  * The callback is expected to write up to the amount of bytes from the passed buffer. It should wait up to the
  * specified timeout to write the specified data to the network.
  */
-typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *c, void *ref, void *buf, int len, int *sent,
+typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *client, void *ref, void *buf, int len, int *sent,
                                                int timeout);
 
 /**
  * The callback used to set a timer.
  */
-typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *c, void *ref, int timeout);
+typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *client, void *ref, int timeout);
 
 /**
  * The callback used to get a timers value.
  */
-typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
+typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *client, void *ref);
 
 /**
  * The callback used to forward incoming messages.
@@ -116,7 +116,7 @@ typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *c, void *ref);
  * recommended to call any further lwmqtt methods in the callback as this might result in weird call stacks. The
  * callback should place the received messages in a queue and dispatch them after the caller has returned.
  */
-typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *, void *ref, lwmqtt_string_t *, lwmqtt_message_t *);
+typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *client, void *ref, lwmqtt_string_t *str, lwmqtt_message_t *msg);
 
 /**
  * The client object.

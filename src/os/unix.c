@@ -111,7 +111,7 @@ void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *network) {
   }
 }
 
-lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_client_t *client, lwmqtt_unix_network_t *network, int *available) {
+lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, int *available) {
   // get the available bytes on the socket
   int rc = ioctl(network->socket, FIONREAD, available);
   if (rc < 0) {

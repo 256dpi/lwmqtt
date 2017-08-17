@@ -82,7 +82,7 @@ TEST(Client, PublishSubscribeQOS0) {
 
   while (counter < 5) {
     int available = 0;
-    err = lwmqtt_unix_network_peek(&client, &network, &available);
+    err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -141,7 +141,7 @@ TEST(Client, PublishSubscribeQOS1) {
 
   while (counter < 5) {
     int available = 0;
-    err = lwmqtt_unix_network_peek(&client, &network, &available);
+    err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -200,7 +200,7 @@ TEST(Client, PublishSubscribeQOS2) {
 
   while (counter < 5) {
     int available = 0;
-    err = lwmqtt_unix_network_peek(&client, &network, &available);
+    err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -257,7 +257,7 @@ TEST(Client, BufferOverflowProtection) {
 
   while (counter < 1) {
     int available = 0;
-    err = lwmqtt_unix_network_peek(&client, &network, &available);
+    err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -314,7 +314,7 @@ TEST(Client, BigBuffersAndPayload) {
 
   while (counter < 5) {
     int available = 0;
-    err = lwmqtt_unix_network_peek(&client, &network, &available);
+    err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -376,7 +376,7 @@ TEST(Client, MultipleSubscriptions) {
 
   while (counter < 5) {
     int available = 0;
-    err = lwmqtt_unix_network_peek(&client, &network, &available);
+    err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {

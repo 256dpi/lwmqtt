@@ -51,7 +51,7 @@ int main() {
 
   while (true) {
     int available = 0;
-    err = lwmqtt_unix_network_peek(&client, &network, &available);
+    err = lwmqtt_unix_network_peek(&network, &available);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_unix_network_peek: %d\n", err);
       exit(1);
