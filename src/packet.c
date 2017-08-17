@@ -256,7 +256,7 @@ lwmqtt_err_t lwmqtt_decode_ack(void *buf, int buf_len, lwmqtt_packet_type_t *pac
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
-  // check lengths
+  // check remaining length and buffer size
   if (rem_len != 2 || buf_len < rem_len + 2) {
     return LWMQTT_LENGTH_MISMATCH;
   }
@@ -325,8 +325,13 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
+  // check remaining length (topic length)
+  if (rem_len < 2) {
+    return LWMQTT_LENGTH_MISMATCH;
+  }
+
   // check buffer size
-  if (buf_len < rem_len + 2) {
+  if (buf_len < 1 + lwmqtt_varnum_length(rem_len) + rem_len) {
     return LWMQTT_LENGTH_MISMATCH;
   }
 
@@ -337,12 +342,17 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
   long ret = lwmqtt_read_string(topic, &ptr, end_ptr);
   if (ret == -1) {
     return LWMQTT_BUFFER_TOO_SHORT;
-  } else if(ret == -2) {
+  } else if (ret == -2) {
     return LWMQTT_DECODE_ERROR;
   }
 
   // read packet id if qos is at least 1
   if (*qos > 0) {
+    // check buffer size
+    if(end_ptr - ptr < 2) {
+      return LWMQTT_BUFFER_TOO_SHORT;
+    }
+
     *packet_id = lwmqtt_read_num(&ptr);
   } else {
     *packet_id = 0;
@@ -472,11 +482,13 @@ lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, long *packet_id, int m
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
-  // calculate end pointer
-  void *end_ptr = ptr + rem_len;
+  // check remaining length (packet id + min. one suback code)
+  if (rem_len < 3) {
+    return LWMQTT_LENGTH_MISMATCH;
+  }
 
   // check buffer size
-  if (end_ptr - ptr < 2) {
+  if (buf_len < 1 + lwmqtt_varnum_length(rem_len) + rem_len) {
     return LWMQTT_LENGTH_MISMATCH;
   }
 
@@ -484,13 +496,14 @@ lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, long *packet_id, int m
   *packet_id = lwmqtt_read_num(&ptr);
 
   // read all suback codes
-  *count = 0;
-  while (ptr < end_ptr) {
+  for (*count = 0; *count < rem_len - 2; (*count)++) {
+    // check max count
     if (*count > max_count) {
       return LWMQTT_DECODE_ERROR;
     }
 
-    granted_qos_levels[(*count)++] = (lwmqtt_qos_t)lwmqtt_read_byte(&ptr);
+    // add qos level
+    granted_qos_levels[*count] = (lwmqtt_qos_t)lwmqtt_read_byte(&ptr);
   }
 
   return LWMQTT_SUCCESS;
