@@ -87,19 +87,19 @@ lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_opti
   // fixed header is 10
   int rem_len = 10;
 
-  // add client id
+  // add client id to remaining length
   rem_len += options->client_id.len + 2;
 
-  // add will if present
+  // add will if present to remaining length
   if (will != NULL) {
     rem_len += will->topic.len + 2 + will->message.payload_len + 2;
   }
 
-  // add username if present
+  // add username if present to remaining length
   if (options->username.len > 0) {
     rem_len += options->username.len + 2;
 
-    // add password if present
+    // add password if present to remaining length
     if (options->password.len > 0) {
       rem_len += options->password.len + 2;
     }
@@ -325,7 +325,7 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
-  // check lengths
+  // check buffer size
   if (buf_len < rem_len + 2) {
     return LWMQTT_LENGTH_MISMATCH;
   }
@@ -357,10 +357,8 @@ lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, l
   // prepare pointer
   void *ptr = buf;
 
-  // prepare remaining length
+  // calculate remaining length
   long rem_len = 2 + topic.len + payload_len;
-
-  // add packet id if qos is at least 1
   if (qos > 0) {
     rem_len += 2;
   }
@@ -410,10 +408,8 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, long pack
   // prepare pointer
   void *ptr = buf;
 
-  // prepare remaining length
+  // calculate remaining length
   int rem_len = 2;
-
-  // add all topics
   for (int i = 0; i < count; i++) {
     rem_len += 2 + topic_filters[i].len + 1;
   }
@@ -473,8 +469,10 @@ lwmqtt_err_t lwmqtt_decode_suback(void *buf, int buf_len, long *packet_id, int m
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
   }
 
+  // calculate end pointer
   void *end_ptr = ptr + rem_len;
 
+  // check buffer size
   if (end_ptr - ptr < 2) {
     return LWMQTT_LENGTH_MISMATCH;
   }
@@ -500,10 +498,8 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, long pa
   // prepare pointer
   void *ptr = buf;
 
-  // prepare remaining length
+  // calculate remaining length
   int rem_len = 2;
-
-  // add all topics
   for (int i = 0; i < count; i++) {
     rem_len += 2 + topic_filters[i].len;
   }
