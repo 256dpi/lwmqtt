@@ -74,12 +74,11 @@ long lwmqtt_read_varnum(void **buf, int buf_len);
 
 /**
  * Writes a variable number to the specified buffer. The pointer is incremented by the bytes written.
+ * The length required by the variable number needs to be checked beforehand using lwmqtt_varnum_length().
  *
  * @param buf - Pointer to the buffer.
- * @param buf_len - The length of the buffer.
  * @param num - The number to write.
- * @return Zero if successful, -1 if buffer is to short and -2 if overflowed.
  */
-int lwmqtt_write_varnum(void **buf, int buf_len, long num);
+void lwmqtt_write_varnum(void **buf, long num);
 
 #endif

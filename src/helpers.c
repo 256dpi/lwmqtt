@@ -168,7 +168,7 @@ long lwmqtt_read_varnum(void **buf, int buf_len) {
   return num;
 }
 
-int lwmqtt_write_varnum(void **buf, int buf_len, long num) {
+void lwmqtt_write_varnum(void **buf, long num) {
   // get array
   unsigned char *ary = *buf;
 
@@ -177,16 +177,6 @@ int lwmqtt_write_varnum(void **buf, int buf_len, long num) {
 
   // encode variadic number
   do {
-    // return error if buffer is to small
-    if (buf_len < len) {
-      return -1;
-    }
-
-    // return error if the length has overflowed
-    if (len > 4) {
-      return -2;
-    }
-
     // calculate current digit
     unsigned char digit = (unsigned char)(num % 128);
 
@@ -204,6 +194,4 @@ int lwmqtt_write_varnum(void **buf, int buf_len, long num) {
 
   // adjust pointer
   *buf += len;
-
-  return 0;
 }

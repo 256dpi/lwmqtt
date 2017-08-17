@@ -12,12 +12,11 @@ TEST(VarNum1, Valid) {
     EXPECT_EQ(1, lwmqtt_varnum_length(i));
 
     unsigned char *ptr1 = buf;
-    int ret = lwmqtt_write_varnum((void **)&ptr1, 1, i);
+    lwmqtt_write_varnum((void **)&ptr1, i);
 
     unsigned char *ptr2 = buf;
     long num = lwmqtt_read_varnum((void **)&ptr2, 1);
 
-    EXPECT_EQ(0, ret);
     EXPECT_EQ(i, num);
     EXPECT_EQ(0, buf[1]);
     EXPECT_EQ(1, ptr1 - buf);
@@ -33,12 +32,11 @@ TEST(VarNum2, Valid) {
     EXPECT_EQ(2, lwmqtt_varnum_length(128 * i));
 
     unsigned char *ptr1 = buf;
-    int ret = lwmqtt_write_varnum((void **)&ptr1, 2, 128 * i);
+    lwmqtt_write_varnum((void **)&ptr1, 128 * i);
 
     unsigned char *ptr2 = buf;
     long num = lwmqtt_read_varnum((void **)&ptr2, 2);
 
-    EXPECT_EQ(0, ret);
     EXPECT_EQ(128 * i, num);
     EXPECT_EQ(0, buf[2]);
     EXPECT_EQ(2, ptr1 - buf);
@@ -54,12 +52,11 @@ TEST(VarNum3, Valid) {
     EXPECT_EQ(3, lwmqtt_varnum_length(128 * 128 * i));
 
     unsigned char *ptr1 = buf;
-    int ret = lwmqtt_write_varnum((void **)&ptr1, 3, 128 * 128 * i);
+    lwmqtt_write_varnum((void **)&ptr1, 128 * 128 * i);
 
     unsigned char *ptr2 = buf;
     long num = lwmqtt_read_varnum((void **)&ptr2, 3);
 
-    EXPECT_EQ(0, ret);
     EXPECT_EQ(128 * 128 * i, num);
     EXPECT_EQ(0, buf[3]);
     EXPECT_EQ(3, ptr1 - buf);
@@ -75,12 +72,11 @@ TEST(VarNum4, Valid) {
     EXPECT_EQ(4, lwmqtt_varnum_length(128 * 128 * 128 * i));
 
     unsigned char *ptr1 = buf;
-    int ret = lwmqtt_write_varnum((void **)&ptr1, 4, 128 * 128 * 128 * i);
+    lwmqtt_write_varnum((void **)&ptr1, 128 * 128 * 128 * i);
 
     unsigned char *ptr2 = buf;
     long num = lwmqtt_read_varnum((void **)&ptr2, 4);
 
-    EXPECT_EQ(0, ret);
     EXPECT_EQ(128 * 128 * 128 * i, num);
     EXPECT_EQ(0, buf[4]);
     EXPECT_EQ(4, ptr1 - buf);
