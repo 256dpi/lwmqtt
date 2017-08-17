@@ -34,18 +34,6 @@ typedef union {
   } bits;
 } lwmqtt_connack_flags_t;
 
-static int lwmqtt_total_header_length(long rem_len) {
-  if (rem_len < 128) {
-    return 1 + 1;
-  } else if (rem_len < 16384) {
-    return 1 + 2;
-  } else if (rem_len < 2097151) {
-    return 1 + 3;
-  } else {
-    return 1 + 4;
-  }
-}
-
 lwmqtt_err_t lwmqtt_detect_packet_type(void *buf, lwmqtt_packet_type_t *packet_type) {
   // prepare pointer
   void *ptr = buf;
@@ -119,8 +107,14 @@ lwmqtt_err_t lwmqtt_encode_connect(void *buf, int buf_len, int *len, lwmqtt_opti
     }
   }
 
+  // calculate remaining length length
+  int rem_len_len = lwmqtt_varnum_length(rem_len);
+  if (rem_len_len < 0) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
+
   // check buffer capacity
-  if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
+  if (1 + rem_len_len + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
@@ -390,8 +384,14 @@ lwmqtt_err_t lwmqtt_encode_publish(void *buf, int buf_len, int *len, bool dup, l
     rem_len += 2;
   }
 
+  // calculate remaining length length
+  int rem_len_len = lwmqtt_varnum_length(rem_len);
+  if (rem_len_len < 0) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
+
   // check buffer size
-  if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
+  if (1 + rem_len_len + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
@@ -442,8 +442,14 @@ lwmqtt_err_t lwmqtt_encode_subscribe(void *buf, int buf_len, int *len, long pack
     rem_len += 2 + topic_filters[i].len + 1;
   }
 
+  // calculate remaining length length
+  int rem_len_len = lwmqtt_varnum_length(rem_len);
+  if (rem_len_len < 0) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
+
   // check buffer size
-  if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
+  if (1 + rem_len_len + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
@@ -531,8 +537,14 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(void *buf, int buf_len, int *len, long pa
     rem_len += 2 + topic_filters[i].len;
   }
 
+  // calculate remaining length length
+  int rem_len_len = lwmqtt_varnum_length(rem_len);
+  if (rem_len_len < 0) {
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  }
+
   // check buffer size
-  if (lwmqtt_total_header_length(rem_len) + rem_len > buf_len) {
+  if (1 + rem_len_len + rem_len > buf_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
