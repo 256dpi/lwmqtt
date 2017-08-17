@@ -18,16 +18,19 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b) {
 }
 
 long lwmqtt_read_string(lwmqtt_string_t *str, void **buf, void *buf_end) {
+  // get buffer size
+  unsigned long buf_len = buf_end - (*buf);
+
   // check if at least 2 bytes
-  if (buf_end - (*buf) < 2) {
+  if (buf_len < 2) {
     return -1;
   }
 
   // read length
   long len = lwmqtt_read_num(buf);
 
-  // check if string end is overflowing the end pointer
-  if (&(*buf)[len] > buf_end) {
+  // check if there is enough data
+  if (buf_len < len + 2) {
     return -2;
   }
 
