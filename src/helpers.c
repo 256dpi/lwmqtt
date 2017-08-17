@@ -107,6 +107,20 @@ void lwmqtt_write_byte(void **buf, unsigned char byte) {
   *buf += 1;
 }
 
+int lwmqtt_varnum_length(long num) {
+  if (num < 128) {
+    return 1;
+  } else if (num < 16384) {
+    return 2;
+  } else if (num < 2097151) {
+    return 3;
+  } else if (num < 268435455) {
+    return 4;
+  } else {
+    return -1;
+  }
+}
+
 long lwmqtt_read_varnum(void **buf, int buf_len) {
   // get array
   unsigned char *ary = *buf;

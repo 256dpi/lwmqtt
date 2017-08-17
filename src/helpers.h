@@ -56,6 +56,14 @@ unsigned char lwmqtt_read_byte(void **buf);
 void lwmqtt_write_byte(void **buf, unsigned char byte);
 
 /**
+ * Returns the amount of bytes required by the variable number.
+ *
+ * @param num - The number to check.
+ * @return The required length or -1 if overflowed.
+ */
+int lwmqtt_varnum_length(long num);
+
+/**
  * Reads a variable number from the specified buffer. The pointer is incremented by the bytes read.
  *
  * @param buf - Pointer to the buffer.

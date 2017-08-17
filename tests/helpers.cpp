@@ -9,6 +9,8 @@ TEST(VarNum1, Valid) {
   memset(buf, 0, 2);
 
   for (int i = 1; i < 128; i++) {
+    EXPECT_EQ(1, lwmqtt_varnum_length(i));
+
     unsigned char *ptr1 = buf;
     int ret = lwmqtt_write_varnum((void **)&ptr1, 1, i);
 
@@ -28,6 +30,8 @@ TEST(VarNum2, Valid) {
   memset(buf, 0, 3);
 
   for (int i = 1; i < 128; i++) {
+    EXPECT_EQ(2, lwmqtt_varnum_length(128 * i));
+
     unsigned char *ptr1 = buf;
     int ret = lwmqtt_write_varnum((void **)&ptr1, 2, 128 * i);
 
@@ -47,6 +51,8 @@ TEST(VarNum3, Valid) {
   memset(buf, 0, 4);
 
   for (int i = 1; i < 128; i++) {
+    EXPECT_EQ(3, lwmqtt_varnum_length(128 * 128 * i));
+
     unsigned char *ptr1 = buf;
     int ret = lwmqtt_write_varnum((void **)&ptr1, 3, 128 * 128 * i);
 
@@ -66,6 +72,8 @@ TEST(VarNum4, Valid) {
   memset(buf, 0, 5);
 
   for (int i = 1; i < 128; i++) {
+    EXPECT_EQ(4, lwmqtt_varnum_length(128 * 128 * 128 * i));
+
     unsigned char *ptr1 = buf;
     int ret = lwmqtt_write_varnum((void **)&ptr1, 4, 128 * 128 * 128 * i);
 
