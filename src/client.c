@@ -437,6 +437,13 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, const char **t
     return err;
   }
 
+  // check suback codes
+  for (int i = 0; i < suback_count; i++) {
+    if (granted_qos[i] == LWMQTT_QOS_FAILURE) {
+      return LWMQTT_FAILED_SUBSCRIPTION;
+    }
+  }
+
   return LWMQTT_SUCCESS;
 }
 

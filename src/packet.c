@@ -349,7 +349,7 @@ lwmqtt_err_t lwmqtt_decode_publish(void *buf, int buf_len, bool *dup, lwmqtt_qos
   // read packet id if qos is at least 1
   if (*qos > 0) {
     // check buffer size
-    if(end_ptr - ptr < 2) {
+    if (end_ptr - ptr < 2) {
       return LWMQTT_BUFFER_TOO_SHORT;
     }
 

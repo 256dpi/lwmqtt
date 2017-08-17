@@ -18,7 +18,8 @@ typedef enum {
   LWMQTT_NETWORK_WRITE_ERROR = -8,
   LWMQTT_MISSING_OR_WRONG_PACKET = -9,
   LWMQTT_CONNECTION_DENIED = -10,
-  LWMQTT_DECODE_ERROR = -11
+  LWMQTT_FAILED_SUBSCRIPTION = -11,
+  LWMQTT_DECODE_ERROR = -12
 } lwmqtt_err_t;
 
 /**
@@ -55,7 +56,7 @@ int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b);
 /**
  * The available QOS levels.
  */
-typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2 } lwmqtt_qos_t;
+typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2, LWMQTT_QOS_FAILURE = 128 } lwmqtt_qos_t;
 
 /**
  * The message object used to publish and receive messages.
