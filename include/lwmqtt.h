@@ -217,7 +217,7 @@ typedef struct {
  * The default initializer for the options object.
  */
 #define lwmqtt_default_options \
-  { lwmqtt_default_string, 60, 1, lwmqtt_default_string, lwmqtt_default_string }
+  { lwmqtt_default_string, 60, true, lwmqtt_default_string, lwmqtt_default_string }
 
 /**
  * The available return codes transported by the connack packet.
