@@ -72,8 +72,8 @@ static lwmqtt_err_t lwmqtt_read_from_network(lwmqtt_client_t *client, int offset
 
     // read
     int partial_read = 0;
-    lwmqtt_err_t err =
-        client->network_read(client, client->network, client->read_buf + offset + read, len - read, &partial_read, remaining_time);
+    lwmqtt_err_t err = client->network_read(client, client->network, client->read_buf + offset + read, len - read,
+                                            &partial_read, remaining_time);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
@@ -101,8 +101,8 @@ static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *client, int offset,
 
     // read
     int partial_write = 0;
-    lwmqtt_err_t err =
-        client->network_write(client, client->network, client->write_buf + offset + written, len - written, &partial_write, remaining_time);
+    lwmqtt_err_t err = client->network_write(client, client->network, client->write_buf + offset + written,
+                                             len - written, &partial_write, remaining_time);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
@@ -114,7 +114,8 @@ static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *client, int offset,
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *client, int *read, lwmqtt_packet_type_t *packet_type) {
+static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *client, int *read,
+                                                 lwmqtt_packet_type_t *packet_type) {
   // preset packet type
   *packet_type = LWMQTT_NO_PACKET;
 
@@ -199,8 +200,8 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, int *read, lwmqtt_pack
       lwmqtt_message_t msg;
       bool dup;
       long packet_id;
-      err = lwmqtt_decode_publish(client->read_buf, client->read_buf_size, &dup, &msg.qos, &msg.retained, &packet_id, &topic,
-                                  &msg.payload, &msg.payload_len);
+      err = lwmqtt_decode_publish(client->read_buf, client->read_buf_size, &dup, &msg.qos, &msg.retained, &packet_id,
+                                  &topic, &msg.payload, &msg.payload_len);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -516,8 +517,8 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_m
 
   // encode publish packet
   int len = 0;
-  lwmqtt_err_t err =
-      lwmqtt_encode_publish(client->write_buf, client->write_buf_size, &len, 0, message->qos, message->retained, packet_id, str, message->payload, message->payload_len);
+  lwmqtt_err_t err = lwmqtt_encode_publish(client->write_buf, client->write_buf_size, &len, 0, message->qos,
+                                           message->retained, packet_id, str, message->payload, message->payload_len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
