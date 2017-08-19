@@ -28,14 +28,14 @@ int main() {
     exit(1);
   }
 
-  lwmqtt_options_t data = lwmqtt_default_options;
-  data.client_id = lwmqtt_str("lwmqtt");
-  data.username = lwmqtt_str("try");
-  data.password = lwmqtt_str("try");
-  data.keep_alive = 5;
+  lwmqtt_options_t options = lwmqtt_default_options;
+  options.client_id = lwmqtt_str("lwmqtt");
+  options.username = lwmqtt_str("try");
+  options.password = lwmqtt_str("try");
+  options.keep_alive = 5;
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_connect: %d (%d)\n", err, return_code);
     exit(1);
