@@ -28,6 +28,7 @@ typedef enum {
  * Will detect the packet type from the at least one byte long buffer.
  *
  * @param buf - The buffer from which the packet type will be detected.
+ * @param buf_len - The length of the specified buffer.
  * @param packet_type - The packet type.
  * @return An error value.
  */
@@ -40,7 +41,8 @@ lwmqtt_err_t lwmqtt_detect_packet_type(uint8_t *buf, size_t buf_len, lwmqtt_pack
  * network. In case the remaining length is overflowed it will return LWMQTT_REMAINING_LENGTH_OVERFLOW.
  *
  * @param buf - The buffer from which the remaining length will be detected.
- * @param buf_len - The length in bytes of the supplied buffer.
+ * @param buf_len - The length of the specified buffer.
+ * @param rem_len - The detected remaining length.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32_t *rem_len);
@@ -49,7 +51,7 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32
   * Encodes a connect packet into the supplied buffer.
   *
   * @param buf - The buffer into which the packet will be encoded.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param len - The encoded length of the packet.
   * @param options - The options to be used to build the connect packet.
   * @param will - The last will and testament.
@@ -62,7 +64,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   * Decodes a connack packet from the supplied buffer.
   *
   * @param buf - The raw buffer data.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param session_present - The session present flag.
   * @param return_code - The return code.
   * @return An error value.
@@ -74,7 +76,7 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_p
   * Encodes a zero (disconnect, pingreq) packet into the supplied buffer.
   *
   * @param buf - The buffer into which the packet will be encoded.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param len - The encoded length of the packet.
   * @param packet_type - The packets type.
   * @return An error value.
@@ -85,7 +87,7 @@ lwmqtt_err_t lwmqtt_encode_zero(uint8_t *buf, size_t buf_len, size_t *len, lwmqt
   * Decodes an ack (puback, pubrec, pubrel, pubcomp, unsuback) packet from the supplied buffer.
   *
   * @param buf - The raw buffer data.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param packet_type - The packet type.
   * @param dup - The dup flag.
   * @param packet_id - The packet id.
@@ -98,7 +100,7 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_
   * Encodes an ack (puback, pubrec, pubrel, pubcomp) packet into the supplied buffer.
   *
   * @param buf - The buffer into which the packet will be encoded.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param len - The encoded length of the packet.
   * @param packet_type - The packets type.
   * @param dup - The dup flag.
@@ -112,7 +114,7 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
   * Decodes a publish packet from the supplied buffer.
   *
   * @param buf - The raw buffer data.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param dup - The dup flag.
   * @param packet_id  - The packet id.
   * @param topic - The topic.
@@ -126,7 +128,7 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
   * Encodes a publish packet into the supplied buffer.
   *
   * @param buf - The buffer into which the packet will be encoded.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param len - The encoded length of the packet.
   * @param dup - The dup flag.
   * @param packet_id  - The packet id.
@@ -141,7 +143,7 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bo
   * Encodes a subscribe packet into the supplied buffer.
   *
   * @param buf - The buffer into which the packet will be encoded.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param len - The encoded length of the packet.
   * @param packet_id - The packet id.
   * @param count - The number of members in the topic_filters and qos_levels array.
@@ -156,7 +158,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, 
   * Decodes a suback packet from the supplied buffer.
   *
   * @param buf - The raw buffer data.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param packet_id - The packet id.
   * @param max_count - The maximum number of members allowed in the granted_qos_levels array.
   * @param count - The number of members in the granted_qos_levels array.
@@ -170,7 +172,7 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
   * Encodes the supplied unsubscribe data into the supplied buffer, ready for sending
   *
   * @param buf - The buffer into which the packet will be encoded.
-  * @param buf_len - The length in bytes of the supplied buffer.
+  * @param buf_len - The length of the specified buffer.
   * @param len - The encoded length of the packet.
   * @param packet_id - The packet id.
   * @param count - The number of members in the topic_filters array.
