@@ -29,9 +29,9 @@ int main() {
   }
 
   lwmqtt_options_t options = lwmqtt_default_options;
-  options.client_id = lwmqtt_str("lwmqtt");
-  options.username = lwmqtt_str("try");
-  options.password = lwmqtt_str("try");
+  options.client_id = lwmqtt_string("lwmqtt");
+  options.username = lwmqtt_string("try");
+  options.password = lwmqtt_string("try");
   options.keep_alive = 5;
 
   lwmqtt_return_code_t return_code;
@@ -43,7 +43,7 @@ int main() {
 
   printf("connected!\n");
 
-  err = lwmqtt_subscribe_one(&client, lwmqtt_str("hello"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), LWMQTT_QOS0, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_subscribe: %d (%d)\n", err, return_code);
     exit(1);

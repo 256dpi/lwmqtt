@@ -45,7 +45,7 @@ typedef struct {
  * @param str - The C string.
  * @return A string object.
  */
-lwmqtt_string_t lwmqtt_str(const char *str);
+lwmqtt_string_t lwmqtt_string(const char *str);
 
 /**
  * Compares a string object to a C string.

@@ -138,7 +138,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   }
 
   // write version string
-  err = lwmqtt_write_string(&buf_ptr, buf_end, lwmqtt_str("MQTT"));
+  err = lwmqtt_write_string(&buf_ptr, buf_end, lwmqtt_string("MQTT"));
   if (err != LWMQTT_SUCCESS) {
     return err;
   }

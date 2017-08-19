@@ -127,16 +127,16 @@ TEST(ConnectTest, Encode1) {
   uint8_t buf[62];
 
   lwmqtt_will_t will = lwmqtt_default_will;
-  will.topic = lwmqtt_str("will");
-  will.payload = lwmqtt_str("send me home");
+  will.topic = lwmqtt_string("will");
+  will.payload = lwmqtt_string("send me home");
   will.qos = LWMQTT_QOS1;
 
   lwmqtt_options_t opts = lwmqtt_default_options;
   opts.clean_session = false;
   opts.keep_alive = 10;
-  opts.client_id = lwmqtt_str("surgemq");
-  opts.username = lwmqtt_str("surgemq");
-  opts.password = lwmqtt_str("verysecret");
+  opts.client_id = lwmqtt_string("surgemq");
+  opts.username = lwmqtt_string("surgemq");
+  opts.password = lwmqtt_string("verysecret");
 
   size_t len;
   lwmqtt_err_t err = lwmqtt_encode_connect(buf, 62, &len, opts, &will);
@@ -449,7 +449,7 @@ TEST(PublishTest, Encode1) {
 
   uint8_t buf[25];
 
-  lwmqtt_string_t topic = lwmqtt_str("surgemq");
+  lwmqtt_string_t topic = lwmqtt_string("surgemq");
   lwmqtt_message_t msg = lwmqtt_default_message;
   msg.qos = LWMQTT_QOS1;
   msg.payload = (uint8_t*)"send me home";
@@ -492,7 +492,7 @@ TEST(PublishTest, Encode2) {
 
   uint8_t buf[23];
 
-  lwmqtt_string_t topic = lwmqtt_str("surgemq");
+  lwmqtt_string_t topic = lwmqtt_string("surgemq");
   lwmqtt_message_t msg = lwmqtt_default_message;
   msg.payload = (uint8_t*)"send me home";
   msg.payload_len = 12;
@@ -507,7 +507,7 @@ TEST(PublishTest, Encode2) {
 TEST(PublishTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
-  lwmqtt_string_t topic = lwmqtt_str("surgemq");
+  lwmqtt_string_t topic = lwmqtt_string("surgemq");
   lwmqtt_message_t msg = lwmqtt_default_message;
   msg.payload = (uint8_t*)"send me home";
   msg.payload_len = 12;
@@ -602,9 +602,9 @@ TEST(SubscribeTest, Encode1) {
   uint8_t buf[38];
 
   lwmqtt_string_t topic_filters[3];
-  topic_filters[0] = lwmqtt_str("surgemq");
-  topic_filters[1] = lwmqtt_str("/a/b/#/c");
-  topic_filters[2] = lwmqtt_str("/a/b/#/cdd");
+  topic_filters[0] = lwmqtt_string("surgemq");
+  topic_filters[1] = lwmqtt_string("/a/b/#/c");
+  topic_filters[2] = lwmqtt_string("/a/b/#/cdd");
 
   lwmqtt_qos_t qos_levels[3] = {LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2};
 
@@ -619,7 +619,7 @@ TEST(SubscribeTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
   lwmqtt_string_t topic_filters[1];
-  topic_filters[0] = lwmqtt_str("surgemq");
+  topic_filters[0] = lwmqtt_string("surgemq");
 
   lwmqtt_qos_t qos_levels[1] = {LWMQTT_QOS0};
 
@@ -671,9 +671,9 @@ TEST(UnsubscribeTest, Encode1) {
   uint8_t buf[38];
 
   lwmqtt_string_t topic_filters[3];
-  topic_filters[0] = lwmqtt_str("surgemq");
-  topic_filters[1] = lwmqtt_str("/a/b/#/c");
-  topic_filters[2] = lwmqtt_str("/a/b/#/cdd");
+  topic_filters[0] = lwmqtt_string("surgemq");
+  topic_filters[1] = lwmqtt_string("/a/b/#/c");
+  topic_filters[2] = lwmqtt_string("/a/b/#/cdd");
 
   size_t len;
   lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 38, &len, 7, 3, topic_filters);
@@ -686,7 +686,7 @@ TEST(UnsubscribeTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
   lwmqtt_string_t topic_filters[1];
-  topic_filters[0] = lwmqtt_str("surgemq");
+  topic_filters[0] = lwmqtt_string("surgemq");
 
   size_t len;
   lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 2, &len, 7, 1, topic_filters);

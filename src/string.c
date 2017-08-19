@@ -2,7 +2,7 @@
 
 #include <lwmqtt.h>
 
-lwmqtt_string_t lwmqtt_str(const char *str) {
+lwmqtt_string_t lwmqtt_string(const char *str) {
   // get length
   uint16_t len = (uint16_t)strlen(str);
 
