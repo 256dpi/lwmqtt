@@ -347,21 +347,18 @@ TEST(PublishTest, Decode1) {
   };
 
   bool dup;
-  lwmqtt_qos_t qos;
-  bool retained;
   uint16_t packet_id;
-  lwmqtt_string_t topic = lwmqtt_default_string;
-  uint8_t* payload;
-  size_t payload_len;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 25, &dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len);
+  lwmqtt_string_t topic;
+  lwmqtt_message_t msg;
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 25, &dup, &packet_id, &topic, &msg);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, true);
-  EXPECT_EQ(qos, 1);
-  EXPECT_EQ(retained, true);
+  EXPECT_EQ(msg.qos, 1);
+  EXPECT_EQ(msg.retained, true);
   EXPECT_EQ(packet_id, 7);
   EXPECT_ARRAY_EQ("surgemq", topic.data, 7);
-  EXPECT_ARRAY_EQ("send me home", payload, 12);
+  EXPECT_ARRAY_EQ("send me home", msg.payload, 12);
 }
 
 TEST(PublishTest, Decode2) {
@@ -392,21 +389,18 @@ TEST(PublishTest, Decode2) {
   };
 
   bool dup;
-  lwmqtt_qos_t qos;
-  bool retained;
   uint16_t packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
-  uint8_t* payload;
-  size_t payload_len;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 23, &dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len);
+  lwmqtt_message_t msg;
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 23, &dup, &packet_id, &topic, &msg);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, false);
-  EXPECT_EQ(qos, 0);
-  EXPECT_EQ(retained, false);
+  EXPECT_EQ(msg.qos, 0);
+  EXPECT_EQ(msg.retained, false);
   EXPECT_EQ(packet_id, 0);
   EXPECT_ARRAY_EQ("surgemq", topic.data, 7);
-  EXPECT_ARRAY_EQ("send me home", payload, 12);
+  EXPECT_ARRAY_EQ("send me home", msg.payload, 12);
 }
 
 TEST(PublishTest, DecodeError1) {
@@ -416,13 +410,10 @@ TEST(PublishTest, DecodeError1) {
   };
 
   bool dup;
-  lwmqtt_qos_t qos;
-  bool retained;
   uint16_t packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
-  uint8_t* payload;
-  size_t payload_len;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 2, &dup, &qos, &retained, &packet_id, &topic, &payload, &payload_len);
+  lwmqtt_message_t msg;
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 2, &dup, &packet_id, &topic, &msg);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }

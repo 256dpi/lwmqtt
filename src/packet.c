@@ -378,9 +378,8 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, lwmqtt_qos_t *qos, bool *retained,
-                                   uint16_t *packet_id, lwmqtt_string_t *topic, uint8_t **payload,
-                                   size_t *payload_len) {
+lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint16_t *packet_id, lwmqtt_string_t *topic,
+                                   lwmqtt_message_t *msg) {
   // prepare pointer
   uint8_t *buf_ptr = buf;
   uint8_t *buf_end = buf + buf_len;
@@ -396,8 +395,8 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, lwmq
 
   // set variables
   *dup = header.bits.dup == 1;
-  *qos = (lwmqtt_qos_t)header.bits.qos;
-  *retained = header.bits.retain == 1;
+  msg->qos = (lwmqtt_qos_t)header.bits.qos;
+  msg->retained = header.bits.retain == 1;
 
   // read remaining length
   uint32_t rem_len;
@@ -418,7 +417,7 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, lwmq
   }
 
   // read packet id if qos is at least 1
-  if (*qos > 0) {
+  if (msg->qos > 0) {
     err = lwmqtt_read_num(&buf_ptr, buf_end, packet_id);
     if (err != LWMQTT_SUCCESS) {
       return err;
@@ -428,13 +427,13 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, lwmq
   }
 
   // read payload
-  err = lwmqtt_read_data(&buf_ptr, buf_end, payload, buf_end - buf_ptr);
+  err = lwmqtt_read_data(&buf_ptr, buf_end, &msg->payload, buf_end - buf_ptr);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
   // set payload length
-  *payload_len = buf_end - buf_ptr;
+  msg->payload_len = buf_end - buf_ptr;
 
   return LWMQTT_SUCCESS;
 }

@@ -202,12 +202,11 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
     // handle publish packets
     case LWMQTT_PUBLISH_PACKET: {
       // decode publish packet
-      lwmqtt_string_t topic = lwmqtt_default_string;
-      lwmqtt_message_t msg;
       bool dup;
       uint16_t packet_id;
-      err = lwmqtt_decode_publish(client->read_buf, client->read_buf_size, &dup, &msg.qos, &msg.retained, &packet_id,
-                                  &topic, &msg.payload, &msg.payload_len);
+      lwmqtt_string_t topic;
+      lwmqtt_message_t msg;
+      err = lwmqtt_decode_publish(client->read_buf, client->read_buf_size, &dup, &packet_id, &topic, &msg);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }

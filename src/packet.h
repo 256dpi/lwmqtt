@@ -114,16 +114,13 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
   * @param buf - The raw buffer data.
   * @param buf_len - The length in bytes of the supplied buffer.
   * @param dup - The dup flag.
-  * @param qos - The QOS level.
-  * @param retained- The retained flag.
   * @param packet_id  - The packet id.
   * @param topic - The topic.
-  * @param payload - The payload data.
-  * @param payload_len - The length of the payload.
+  * @parma msg - The message.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, lwmqtt_qos_t *qos, bool *retained,
-                                   uint16_t *packet_id, lwmqtt_string_t *topic, uint8_t **payload, size_t *payload_len);
+lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint16_t *packet_id, lwmqtt_string_t *topic,
+                                   lwmqtt_message_t *msg);
 
 /**
   * Encodes a publish packet into the supplied buffer.
@@ -132,12 +129,9 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, lwmq
   * @param buf_len - The length in bytes of the supplied buffer.
   * @param len - The encoded length of the packet.
   * @param dup - The dup flag.
-  * @param qos - The QOS level.
-  * @param retained- The retained flag.
   * @param packet_id  - The packet id.
   * @param topic - The topic.
-  * @param payload - The payload data.
-  * @param payload_len - The length of the payload.
+  * @param msg - The message.
   * @return An error value.
   */
 lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bool dup, uint16_t packet_id,
