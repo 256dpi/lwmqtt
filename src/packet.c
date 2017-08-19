@@ -65,7 +65,7 @@ lwmqtt_err_t lwmqtt_detect_packet_type(uint8_t *buf, size_t buf_len, lwmqtt_pack
       return LWMQTT_SUCCESS;
     default:
       *packet_type = LWMQTT_NO_PACKET;
-      return LWMQTT_DECODE_ERROR;
+      return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 }
 
@@ -246,7 +246,7 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_p
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (header.bits.type != LWMQTT_CONNACK_PACKET) {
-    return LWMQTT_DECODE_ERROR;
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // read remaining length
@@ -258,7 +258,7 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_p
 
   // check remaining length
   if (rem_len != 2) {
-    return LWMQTT_LENGTH_MISMATCH;
+    return LWMQTT_REMAINING_LENGTH_MISMATCH;
   }
 
   // read flags
@@ -333,7 +333,7 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_
 
   // check remaining length
   if (rem_len != 2) {
-    return LWMQTT_LENGTH_MISMATCH;
+    return LWMQTT_REMAINING_LENGTH_MISMATCH;
   }
 
   // read packet id
@@ -393,7 +393,7 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (header.bits.type != LWMQTT_PUBLISH_PACKET) {
-    return LWMQTT_DECODE_ERROR;
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // set variables
@@ -410,7 +410,7 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
 
   // check remaining length (topic length)
   if (rem_len < 2) {
-    return LWMQTT_LENGTH_MISMATCH;
+    return LWMQTT_REMAINING_LENGTH_MISMATCH;
   }
 
   // read topic
@@ -578,7 +578,7 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
   if (err != LWMQTT_SUCCESS) {
     return err;
   } else if (header.bits.type != LWMQTT_SUBACK_PACKET) {
-    return LWMQTT_DECODE_ERROR;
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // read remaining length
@@ -590,7 +590,7 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
 
   // check remaining length (packet id + min. one suback code)
   if (rem_len < 3) {
-    return LWMQTT_LENGTH_MISMATCH;
+    return LWMQTT_REMAINING_LENGTH_MISMATCH;
   }
 
   // read packet id
@@ -603,7 +603,7 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
   for (*count = 0; *count < (int)rem_len - 2; (*count)++) {
     // check max count
     if (*count > max_count) {
-      return LWMQTT_DECODE_ERROR;
+      return LWMQTT_SUBACK_ARRAY_OVERFLOW;
     }
 
     // read qos level

@@ -25,7 +25,7 @@ TEST(DetectPacketType, Invalid) {
   lwmqtt_packet_type_t p;
   lwmqtt_err_t err = lwmqtt_detect_packet_type(&h, 1, &p);
   EXPECT_EQ(p, LWMQTT_NO_PACKET);
-  EXPECT_EQ(err, LWMQTT_DECODE_ERROR);
+  EXPECT_EQ(err, LWMQTT_MISSING_OR_WRONG_PACKET);
 }
 
 TEST(DetectRemainingLength, Valid1) {
@@ -213,7 +213,7 @@ TEST(ConnackTest, DecodeError1) {
   lwmqtt_return_code_t return_code;
   lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 4, &session_present, &return_code);
 
-  EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
+  EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
 TEST(ConnackTest, DecodeError2) {
@@ -227,7 +227,7 @@ TEST(ConnackTest, DecodeError2) {
   lwmqtt_return_code_t return_code;
   lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 3, &session_present, &return_code);
 
-  EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
+  EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
 TEST(ZeroTest, Encode1) {
@@ -273,7 +273,7 @@ TEST(AckTest, DecodeError1) {
   uint16_t packet_id;
   lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
 
-  EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
+  EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
 TEST(AckTest, DecodeError2) {
@@ -289,7 +289,7 @@ TEST(AckTest, DecodeError2) {
   uint16_t packet_id;
   lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
 
-  EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
+  EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
 TEST(AckTest, Encode1) {
@@ -554,7 +554,7 @@ TEST(SubackTest, DecodeError1) {
   lwmqtt_qos_t granted_qos_levels[2];
   lwmqtt_err_t err = lwmqtt_decode_suback(pkt, 5, &packet_id, 2, &count, granted_qos_levels);
 
-  EXPECT_EQ(err, LWMQTT_LENGTH_MISMATCH);
+  EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
 TEST(SubscribeTest, Encode1) {
