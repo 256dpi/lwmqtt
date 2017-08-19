@@ -55,7 +55,7 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
   struct addrinfo *result = NULL;
   int rc = getaddrinfo(host, NULL, &hints, &result);
   if (rc < 0) {
-    return LWMQTT_NETWORK_CONNECT_ERROR;
+    return LWMQTT_NETWORK_FAILED_CONNECT;
   }
 
   // prepare selected result
@@ -76,7 +76,7 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
 
   // return error if none found
   if (selected == NULL) {
-    return LWMQTT_NETWORK_CONNECT_ERROR;
+    return LWMQTT_NETWORK_FAILED_CONNECT;
   }
 
   // populate address struct
@@ -91,13 +91,13 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
   // create new socket
   network->socket = socket(AF_INET, SOCK_STREAM, 0);
   if (network->socket < 0) {
-    return LWMQTT_NETWORK_CONNECT_ERROR;
+    return LWMQTT_NETWORK_FAILED_CONNECT;
   }
 
   // connect socket
   rc = connect(network->socket, (struct sockaddr *)&address, sizeof(address));
   if (rc < 0) {
-    return LWMQTT_NETWORK_CONNECT_ERROR;
+    return LWMQTT_NETWORK_FAILED_CONNECT;
   }
 
   return LWMQTT_SUCCESS;
@@ -115,7 +115,7 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *av
   // get the available bytes on the socket
   int rc = ioctl(network->socket, FIONREAD, available);
   if (rc < 0) {
-    return LWMQTT_NETWORK_READ_ERROR;
+    return LWMQTT_NETWORK_FAILED_READ;
   }
 
   return LWMQTT_SUCCESS;
@@ -130,13 +130,13 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, uint8_
   struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
   int rc = setsockopt(n->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&t, sizeof(t));
   if (rc < 0) {
-    return LWMQTT_NETWORK_READ_ERROR;
+    return LWMQTT_NETWORK_FAILED_READ;
   }
 
   // read from socket
   int bytes = (int)recv(n->socket, buffer, len, 0);
   if (bytes < 0 && errno != EAGAIN) {
-    return LWMQTT_NETWORK_READ_ERROR;
+    return LWMQTT_NETWORK_FAILED_READ;
   }
 
   // increment counter
@@ -154,13 +154,13 @@ lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, uint8
   struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
   int rc = setsockopt(n->socket, SOL_SOCKET, SO_SNDTIMEO, (char *)&t, sizeof(t));
   if (rc < 0) {
-    return LWMQTT_NETWORK_WRITE_ERROR;
+    return LWMQTT_NETWORK_FAILED_WRITE;
   }
 
   // write to socket
   int bytes = (int)send(n->socket, buffer, len, 0);
   if (bytes < 0 && errno != EAGAIN) {
-    return LWMQTT_NETWORK_WRITE_ERROR;
+    return LWMQTT_NETWORK_FAILED_WRITE;
   }
 
   // increment counter
