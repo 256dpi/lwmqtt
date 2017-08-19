@@ -89,9 +89,10 @@ lwmqtt_err_t lwmqtt_write_byte(uint8_t **buf, uint8_t *buf_end, uint8_t byte);
  * Returns the amount of bytes required by the variable number.
  *
  * @param varnum - The number to check.
- * @return The required length or -1 if overflowed.
+ * @param len - The required length;
+ * @return LWMQTT_SUCCESS or LWMQTT_VARNUM_OVERFLOW.
  */
-int lwmqtt_varnum_length(uint32_t varnum);
+lwmqtt_err_t lwmqtt_varnum_length(uint32_t varnum, int *len);
 
 /**
  * Reads a variable number from the specified buffer. The pointer is incremented by the bytes read.

@@ -9,10 +9,13 @@ TEST(VarNum1, Valid) {
   memset(buf, 0, 2);
 
   for (uint32_t i = 1; i < 128; i++) {
-    EXPECT_EQ(1, lwmqtt_varnum_length(i));
+    int len;
+    lwmqtt_err_t err = lwmqtt_varnum_length(i, &len);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
+    EXPECT_EQ(len, 1);
 
     uint8_t *ptr1 = buf;
-    lwmqtt_err_t err = lwmqtt_write_varnum(&ptr1, buf + 1, i);
+    err = lwmqtt_write_varnum(&ptr1, buf + 1, i);
     EXPECT_EQ(err, LWMQTT_SUCCESS);
 
     uint8_t *ptr2 = buf;
@@ -32,10 +35,13 @@ TEST(VarNum2, Valid) {
   memset(buf, 0, 3);
 
   for (uint32_t i = 1; i < 128; i++) {
-    EXPECT_EQ(lwmqtt_varnum_length(128 * i), 2);
+    int len;
+    lwmqtt_err_t err = lwmqtt_varnum_length(128 * i, &len);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
+    EXPECT_EQ(len, 2);
 
     uint8_t *ptr1 = buf;
-    lwmqtt_err_t err = lwmqtt_write_varnum(&ptr1, buf + 2, 128 * i);
+    err = lwmqtt_write_varnum(&ptr1, buf + 2, 128 * i);
     EXPECT_EQ(err, LWMQTT_SUCCESS);
 
     uint8_t *ptr2 = buf;
@@ -55,10 +61,13 @@ TEST(VarNum3, Valid) {
   memset(buf, 0, 4);
 
   for (uint32_t i = 1; i < 128; i++) {
-    EXPECT_EQ(lwmqtt_varnum_length(128 * 128 * i), 3);
+    int len;
+    lwmqtt_err_t err = lwmqtt_varnum_length(128 * 128 * i, &len);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
+    EXPECT_EQ(len, 3);
 
     uint8_t *ptr1 = buf;
-    lwmqtt_err_t err = lwmqtt_write_varnum(&ptr1, buf + 3, 128 * 128 * i);
+    err = lwmqtt_write_varnum(&ptr1, buf + 3, 128 * 128 * i);
     EXPECT_EQ(err, LWMQTT_SUCCESS);
 
     uint8_t *ptr2 = buf;
@@ -78,10 +87,13 @@ TEST(VarNum4, Valid) {
   memset(buf, 0, 5);
 
   for (uint32_t i = 1; i < 128; i++) {
-    EXPECT_EQ(lwmqtt_varnum_length(128 * 128 * 128 * i), 4);
+    int len;
+    lwmqtt_err_t err = lwmqtt_varnum_length(128 * 128 * 128 * i, &len);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
+    EXPECT_EQ(len, 4);
 
     uint8_t *ptr1 = buf;
-    lwmqtt_err_t err = lwmqtt_write_varnum(&ptr1, buf + 4, 128 * 128 * 128 * i);
+    err = lwmqtt_write_varnum(&ptr1, buf + 4, 128 * 128 * 128 * i);
     EXPECT_EQ(err, LWMQTT_SUCCESS);
 
     uint8_t *ptr2 = buf;

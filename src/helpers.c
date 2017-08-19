@@ -142,17 +142,22 @@ lwmqtt_err_t lwmqtt_write_byte(uint8_t **buf, uint8_t *buf_end, uint8_t byte) {
   return LWMQTT_SUCCESS;
 }
 
-int lwmqtt_varnum_length(uint32_t varnum) {
+lwmqtt_err_t lwmqtt_varnum_length(uint32_t varnum, int *len) {
   if (varnum < 128) {
-    return 1;
+    *len = 1;
+    return LWMQTT_SUCCESS;
   } else if (varnum < 16384) {
-    return 2;
+    *len = 2;
+    return LWMQTT_SUCCESS;
   } else if (varnum < 2097151) {
-    return 3;
+    *len = 3;
+    return LWMQTT_SUCCESS;
   } else if (varnum < 268435455) {
-    return 4;
+    *len = 4;
+    return LWMQTT_SUCCESS;
   } else {
-    return -1;
+    *len = 0;
+    return LWMQTT_VARNUM_OVERFLOW;
   }
 }
 
