@@ -2,22 +2,6 @@
 
 #include "helpers.h"
 
-// TODO: Make overflow safe?
-lwmqtt_string_t lwmqtt_str(const char *str) { return (lwmqtt_string_t){(uint16_t)strlen(str), (char *)str}; }
-
-int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b) {
-  // get length of b
-  long len = strlen(b);
-
-  // otherwise check if length matches
-  if (len != a->len) {
-    return -1;
-  }
-
-  // compare memory
-  return strncmp(a->data, b, (size_t)len);
-}
-
 lwmqtt_err_t lwmqtt_read_data(uint8_t **buf, uint8_t *buf_end, uint8_t **data, size_t len) {
   // check zero length
   if (len == 0) {

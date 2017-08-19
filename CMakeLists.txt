@@ -25,6 +25,7 @@ set(SOURCE_FILES
         src/helpers.h
         src/packet.c
         src/packet.h
+        src/string.c
         src/os/unix.c)
 
 add_library(lwmqtt ${SOURCE_FILES})
