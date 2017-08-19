@@ -263,7 +263,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_message_t *msg, int timeout);
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t *msg, int timeout);
 
 /**
  * Will send a subscribe packet with multiple topic filters plus QOS levels and wait for the suback to complete.
@@ -277,7 +277,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, const char *topic, lwmqtt_m
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, const char **topic_filter, lwmqtt_qos_t *qos,
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, lwmqtt_qos_t *qos,
                               int timeout);
 
 /**
@@ -291,7 +291,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, const char **t
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, const char *topic_filter, lwmqtt_qos_t qos, int timeout);
+lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_qos_t qos, int timeout);
 
 /**
  * Will send an unsubscribe packet with multiple topic filters and wait for the unsuback to complete.
@@ -304,7 +304,7 @@ lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, const char *topic_fil
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, const char **topic_filter, int timeout);
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, int timeout);
 
 /**
  * Will send an unsubscribe packet with a single topic filter and wait for the unsuback to complete.
@@ -316,7 +316,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, const char *
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, const char *topic_filter, int timeout);
+lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, int timeout);
 
 /**
  * Will send a disconnect packet and finish the client.
