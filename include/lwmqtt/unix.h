@@ -49,16 +49,18 @@ void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *network);
  * @param available - The available bytes.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, int *available);
+lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *available);
 
 /**
  * Callback to read from a UNIX network connection.
  */
-lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, void *buf, int len, int *read, int timeout);
+lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len, size_t *read,
+                                      int timeout);
 
 /**
  * Callback to write to a UNIX network connection.
  */
-lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, void *buf, int len, int *sent, int timeout);
+lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len, size_t *sent,
+                                       int timeout);
 
 #endif  // LWMQTT_UNIX_H

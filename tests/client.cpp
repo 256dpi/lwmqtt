@@ -8,10 +8,10 @@ extern "C" {
 #define COMMAND_TIMEOUT 5000
 
 #define PAYLOAD_LEN 256
-char payload[PAYLOAD_LEN + 1];
+uint8_t payload[PAYLOAD_LEN + 1];
 
 #define BIG_PAYLOAD_LEN 9800
-char big_payload[BIG_PAYLOAD_LEN + 1];
+uint8_t big_payload[BIG_PAYLOAD_LEN + 1];
 
 volatile int counter;
 
@@ -47,7 +47,7 @@ TEST(Client, PublishSubscribeQOS0) {
 
   lwmqtt_client_t client;
 
-  lwmqtt_init(&client, malloc(512), 512, malloc(512), 512);
+  lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
@@ -81,7 +81,7 @@ TEST(Client, PublishSubscribeQOS0) {
   }
 
   while (counter < 5) {
-    int available = 0;
+    size_t available = 0;
     err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
@@ -106,7 +106,7 @@ TEST(Client, PublishSubscribeQOS1) {
 
   lwmqtt_client_t client;
 
-  lwmqtt_init(&client, malloc(512), 512, malloc(512), 512);
+  lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
@@ -140,7 +140,7 @@ TEST(Client, PublishSubscribeQOS1) {
   }
 
   while (counter < 5) {
-    int available = 0;
+    size_t available = 0;
     err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
@@ -165,7 +165,7 @@ TEST(Client, PublishSubscribeQOS2) {
 
   lwmqtt_client_t client;
 
-  lwmqtt_init(&client, malloc(512), 512, malloc(512), 512);
+  lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
@@ -199,7 +199,7 @@ TEST(Client, PublishSubscribeQOS2) {
   }
 
   while (counter < 5) {
-    int available = 0;
+    size_t available = 0;
     err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
@@ -224,7 +224,7 @@ TEST(Client, BufferOverflowProtection) {
 
   lwmqtt_client_t client;
 
-  lwmqtt_init(&client, malloc(512), 512, malloc(512), 256);
+  lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 256);
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
@@ -256,7 +256,7 @@ TEST(Client, BufferOverflowProtection) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   while (counter < 1) {
-    int available = 0;
+    size_t available = 0;
     err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
@@ -279,7 +279,7 @@ TEST(Client, BigBuffersAndPayload) {
 
   lwmqtt_client_t client;
 
-  lwmqtt_init(&client, malloc(10000), 10000, malloc(10000), 10000);
+  lwmqtt_init(&client, (uint8_t *)malloc(10000), 10000, (uint8_t *)malloc(10000), 10000);
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
@@ -313,7 +313,7 @@ TEST(Client, BigBuffersAndPayload) {
   }
 
   while (counter < 5) {
-    int available = 0;
+    size_t available = 0;
     err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
@@ -338,7 +338,7 @@ TEST(Client, MultipleSubscriptions) {
 
   lwmqtt_client_t client;
 
-  lwmqtt_init(&client, malloc(512), 512, malloc(512), 512);
+  lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
@@ -375,7 +375,7 @@ TEST(Client, MultipleSubscriptions) {
   }
 
   while (counter < 5) {
-    int available = 0;
+    size_t available = 0;
     err = lwmqtt_unix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 

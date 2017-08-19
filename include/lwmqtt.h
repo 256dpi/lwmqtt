@@ -2,6 +2,8 @@
 #define LWMQTT_H
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /**
  * The error type used by all exposed APIs.
@@ -19,14 +21,15 @@ typedef enum {
   LWMQTT_MISSING_OR_WRONG_PACKET = -9,
   LWMQTT_CONNECTION_DENIED = -10,
   LWMQTT_FAILED_SUBSCRIPTION = -11,
-  LWMQTT_DECODE_ERROR = -12
+  LWMQTT_DECODE_ERROR = -12,
+  LWMQTT_VARNUM_OVERFLOW = -13
 } lwmqtt_err_t;
 
 /**
  * A common string object.
  */
 typedef struct {
-  long len;
+  uint16_t len;
   char *data;
 } lwmqtt_string_t;
 
@@ -64,8 +67,8 @@ typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2, LWMQTT_QOS_FAI
 typedef struct {
   lwmqtt_qos_t qos;
   bool retained;
-  void *payload;
-  int payload_len;
+  uint8_t *payload;
+  size_t payload_len;
 } lwmqtt_message_t;
 
 /**
@@ -85,8 +88,8 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
  * The callbacks is expected to read up to the amount of bytes in to the passed buffer. It should block the specified
  * timeout and wait for more incoming data.
  */
-typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *client, void *ref, void *buf, int len, int *read,
-                                              int timeout);
+typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len,
+                                              size_t *read, int timeout);
 
 /**
  * The callback used to write to a network object.
@@ -94,8 +97,8 @@ typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *client, void *ref
  * The callback is expected to write up to the amount of bytes from the passed buffer. It should wait up to the
  * specified timeout to write the specified data to the network.
  */
-typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *client, void *ref, void *buf, int len, int *sent,
-                                               int timeout);
+typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len,
+                                               size_t *sent, int timeout);
 
 /**
  * The callback used to set a timer.
@@ -122,12 +125,12 @@ typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *client, void *ref, lwmqtt_str
  * The client object.
  */
 struct lwmqtt_client_t {
-  long last_packet_id;
+  uint16_t last_packet_id;
   int keep_alive_interval;
   bool ping_outstanding;
 
-  int write_buf_size, read_buf_size;
-  void *write_buf, *read_buf;
+  size_t write_buf_size, read_buf_size;
+  uint8_t *write_buf, *read_buf;
 
   void *callback_ref;
   lwmqtt_callback_t callback;
@@ -155,7 +158,8 @@ struct lwmqtt_client_t {
  * @param read_buf - The read buffer.
  * @param read_buf_size - The read buffer size.
  */
-void lwmqtt_init(lwmqtt_client_t *client, void *write_buf, int write_buf_size, void *read_buf, int read_buf_size);
+void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_size, uint8_t *read_buf,
+                 size_t read_buf_size);
 
 /**
  * Will set the network reference and callbacks for this client object.
@@ -194,6 +198,7 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t c
 typedef struct {
   lwmqtt_string_t topic;
   lwmqtt_message_t message;
+  // TODO: Payload in a will message is constrained to a uint16_t of length.
 } lwmqtt_will_t;
 
 /**
@@ -207,7 +212,7 @@ typedef struct {
  */
 typedef struct {
   lwmqtt_string_t client_id;
-  int keep_alive;
+  uint16_t keep_alive;
   bool clean_session;
   lwmqtt_string_t username;
   lwmqtt_string_t password;
@@ -335,7 +340,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, int timeout);
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, int available, int timeout);
+lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, int timeout);
 
 /**
  * Will yield control to the client to keep the connection alive.

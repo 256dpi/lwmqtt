@@ -111,7 +111,7 @@ void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *network) {
   }
 }
 
-lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, int *available) {
+lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *available) {
   // get the available bytes on the socket
   int rc = ioctl(network->socket, FIONREAD, available);
   if (rc < 0) {
@@ -121,7 +121,7 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, int *avail
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, void *buffer, int len, int *read,
+lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, uint8_t *buffer, size_t len, size_t *read,
                                       int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
@@ -134,7 +134,7 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, void *
   }
 
   // read from socket
-  int bytes = (int)recv(n->socket, buffer, (size_t)len, 0);
+  int bytes = (int)recv(n->socket, buffer, len, 0);
   if (bytes < 0 && errno != EAGAIN) {
     return LWMQTT_NETWORK_READ_ERROR;
   }
@@ -145,7 +145,7 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, void *
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, void *buffer, int len, int *sent,
+lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, uint8_t *buffer, size_t len, size_t *sent,
                                        int timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
@@ -158,7 +158,7 @@ lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, void 
   }
 
   // write to socket
-  int bytes = (int)send(n->socket, buffer, (size_t)len, 0);
+  int bytes = (int)send(n->socket, buffer, len, 0);
   if (bytes < 0 && errno != EAGAIN) {
     return LWMQTT_NETWORK_WRITE_ERROR;
   }

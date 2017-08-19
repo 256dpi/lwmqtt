@@ -5,90 +5,104 @@ extern "C" {
 }
 
 TEST(VarNum1, Valid) {
-  unsigned char buf[2];
+  uint8_t buf[2];
   memset(buf, 0, 2);
 
-  for (int i = 1; i < 128; i++) {
+  for (uint32_t i = 1; i < 128; i++) {
     EXPECT_EQ(1, lwmqtt_varnum_length(i));
 
-    unsigned char *ptr1 = buf;
-    lwmqtt_write_varnum((void **)&ptr1, i);
+    uint8_t *ptr1 = buf;
+    lwmqtt_err_t err = lwmqtt_write_varnum(&ptr1, buf + 1, i);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-    unsigned char *ptr2 = buf;
-    long num = lwmqtt_read_varnum((void **)&ptr2, 1);
+    uint8_t *ptr2 = buf;
+    uint32_t num;
+    err = lwmqtt_read_varnum(&ptr2, buf + 1, &num);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-    EXPECT_EQ(i, num);
-    EXPECT_EQ(0, buf[1]);
-    EXPECT_EQ(1, ptr1 - buf);
-    EXPECT_EQ(1, ptr2 - buf);
+    EXPECT_EQ(num, i);
+    EXPECT_EQ(buf[1], 0);
+    EXPECT_EQ(ptr1 - buf, 1);
+    EXPECT_EQ(ptr2 - buf, 1);
   }
 }
 
 TEST(VarNum2, Valid) {
-  unsigned char buf[3];
+  uint8_t buf[3];
   memset(buf, 0, 3);
 
-  for (int i = 1; i < 128; i++) {
-    EXPECT_EQ(2, lwmqtt_varnum_length(128 * i));
+  for (uint32_t i = 1; i < 128; i++) {
+    EXPECT_EQ(lwmqtt_varnum_length(128 * i), 2);
 
-    unsigned char *ptr1 = buf;
-    lwmqtt_write_varnum((void **)&ptr1, 128 * i);
+    uint8_t *ptr1 = buf;
+    lwmqtt_err_t err = lwmqtt_write_varnum(&ptr1, buf + 2, 128 * i);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-    unsigned char *ptr2 = buf;
-    long num = lwmqtt_read_varnum((void **)&ptr2, 2);
+    uint8_t *ptr2 = buf;
+    uint32_t num;
+    err = lwmqtt_read_varnum(&ptr2, buf + 2, &num);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-    EXPECT_EQ(128 * i, num);
-    EXPECT_EQ(0, buf[2]);
-    EXPECT_EQ(2, ptr1 - buf);
-    EXPECT_EQ(2, ptr2 - buf);
+    EXPECT_EQ(num, 128 * i);
+    EXPECT_EQ(buf[2], 0);
+    EXPECT_EQ(ptr1 - buf, 2);
+    EXPECT_EQ(ptr2 - buf, 2);
   }
 }
 
 TEST(VarNum3, Valid) {
-  unsigned char buf[4];
+  uint8_t buf[4];
   memset(buf, 0, 4);
 
-  for (int i = 1; i < 128; i++) {
-    EXPECT_EQ(3, lwmqtt_varnum_length(128 * 128 * i));
+  for (uint32_t i = 1; i < 128; i++) {
+    EXPECT_EQ(lwmqtt_varnum_length(128 * 128 * i), 3);
 
-    unsigned char *ptr1 = buf;
-    lwmqtt_write_varnum((void **)&ptr1, 128 * 128 * i);
+    uint8_t *ptr1 = buf;
+    lwmqtt_err_t err = lwmqtt_write_varnum(&ptr1, buf + 3, 128 * 128 * i);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-    unsigned char *ptr2 = buf;
-    long num = lwmqtt_read_varnum((void **)&ptr2, 3);
+    uint8_t *ptr2 = buf;
+    uint32_t num;
+    err = lwmqtt_read_varnum(&ptr2, buf + 3, &num);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-    EXPECT_EQ(128 * 128 * i, num);
-    EXPECT_EQ(0, buf[3]);
-    EXPECT_EQ(3, ptr1 - buf);
-    EXPECT_EQ(3, ptr2 - buf);
+    EXPECT_EQ(num, 128 * 128 * i);
+    EXPECT_EQ(buf[3], 0);
+    EXPECT_EQ(ptr1 - buf, 3);
+    EXPECT_EQ(ptr2 - buf, 3);
   }
 }
 
 TEST(VarNum4, Valid) {
-  unsigned char buf[5];
+  uint8_t buf[5];
   memset(buf, 0, 5);
 
-  for (int i = 1; i < 128; i++) {
-    EXPECT_EQ(4, lwmqtt_varnum_length(128 * 128 * 128 * i));
+  for (uint32_t i = 1; i < 128; i++) {
+    EXPECT_EQ(lwmqtt_varnum_length(128 * 128 * 128 * i), 4);
 
-    unsigned char *ptr1 = buf;
-    lwmqtt_write_varnum((void **)&ptr1, 128 * 128 * 128 * i);
+    uint8_t *ptr1 = buf;
+    lwmqtt_err_t err = lwmqtt_write_varnum(&ptr1, buf + 4, 128 * 128 * 128 * i);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-    unsigned char *ptr2 = buf;
-    long num = lwmqtt_read_varnum((void **)&ptr2, 4);
+    uint8_t *ptr2 = buf;
+    uint32_t num;
+    err = lwmqtt_read_varnum(&ptr2, buf + 4, &num);
+    EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-    EXPECT_EQ(128 * 128 * 128 * i, num);
-    EXPECT_EQ(0, buf[4]);
-    EXPECT_EQ(4, ptr1 - buf);
-    EXPECT_EQ(4, ptr2 - buf);
+    EXPECT_EQ(num, 128 * 128 * 128 * i);
+    EXPECT_EQ(buf[4], 0);
+    EXPECT_EQ(ptr1 - buf, 4);
+    EXPECT_EQ(ptr2 - buf, 4);
   }
 }
 
 TEST(VarNumMax, Valid) {
-  unsigned char buf[4] = {0xFF, 0xFF, 0xFF, 0x7F};
+  uint8_t buf[4] = {0xFF, 0xFF, 0xFF, 0x7F};
 
-  unsigned char *ptr = buf;
-  long num = lwmqtt_read_varnum((void **)&ptr, 4);
+  uint8_t *ptr = buf;
+  uint32_t num;
+  lwmqtt_err_t err = lwmqtt_read_varnum(&ptr, buf + 4, &num);
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
 
-  EXPECT_EQ(268435455, num);
+  EXPECT_EQ(num, (uint32_t)268435455);
 }

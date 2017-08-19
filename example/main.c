@@ -7,7 +7,7 @@
 #define COMMAND_TIMEOUT 5000
 
 static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, lwmqtt_message_t *m) {
-  printf("message_arrived: %.*s => %.*s\n", (int)t->len, t->data, m->payload_len, (char *)m->payload);
+  printf("message_arrived: %.*s => %.*s\n", (int)t->len, t->data, (int)m->payload_len, (char *)m->payload);
 }
 
 int main() {
@@ -50,7 +50,7 @@ int main() {
   }
 
   while (true) {
-    int available = 0;
+    size_t available = 0;
     err = lwmqtt_unix_network_peek(&network, &available);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_unix_network_peek: %d\n", err);
