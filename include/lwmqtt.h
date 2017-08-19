@@ -197,15 +197,16 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t c
  */
 typedef struct {
   lwmqtt_string_t topic;
-  lwmqtt_message_t message;
-  // TODO: Payload in a will message is constrained to a uint16_t of length.
+  lwmqtt_qos_t qos;
+  bool retained;
+  lwmqtt_string_t payload;
 } lwmqtt_will_t;
 
 /**
  * The default initializer for the will object.
  */
 #define lwmqtt_default_will \
-  { lwmqtt_default_string, lwmqtt_default_message }
+  { lwmqtt_default_string, LWMQTT_QOS0, false, lwmqtt_default_string }
 
 /**
  * The object containing the connection options for a client.

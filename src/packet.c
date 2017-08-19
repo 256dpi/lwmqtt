@@ -94,7 +94,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
 
   // add will if present to remaining length
   if (will != NULL) {
-    rem_len += will->topic.len + 2 + will->message.payload_len + 2;
+    rem_len += will->topic.len + 2 + will->payload.len + 2;
   }
 
   // add username if present to remaining length
@@ -153,8 +153,8 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   // set will flags if present
   if (will != NULL) {
     flags.bits.will = 1;
-    flags.bits.will_qos = (unsigned int)will->message.qos;
-    flags.bits.will_retain = will->message.retained ? 1 : 0;
+    flags.bits.will_qos = (unsigned int)will->qos;
+    flags.bits.will_retain = will->retained ? 1 : 0;
   }
 
   // set username flag if present
@@ -194,13 +194,13 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
     }
 
     // write payload length
-    err = lwmqtt_write_num(&buf_ptr, buf_end, (uint16_t)will->message.payload_len);
+    err = lwmqtt_write_num(&buf_ptr, buf_end, (uint16_t)will->payload.len);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
 
     // write payload
-    err = lwmqtt_write_data(&buf_ptr, buf_end, will->message.payload, will->message.payload_len);
+    err = lwmqtt_write_data(&buf_ptr, buf_end, (uint8_t *)will->payload.data, will->payload.len);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
