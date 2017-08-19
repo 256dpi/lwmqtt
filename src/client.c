@@ -102,7 +102,7 @@ static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *client, size_t offs
 
     // check timeout
     if (remaining_time <= 0) {
-      return LWMQTT_NOT_ENOUGH_DATA;
+      return LWMQTT_NETWORK_WRITE_ERROR;
     }
 
     // read
