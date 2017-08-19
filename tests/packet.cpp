@@ -55,7 +55,7 @@ TEST(DetectRemainingLength, Overflow) {
   uint8_t h[5] = {255, 255, 255, 255, 255};
   uint32_t rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, 5, &rem_len);
-  EXPECT_EQ(err, LWMQTT_VARNUM_OVERFLOW);
+  EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_OVERFLOW);
 }
 
 TEST(ConnectTest, Encode1) {

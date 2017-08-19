@@ -75,7 +75,10 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32
 
   // attempt to decode remaining length
   lwmqtt_err_t err = lwmqtt_read_varnum(&ptr, buf + buf_len, rem_len);
-  if (err != LWMQTT_SUCCESS) {
+  if (err == LWMQTT_VARNUM_OVERFLOW) {
+    *rem_len = 0;
+    return LWMQTT_REMAINING_LENGTH_OVERFLOW;
+  } else if (err != LWMQTT_SUCCESS) {
     *rem_len = 0;
     return err;
   }
