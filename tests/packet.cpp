@@ -139,7 +139,7 @@ TEST(ConnectTest, Encode1) {
   opts.password = lwmqtt_str("verysecret");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 62, &len, &opts, &will);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 62, &len, opts, &will);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -168,7 +168,7 @@ TEST(ConnectTest, Encode2) {
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 14, &len, &opts, NULL);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 14, &len, opts, NULL);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -180,7 +180,7 @@ TEST(ConnectTest, EncodeError1) {
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 4, &len, &opts, NULL);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 4, &len, opts, NULL);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
@@ -459,11 +459,14 @@ TEST(PublishTest, Encode1) {
   uint8_t buf[25];
 
   lwmqtt_string_t topic = lwmqtt_str("surgemq");
-
-  uint8_t* payload = (uint8_t*)"send me home";
+  lwmqtt_message_t msg = lwmqtt_default_message;
+  msg.qos = LWMQTT_QOS1;
+  msg.payload = (uint8_t*)"send me home";
+  msg.payload_len = 12;
+  msg.retained = true;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 25, &len, true, LWMQTT_QOS1, true, 7, topic, payload, 12);
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 25, &len, true, 7, topic, msg);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -499,10 +502,12 @@ TEST(PublishTest, Encode2) {
   uint8_t buf[23];
 
   lwmqtt_string_t topic = lwmqtt_str("surgemq");
-  uint8_t* payload = (uint8_t*)"send me home";
+  lwmqtt_message_t msg = lwmqtt_default_message;
+  msg.payload = (uint8_t*)"send me home";
+  msg.payload_len = 12;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 23, &len, false, LWMQTT_QOS0, false, 0, topic, payload, 12);
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 23, &len, false, 0, topic, msg);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -512,10 +517,12 @@ TEST(PublishTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
   lwmqtt_string_t topic = lwmqtt_str("surgemq");
-  uint8_t* payload = (uint8_t*)"send me home";
+  lwmqtt_message_t msg = lwmqtt_default_message;
+  msg.payload = (uint8_t*)"send me home";
+  msg.payload_len = 12;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 2, &len, false, LWMQTT_QOS0, false, 0, topic, payload, 12);
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 2, &len, false, 0, topic, msg);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }

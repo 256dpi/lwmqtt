@@ -54,7 +54,7 @@ lwmqtt_string_t lwmqtt_str(const char *str);
  * @param b - The C string to compare.
  * @return Similarity e.g. strcmp().
  */
-int lwmqtt_strcmp(lwmqtt_string_t *a, const char *b);
+int lwmqtt_strcmp(lwmqtt_string_t a, const char *b);
 
 /**
  * The available QOS levels.
@@ -119,7 +119,7 @@ typedef int (*lwmqtt_timer_get_t)(lwmqtt_client_t *client, void *ref);
  * recommended to call any further lwmqtt methods in the callback as this might result in weird call stacks. The
  * callback should place the received messages in a queue and dispatch them after the caller has returned.
  */
-typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *client, void *ref, lwmqtt_string_t *str, lwmqtt_message_t *msg);
+typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *client, void *ref, lwmqtt_string_t str, lwmqtt_message_t msg);
 
 /**
  * The client object.
@@ -249,7 +249,7 @@ typedef enum {
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, lwmqtt_will_t *will,
+lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, int timeout);
 
 /**
@@ -263,7 +263,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t *options, 
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t *msg, int timeout);
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t msg, int timeout);
 
 /**
  * Will send a subscribe packet with multiple topic filters plus QOS levels and wait for the suback to complete.

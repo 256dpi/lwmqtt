@@ -55,7 +55,7 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32
   * @param will - The last will and testament.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_options_t *options,
+lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_options_t options,
                                    lwmqtt_will_t *will);
 
 /**
@@ -140,8 +140,8 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, lwmq
   * @param payload_len - The length of the payload.
   * @return An error value.
   */
-lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bool dup, lwmqtt_qos_t qos, bool retained,
-                                   uint16_t packet_id, lwmqtt_string_t topic, uint8_t *payload, size_t payload_len);
+lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bool dup, uint16_t packet_id,
+                                   lwmqtt_string_t topic, lwmqtt_message_t msg);
 
 /**
   * Encodes a subscribe packet into the supplied buffer.

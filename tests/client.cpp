@@ -17,25 +17,25 @@ volatile int counter;
 
 const char *custom_ref = "cool";
 
-static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, lwmqtt_message_t *m) {
+static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lwmqtt_message_t m) {
   ASSERT_EQ(ref, custom_ref);
 
   int res = lwmqtt_strcmp(t, "lwmqtt");
   ASSERT_EQ(res, 0);
 
-  res = memcmp(payload, (char *)m->payload, (size_t)m->payload_len);
+  res = memcmp(payload, (char *)m.payload, (size_t)m.payload_len);
   ASSERT_EQ(res, 0);
 
   counter++;
 }
 
-static void big_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t *t, lwmqtt_message_t *m) {
+static void big_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lwmqtt_message_t m) {
   ASSERT_EQ(ref, custom_ref);
 
   int res = lwmqtt_strcmp(t, "lwmqtt");
   ASSERT_EQ(res, 0);
 
-  res = memcmp(big_payload, (char *)m->payload, (size_t)m->payload_len);
+  res = memcmp(big_payload, (char *)m.payload, (size_t)m.payload_len);
   ASSERT_EQ(res, 0);
 
   counter++;
@@ -62,7 +62,7 @@ TEST(Client, PublishSubscribeQOS0) {
   data.password = lwmqtt_str("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, data, NULL, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_str("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -76,7 +76,7 @@ TEST(Client, PublishSubscribeQOS0) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), &msg, COMMAND_TIMEOUT);
+    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -115,13 +115,13 @@ TEST(Client, PublishSubscribeQOS1) {
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t data = lwmqtt_default_options;
-  data.client_id = lwmqtt_str("lwmqtt");
-  data.username = lwmqtt_str("try");
-  data.password = lwmqtt_str("try");
+  lwmqtt_options_t options = lwmqtt_default_options;
+  options.client_id = lwmqtt_str("lwmqtt");
+  options.username = lwmqtt_str("try");
+  options.password = lwmqtt_str("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_str("lwmqtt"), LWMQTT_QOS1, COMMAND_TIMEOUT);
@@ -135,7 +135,7 @@ TEST(Client, PublishSubscribeQOS1) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), &msg, COMMAND_TIMEOUT);
+    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -174,13 +174,13 @@ TEST(Client, PublishSubscribeQOS2) {
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t data = lwmqtt_default_options;
-  data.client_id = lwmqtt_str("lwmqtt");
-  data.username = lwmqtt_str("try");
-  data.password = lwmqtt_str("try");
+  lwmqtt_options_t options = lwmqtt_default_options;
+  options.client_id = lwmqtt_str("lwmqtt");
+  options.username = lwmqtt_str("try");
+  options.password = lwmqtt_str("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_str("lwmqtt"), LWMQTT_QOS2, COMMAND_TIMEOUT);
@@ -194,7 +194,7 @@ TEST(Client, PublishSubscribeQOS2) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), &msg, COMMAND_TIMEOUT);
+    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -233,13 +233,13 @@ TEST(Client, BufferOverflowProtection) {
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t data = lwmqtt_default_options;
-  data.client_id = lwmqtt_str("lwmqtt");
-  data.username = lwmqtt_str("try");
-  data.password = lwmqtt_str("try");
+  lwmqtt_options_t options = lwmqtt_default_options;
+  options.client_id = lwmqtt_str("lwmqtt");
+  options.username = lwmqtt_str("try");
+  options.password = lwmqtt_str("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_str("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -252,7 +252,7 @@ TEST(Client, BufferOverflowProtection) {
   msg.payload = payload;
   msg.payload_len = PAYLOAD_LEN;
 
-  err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), &msg, COMMAND_TIMEOUT);
+  err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   while (counter < 1) {
@@ -288,13 +288,13 @@ TEST(Client, BigBuffersAndPayload) {
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t data = lwmqtt_default_options;
-  data.client_id = lwmqtt_str("lwmqtt");
-  data.username = lwmqtt_str("try");
-  data.password = lwmqtt_str("try");
+  lwmqtt_options_t options = lwmqtt_default_options;
+  options.client_id = lwmqtt_str("lwmqtt");
+  options.username = lwmqtt_str("try");
+  options.password = lwmqtt_str("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_str("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -308,7 +308,7 @@ TEST(Client, BigBuffersAndPayload) {
     msg.payload = big_payload;
     msg.payload_len = BIG_PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), &msg, COMMAND_TIMEOUT);
+    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -347,13 +347,13 @@ TEST(Client, MultipleSubscriptions) {
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t data = lwmqtt_default_options;
-  data.client_id = lwmqtt_str("lwmqtt");
-  data.username = lwmqtt_str("try");
-  data.password = lwmqtt_str("try");
+  lwmqtt_options_t options = lwmqtt_default_options;
+  options.client_id = lwmqtt_str("lwmqtt");
+  options.username = lwmqtt_str("try");
+  options.password = lwmqtt_str("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &data, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_string_t topic_filters[2] = {lwmqtt_str("foo"), lwmqtt_str("lwmqtt")};
@@ -370,7 +370,7 @@ TEST(Client, MultipleSubscriptions) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), &msg, COMMAND_TIMEOUT);
+    err = lwmqtt_publish(&client, lwmqtt_str("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
