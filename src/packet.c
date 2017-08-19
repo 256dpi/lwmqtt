@@ -48,8 +48,11 @@ lwmqtt_err_t lwmqtt_detect_packet_type(uint8_t *buf, size_t buf_len, lwmqtt_pack
     return err;
   }
 
+  // set packet type
+  *packet_type = (lwmqtt_packet_type_t)header.bits.type;
+
   // check if packet type is correct and can be received
-  switch ((lwmqtt_packet_type_t)header.bits.type) {
+  switch (*packet_type) {
     case LWMQTT_CONNACK_PACKET:
     case LWMQTT_PUBLISH_PACKET:
     case LWMQTT_PUBACK_PACKET:
@@ -59,9 +62,9 @@ lwmqtt_err_t lwmqtt_detect_packet_type(uint8_t *buf, size_t buf_len, lwmqtt_pack
     case LWMQTT_SUBACK_PACKET:
     case LWMQTT_UNSUBACK_PACKET:
     case LWMQTT_PINGRESP_PACKET:
-      *packet_type = (lwmqtt_packet_type_t)header.bits.type;
       return LWMQTT_SUCCESS;
     default:
+      *packet_type = LWMQTT_NO_PACKET;
       return LWMQTT_DECODE_ERROR;
   }
 }
