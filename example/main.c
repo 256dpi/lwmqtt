@@ -58,7 +58,7 @@ int main() {
     }
 
     if (available > 0) {
-      err = lwmqtt_yield(&client, 0, COMMAND_TIMEOUT);
+      err = lwmqtt_yield(&client, available, COMMAND_TIMEOUT);
       if (err != LWMQTT_SUCCESS) {
         printf("failed lwmqtt_yield: %d\n", err);
         exit(1);
