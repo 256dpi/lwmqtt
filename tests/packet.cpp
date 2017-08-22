@@ -358,6 +358,7 @@ TEST(PublishTest, Decode1) {
   EXPECT_EQ(msg.retained, true);
   EXPECT_EQ(packet_id, 7);
   EXPECT_ARRAY_EQ("surgemq", topic.data, 7);
+  EXPECT_EQ(msg.payload_len, (size_t)12);
   EXPECT_ARRAY_EQ("send me home", msg.payload, 12);
 }
 
@@ -400,6 +401,7 @@ TEST(PublishTest, Decode2) {
   EXPECT_EQ(msg.retained, false);
   EXPECT_EQ(packet_id, 0);
   EXPECT_ARRAY_EQ("surgemq", topic.data, 7);
+  EXPECT_EQ(msg.payload_len, (size_t)12);
   EXPECT_ARRAY_EQ("send me home", msg.payload, 12);
 }
 
