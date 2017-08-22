@@ -409,6 +409,11 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
     return LWMQTT_REMAINING_LENGTH_MISMATCH;
   }
 
+  // check buffer capacity
+  if (buf_end - buf_ptr < rem_len) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  }
+
   // reset buf end
   buf_end = buf_ptr + rem_len;
 
