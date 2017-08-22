@@ -113,16 +113,11 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
     }
   }
 
-  // calculate remaining length length
+  // check remaining length length
   int rem_len_len;
   lwmqtt_err_t err = lwmqtt_varnum_length(rem_len, &rem_len_len);
   if (err == LWMQTT_VARNUM_OVERFLOW) {
     return LWMQTT_REMAINING_LENGTH_OVERFLOW;
-  }
-
-  // check buffer capacity
-  if (1 + rem_len_len + rem_len > buf_len) {
-    return LWMQTT_BUFFER_TOO_SHORT;
   }
 
   // prepare header
@@ -454,7 +449,7 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bo
     rem_len += 2;
   }
 
-  // calculate remaining length length
+  // check remaining length length
   int rem_len_len;
   lwmqtt_err_t err = lwmqtt_varnum_length(rem_len, &rem_len_len);
   if (err == LWMQTT_VARNUM_OVERFLOW) {
@@ -518,7 +513,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, 
     rem_len += 2 + topic_filters[i].len + 1;
   }
 
-  // calculate remaining length length
+  // check remaining length length
   int rem_len_len;
   lwmqtt_err_t err = lwmqtt_varnum_length(rem_len, &rem_len_len);
   if (err == LWMQTT_VARNUM_OVERFLOW) {
@@ -635,7 +630,7 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len
     rem_len += 2 + topic_filters[i].len;
   }
 
-  // calculate remaining length length
+  // check remaining length length
   int rem_len_len;
   lwmqtt_err_t err = lwmqtt_varnum_length(rem_len, &rem_len_len);
   if (err == LWMQTT_VARNUM_OVERFLOW) {
