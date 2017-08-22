@@ -23,6 +23,7 @@ static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lw
   int res = lwmqtt_strcmp(t, "lwmqtt");
   ASSERT_EQ(res, 0);
 
+  ASSERT_EQ(m.payload_len, (size_t)PAYLOAD_LEN);
   res = memcmp(payload, (char *)m.payload, (size_t)m.payload_len);
   ASSERT_EQ(res, 0);
 
@@ -35,6 +36,7 @@ static void big_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t
   int res = lwmqtt_strcmp(t, "lwmqtt");
   ASSERT_EQ(res, 0);
 
+  ASSERT_EQ(m.payload_len, (size_t)BIG_PAYLOAD_LEN);
   res = memcmp(big_payload, (char *)m.payload, (size_t)m.payload_len);
   ASSERT_EQ(res, 0);
 

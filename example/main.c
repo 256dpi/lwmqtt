@@ -7,7 +7,7 @@
 #define COMMAND_TIMEOUT 5000
 
 static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
-  printf("message_arrived: %.*s => %.*s\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload);
+  printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload, (int)msg.payload_len);
 }
 
 int main() {

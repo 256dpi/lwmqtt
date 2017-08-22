@@ -409,6 +409,9 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
     return LWMQTT_REMAINING_LENGTH_MISMATCH;
   }
 
+  // reset buf end
+  buf_end = buf_ptr + rem_len;
+
   // read topic
   err = lwmqtt_read_string(&buf_ptr, buf_end, topic);
   if (err != LWMQTT_SUCCESS) {
@@ -425,14 +428,15 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
     *packet_id = 0;
   }
 
+  // set payload length
+  msg->payload_len = buf_end - buf_ptr;
+
   // read payload
   err = lwmqtt_read_data(&buf_ptr, buf_end, &msg->payload, buf_end - buf_ptr);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
-  // set payload length
-  msg->payload_len = buf_end - buf_ptr;
 
   return LWMQTT_SUCCESS;
 }
