@@ -13,7 +13,7 @@ typedef struct { struct timeval end; } lwmqtt_unix_timer_t;
 /**
  * Callback to set the UNIX timer object.
  */
-void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, int timeout);
+void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, uint32_t timeout);
 
 /**
  * Callback to read the UNIX timer object.
@@ -55,12 +55,12 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *av
  * Callback to read from a UNIX network connection.
  */
 lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len, size_t *read,
-                                      int timeout);
+                                      uint32_t timeout);
 
 /**
  * Callback to write to a UNIX network connection.
  */
 lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len, size_t *sent,
-                                       int timeout);
+                                       uint32_t timeout);
 
 #endif  // LWMQTT_UNIX_H

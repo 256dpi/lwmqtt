@@ -8,7 +8,7 @@
 
 #include <lwmqtt/unix.h>
 
-void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, int timeout) {
+void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, uint32_t timeout) {
   // cast timer reference
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
@@ -122,7 +122,7 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *av
 }
 
 lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, uint8_t *buffer, size_t len, size_t *read,
-                                      int timeout) {
+                                      uint32_t timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
@@ -146,7 +146,7 @@ lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, uint8_
 }
 
 lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, uint8_t *buffer, size_t len, size_t *sent,
-                                       int timeout) {
+                                       uint32_t timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
