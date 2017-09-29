@@ -126,7 +126,7 @@ typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *client, void *ref, lwmqtt_str
  */
 struct lwmqtt_client_t {
   uint16_t last_packet_id;
-  uint16_t keep_alive_interval;
+  uint32_t keep_alive_interval;
   bool ping_outstanding;
 
   size_t write_buf_size, read_buf_size;
