@@ -18,7 +18,7 @@ void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, uint32_t timeout)
 /**
  * Callback to read the UNIX timer object.
  */
-int lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref);
+uint32_t lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref);
 
 /**
  * The UNIX network object.

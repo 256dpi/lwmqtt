@@ -24,7 +24,7 @@ void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, uint32_t timeout)
   timeradd(&now, &interval, &t->end);
 }
 
-int lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref) {
+uint32_t lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref) {
   // cast timer reference
   lwmqtt_unix_timer_t *t = (lwmqtt_unix_timer_t *)ref;
 
@@ -37,7 +37,7 @@ int lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref) {
   timersub(&t->end, &now, &res);
 
   // convert to ms
-  return res.tv_sec < 0 ? 0 : (int)(res.tv_sec * 1000 + res.tv_usec / 1000);
+  return res.tv_sec < 0 ? 0 : (uint32_t)(res.tv_sec * 1000 + res.tv_usec / 1000);
 }
 
 lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *host, int port) {
