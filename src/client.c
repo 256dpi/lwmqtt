@@ -185,7 +185,7 @@ static lwmqtt_err_t lwmqtt_send_packet_in_buffer(lwmqtt_client_t *client, size_t
   }
 
   // reset keep alive timer
-  client->timer_set(client, client->keep_alive_timer, client->keep_alive_interval * 1000);
+  client->timer_set(client, client->keep_alive_timer, client->keep_alive_interval);
 
   return LWMQTT_SUCCESS;
 }
@@ -359,12 +359,12 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
   // set timer to command timeout
   client->timer_set(client, client->command_timer, timeout);
 
-  // save keep alive interval
-  client->keep_alive_interval = options.keep_alive;
+  // save keep alive interval (take 75% to be a little earlier than actually needed)
+  client->keep_alive_interval = (uint32_t)(options.keep_alive * 750);
 
   // set keep alive timer
   if (client->keep_alive_interval > 0) {
-    client->timer_set(client, client->keep_alive_timer, client->keep_alive_interval * 1000);
+    client->timer_set(client, client->keep_alive_timer, client->keep_alive_interval);
   }
 
   // encode connect packet
