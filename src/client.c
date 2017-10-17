@@ -365,6 +365,9 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
   // set keep alive timer
   client->timer_set(client, client->keep_alive_timer, client->keep_alive_interval);
 
+  // reset pong pending flag
+  client->pong_pending = false;
+
   // encode connect packet
   size_t len;
   lwmqtt_err_t err = lwmqtt_encode_connect(client->write_buf, client->write_buf_size, &len, options, will);
