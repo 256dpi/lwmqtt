@@ -4,7 +4,7 @@ void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_s
                  size_t read_buf_size) {
   client->last_packet_id = 1;
   client->keep_alive_interval = 0;
-  client->ping_outstanding = false;
+  client->pong_pending = false;
 
   client->write_buf = write_buf;
   client->write_buf_size = write_buf_size;
@@ -301,7 +301,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
     // handle pingresp packets
     case LWMQTT_PINGRESP_PACKET: {
       // set flag
-      client->ping_outstanding = false;
+      client->pong_pending = false;
 
       break;
     }
@@ -589,9 +589,9 @@ lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout) {
 
   // a ping is due
 
-  // fail immediately if a ping is still outstanding
-  if (client->ping_outstanding) {
-    return LWMQTT_UNANSWERED_PING;
+  // fail immediately if a pong is already pending
+  if (client->pong_pending) {
+    return LWMQTT_PONG_TIMEOUT;
   }
 
   // encode pingreq packet
@@ -608,7 +608,7 @@ lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout) {
   }
 
   // set flag
-  client->ping_outstanding = true;
+  client->pong_pending = true;
 
   return LWMQTT_SUCCESS;
 }
