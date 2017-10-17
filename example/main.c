@@ -5,6 +5,7 @@
 #include <lwmqtt/unix.h>
 
 #define COMMAND_TIMEOUT 5000
+#define MESSAGE_TIMEOUT 1000
 
 static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
   printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload,
@@ -13,7 +14,7 @@ static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t 
 
 int main() {
   lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_unix_timer_t timer1, timer2, timer3;
 
   lwmqtt_client_t client;
 
@@ -22,6 +23,8 @@ int main() {
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, NULL, message_arrived);
+
+  lwmqtt_unix_timer_set(NULL, &timer3, MESSAGE_TIMEOUT);
 
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "broker.shiftr.io", 1883);
   if (err != LWMQTT_SUCCESS) {
@@ -70,6 +73,18 @@ int main() {
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_keep_alive: %d\n", err);
       exit(1);
+    }
+
+    if (lwmqtt_unix_timer_get(NULL, &timer3) <= 0) {
+      lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = false, .payload = (uint8_t *)("world"), .payload_len = 5};
+
+      err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
+      if (err != LWMQTT_SUCCESS) {
+        printf("failed lwmqtt_keep_alive: %d\n", err);
+        exit(1);
+      }
+
+      lwmqtt_unix_timer_set(NULL, &timer3, MESSAGE_TIMEOUT);
     }
   }
 }
