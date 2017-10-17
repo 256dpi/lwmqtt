@@ -363,9 +363,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
   client->keep_alive_interval = (uint32_t)(options.keep_alive * 750);
 
   // set keep alive timer
-  if (client->keep_alive_interval > 0) {
-    client->timer_set(client, client->keep_alive_timer, client->keep_alive_interval);
-  }
+  client->timer_set(client, client->keep_alive_timer, client->keep_alive_interval);
 
   // encode connect packet
   size_t len;
