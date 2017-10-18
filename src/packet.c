@@ -415,10 +415,27 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
     return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
-  // set variables
+  // set dup flag
   *dup = header.bits.dup == 1;
-  msg->qos = (lwmqtt_qos_t)header.bits.qos;
+
+  // set retained flag
   msg->retained = header.bits.retain == 1;
+
+  // set qos
+  switch (header.bits.qos) {
+    case 0:
+      msg->qos = LWMQTT_QOS0;
+      break;
+    case 1:
+      msg->qos = LWMQTT_QOS1;
+      break;
+    case 2:
+      msg->qos = LWMQTT_QOS2;
+      break;
+    default:
+      msg->qos = LWMQTT_QOS0;
+      break;
+  }
 
   // read remaining length
   uint32_t rem_len;
@@ -643,7 +660,20 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
     }
 
     // set qos level
-    granted_qos_levels[*count] = (lwmqtt_qos_t)raw_qos_level;
+    switch (raw_qos_level) {
+      case 0:
+        granted_qos_levels[*count] = LWMQTT_QOS0;
+        break;
+      case 1:
+        granted_qos_levels[*count] = LWMQTT_QOS1;
+        break;
+      case 2:
+        granted_qos_levels[*count] = LWMQTT_QOS2;
+        break;
+      default:
+        granted_qos_levels[*count] = LWMQTT_QOS_FAILURE;
+        break;
+    }
   }
 
   return LWMQTT_SUCCESS;
