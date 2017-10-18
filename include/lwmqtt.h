@@ -124,7 +124,7 @@ typedef void (*lwmqtt_timer_set_t)(void *ref, uint32_t timeout);
  * @param - A custom reference.
  * @return The amount of milliseconds until the deadline. May return negative number if the deadline has been reached.
  */
-typedef uint32_t (*lwmqtt_timer_get_t)(void *ref);
+typedef int32_t (*lwmqtt_timer_get_t)(void *ref);
 
 /**
  * The callback used to forward incoming messages.
