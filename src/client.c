@@ -10,7 +10,9 @@ void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_s
   client->write_buf_size = write_buf_size;
   client->read_buf = read_buf;
   client->read_buf_size = read_buf_size;
+
   client->callback = NULL;
+  client->callback_ref = NULL;
 
   client->network = NULL;
   client->network_read = NULL;

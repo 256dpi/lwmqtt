@@ -132,8 +132,8 @@ struct lwmqtt_client_t {
   size_t write_buf_size, read_buf_size;
   uint8_t *write_buf, *read_buf;
 
-  void *callback_ref;
   lwmqtt_callback_t callback;
+  void *callback_ref;
 
   void *network;
   lwmqtt_network_read_t network_read;
