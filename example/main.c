@@ -24,7 +24,7 @@ int main() {
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, NULL, message_arrived);
 
-  lwmqtt_unix_timer_set(NULL, &timer3, MESSAGE_TIMEOUT);
+  lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
 
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "broker.shiftr.io", 1883);
   if (err != LWMQTT_SUCCESS) {
@@ -75,7 +75,7 @@ int main() {
       exit(1);
     }
 
-    if (lwmqtt_unix_timer_get(NULL, &timer3) <= 0) {
+    if (lwmqtt_unix_timer_get(&timer3) <= 0) {
       lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = false, .payload = (uint8_t *)("world"), .payload_len = 5};
 
       err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
@@ -84,7 +84,7 @@ int main() {
         exit(1);
       }
 
-      lwmqtt_unix_timer_set(NULL, &timer3, MESSAGE_TIMEOUT);
+      lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
     }
   }
 }

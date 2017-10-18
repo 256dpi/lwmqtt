@@ -88,8 +88,7 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
  * The callbacks is expected to read up to the amount of bytes in to the passed buffer. It should block the specified
  * timeout and wait for more incoming data.
  */
-typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len,
-                                              size_t *read, uint32_t timeout);
+typedef lwmqtt_err_t (*lwmqtt_network_read_t)(void *ref, uint8_t *buf, size_t len, size_t *read, uint32_t timeout);
 
 /**
  * The callback used to write to a network object.
@@ -97,18 +96,17 @@ typedef lwmqtt_err_t (*lwmqtt_network_read_t)(lwmqtt_client_t *client, void *ref
  * The callback is expected to write up to the amount of bytes from the passed buffer. It should wait up to the
  * specified timeout to write the specified data to the network.
  */
-typedef lwmqtt_err_t (*lwmqtt_network_write_t)(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len,
-                                               size_t *sent, uint32_t timeout);
+typedef lwmqtt_err_t (*lwmqtt_network_write_t)(void *ref, uint8_t *buf, size_t len, size_t *sent, uint32_t timeout);
 
 /**
  * The callback used to set a timer.
  */
-typedef void (*lwmqtt_timer_set_t)(lwmqtt_client_t *client, void *ref, uint32_t timeout);
+typedef void (*lwmqtt_timer_set_t)(void *ref, uint32_t timeout);
 
 /**
  * The callback used to get a timers value.
  */
-typedef uint32_t (*lwmqtt_timer_get_t)(lwmqtt_client_t *client, void *ref);
+typedef uint32_t (*lwmqtt_timer_get_t)(void *ref);
 
 /**
  * The callback used to forward incoming messages.

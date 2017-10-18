@@ -13,12 +13,12 @@ typedef struct { struct timeval end; } lwmqtt_unix_timer_t;
 /**
  * Callback to set the UNIX timer object.
  */
-void lwmqtt_unix_timer_set(lwmqtt_client_t *client, void *ref, uint32_t timeout);
+void lwmqtt_unix_timer_set(void *ref, uint32_t timeout);
 
 /**
  * Callback to read the UNIX timer object.
  */
-uint32_t lwmqtt_unix_timer_get(lwmqtt_client_t *client, void *ref);
+uint32_t lwmqtt_unix_timer_get(void *ref);
 
 /**
  * The UNIX network object.
@@ -54,13 +54,11 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *av
 /**
  * Callback to read from a UNIX network connection.
  */
-lwmqtt_err_t lwmqtt_unix_network_read(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len, size_t *read,
-                                      uint32_t timeout);
+lwmqtt_err_t lwmqtt_unix_network_read(void *ref, uint8_t *buf, size_t len, size_t *read, uint32_t timeout);
 
 /**
  * Callback to write to a UNIX network connection.
  */
-lwmqtt_err_t lwmqtt_unix_network_write(lwmqtt_client_t *client, void *ref, uint8_t *buf, size_t len, size_t *sent,
-                                       uint32_t timeout);
+lwmqtt_err_t lwmqtt_unix_network_write(void *ref, uint8_t *buf, size_t len, size_t *sent, uint32_t timeout);
 
 #endif  // LWMQTT_UNIX_H
