@@ -197,8 +197,8 @@ TEST(ConnackTest, Decode1) {
   lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 4, &session_present, &return_code);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
-  EXPECT_EQ(session_present, 0);
-  EXPECT_EQ(return_code, 0);
+  EXPECT_EQ(session_present, false);
+  EXPECT_EQ(return_code, LWMQTT_CONNECTION_ACCEPTED);
 }
 
 TEST(ConnackTest, DecodeError1) {

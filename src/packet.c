@@ -271,9 +271,32 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_p
     return err;
   }
 
-  // set variables
+  // set session present
   *session_present = flags.bits.session_present == 1;
-  *return_code = (lwmqtt_return_code_t)raw_return_code;
+
+  // set return code
+  switch (raw_return_code) {
+    case 0:
+      *return_code = LWMQTT_CONNECTION_ACCEPTED;
+      break;
+    case 1:
+      *return_code = LWMQTT_UNACCEPTABLE_PROTOCOL;
+      break;
+    case 2:
+      *return_code = LWMQTT_IDENTIFIER_REJECTED;
+      break;
+    case 3:
+      *return_code = LWMQTT_SERVER_UNAVAILABLE;
+      break;
+    case 4:
+      *return_code = LWMQTT_BAD_USERNAME_OR_PASSWORD;
+      break;
+    case 5:
+      *return_code = LWMQTT_NOT_AUTHORIZED;
+      break;
+    default:
+      *return_code = LWMQTT_UNKNOWN_RETURN_CODE;
+  }
 
   return LWMQTT_SUCCESS;
 }
