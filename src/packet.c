@@ -11,14 +11,14 @@ lwmqtt_err_t lwmqtt_detect_packet_type(uint8_t *buf, size_t buf_len, lwmqtt_pack
   // prepare header
   uint8_t header;
 
-  // reader header
+  // read header
   lwmqtt_err_t err = lwmqtt_read_byte(&buf_ptr, buf_end, &header);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
-  // set packet type
-  *packet_type = (lwmqtt_packet_type_t)lwmqtt_read_bits(header, 0xF0, 4);
+  // get packet type
+  *packet_type = (lwmqtt_packet_type_t)lwmqtt_read_bits(header, 4, 4);
 
   // check if packet type is correct and can be received
   switch (*packet_type) {
@@ -91,7 +91,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
 
   // prepare header
   uint8_t header = 0;
-  lwmqtt_write_bits(&header, LWMQTT_CONNECT_PACKET, 0xF0, 4);
+  lwmqtt_write_bits(&header, LWMQTT_CONNECT_PACKET, 4, 4);
 
   // write header
   err = lwmqtt_write_byte(&buf_ptr, buf_end, header);
@@ -119,22 +119,24 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
 
   // prepare flags
   uint8_t flags = 0;
-  lwmqtt_write_bits(&flags, (uint8_t)(options.clean_session ? 1 : 0), 0x2, 1);
+
+  // set clean session
+  lwmqtt_write_bits(&flags, (uint8_t)(options.clean_session ? 1 : 0), 1, 1);
 
   // set will flags if present
   if (will != NULL) {
-    lwmqtt_write_bits(&flags, 1, 0x4, 2);
-    lwmqtt_write_bits(&flags, will->qos, 0x18, 3);
-    lwmqtt_write_bits(&flags, (uint8_t)(will->retained ? 1 : 0), 0x20, 5);
+    lwmqtt_write_bits(&flags, 1, 2, 1);
+    lwmqtt_write_bits(&flags, will->qos, 3, 2);
+    lwmqtt_write_bits(&flags, (uint8_t)(will->retained ? 1 : 0), 5, 1);
   }
 
   // set username flag if present
   if (options.username.len > 0) {
-    lwmqtt_write_bits(&flags, 1, 0x40, 6);
+    lwmqtt_write_bits(&flags, 1, 6, 1);
 
     // set password flag if present
     if (options.password.len > 0) {
-      lwmqtt_write_bits(&flags, 1, 0x80, 7);
+      lwmqtt_write_bits(&flags, 1, 7, 1);
     }
   }
 
@@ -210,7 +212,10 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_p
   lwmqtt_err_t err = lwmqtt_read_byte(&buf_ptr, buf_end, &header);
   if (err != LWMQTT_SUCCESS) {
     return err;
-  } else if (lwmqtt_read_bits(header, 0xF0, 4) != LWMQTT_CONNACK_PACKET) {
+  }
+
+  // check packet type
+  if (lwmqtt_read_bits(header, 4, 4) != LWMQTT_CONNACK_PACKET) {
     return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
@@ -240,10 +245,10 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_p
     return err;
   }
 
-  // set session present
-  *session_present = lwmqtt_read_bits(flags, 0x80, 7) == 1;
+  // get session present
+  *session_present = lwmqtt_read_bits(flags, 7, 1) == 1;
 
-  // set return code
+  // get return code
   switch (raw_return_code) {
     case 0:
       *return_code = LWMQTT_CONNECTION_ACCEPTED;
@@ -277,7 +282,7 @@ lwmqtt_err_t lwmqtt_encode_zero(uint8_t *buf, size_t buf_len, size_t *len, lwmqt
 
   // write header
   uint8_t header = 0;
-  lwmqtt_write_bits(&header, packet_type, 0xF0, 4);
+  lwmqtt_write_bits(&header, packet_type, 4, 4);
   lwmqtt_err_t err = lwmqtt_write_byte(&buf_ptr, buf_end, header);
   if (err != LWMQTT_SUCCESS) {
     return err;
@@ -308,9 +313,11 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_
     return err;
   }
 
-  // set variables
-  *dup = lwmqtt_read_bits(header, 0x8, 3) == 1;
-  *packet_type = (lwmqtt_packet_type_t)lwmqtt_read_bits(header, 0xF0, 4);
+  // get packet type
+  *packet_type = (lwmqtt_packet_type_t)lwmqtt_read_bits(header, 4, 4);
+
+  // get dup
+  *dup = lwmqtt_read_bits(header, 3, 1) == 1;
 
   // read remaining length
   uint32_t rem_len;
@@ -341,9 +348,15 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
 
   // prepare header
   uint8_t header = 0;
-  lwmqtt_write_bits(&header, packet_type, 0xF0, 4);
-  lwmqtt_write_bits(&header, (uint8_t)(dup ? 1 : 0), 0x8, 3);
-  lwmqtt_write_bits(&header, (uint8_t)(packet_type == LWMQTT_PUBREL_PACKET ? 1 : 0), 0x6, 1);
+
+  // set packet type
+  lwmqtt_write_bits(&header, packet_type, 4, 4);
+
+  // set dup
+  lwmqtt_write_bits(&header, (uint8_t)(dup ? 1 : 0), 3, 1);
+
+  // set qos
+  lwmqtt_write_bits(&header, (uint8_t)(packet_type == LWMQTT_PUBREL_PACKET ? LWMQTT_QOS1 : LWMQTT_QOS0), 1, 2);
 
   // write header
   lwmqtt_err_t err = lwmqtt_write_byte(&buf_ptr, buf_end, header);
@@ -380,18 +393,21 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
   lwmqtt_err_t err = lwmqtt_read_byte(&buf_ptr, buf_end, &header);
   if (err != LWMQTT_SUCCESS) {
     return err;
-  } else if (lwmqtt_read_bits(header, 0xF0, 4) != LWMQTT_PUBLISH_PACKET) {
+  }
+
+  // check packet type
+  if (lwmqtt_read_bits(header, 4, 4) != LWMQTT_PUBLISH_PACKET) {
     return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
-  // set dup flag
-  *dup = lwmqtt_read_bits(header, 0x8, 3) == 1;
+  // get dup
+  *dup = lwmqtt_read_bits(header, 3, 1) == 1;
 
-  // set retained flag
-  msg->retained = lwmqtt_read_bits(header, 0x1, 0) == 1;
+  // get retained
+  msg->retained = lwmqtt_read_bits(header, 0, 1) == 1;
 
-  // set qos
-  switch (lwmqtt_read_bits(header, 0x6, 1)) {
+  // get qos
+  switch (lwmqtt_read_bits(header, 1, 2)) {
     case 0:
       msg->qos = LWMQTT_QOS0;
       break;
@@ -475,10 +491,18 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bo
 
   // prepare header
   uint8_t header = 0;
-  lwmqtt_write_bits(&header, LWMQTT_PUBLISH_PACKET, 0xF0, 4);
-  lwmqtt_write_bits(&header, (uint8_t)(dup ? 1 : 0), 0x8, 3);
-  lwmqtt_write_bits(&header, msg.qos, 0x6, 1);
-  lwmqtt_write_bits(&header, (uint8_t)(msg.retained ? 1 : 0), 0x1, 0);
+
+  // set packet type
+  lwmqtt_write_bits(&header, LWMQTT_PUBLISH_PACKET, 4, 4);
+
+  // set dup
+  lwmqtt_write_bits(&header, (uint8_t)(dup ? 1 : 0), 3, 1);
+
+  // set qos
+  lwmqtt_write_bits(&header, msg.qos, 1, 2);
+
+  // set retained
+  lwmqtt_write_bits(&header, (uint8_t)(msg.retained ? 1 : 0), 0, 1);
 
   // write header
   err = lwmqtt_write_byte(&buf_ptr, buf_end, header);
@@ -539,8 +563,12 @@ lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, 
 
   // prepare header
   uint8_t header = 0;
-  lwmqtt_write_bits(&header, LWMQTT_SUBSCRIBE_PACKET, 0xF0, 4);
-  lwmqtt_write_bits(&header, 1, 0x6, 1);
+
+  // set packet type
+  lwmqtt_write_bits(&header, LWMQTT_SUBSCRIBE_PACKET, 4, 4);
+
+  // set qos
+  lwmqtt_write_bits(&header, LWMQTT_QOS1, 1, 2);
 
   // write header
   err = lwmqtt_write_byte(&buf_ptr, buf_end, header);
@@ -592,7 +620,10 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
   lwmqtt_err_t err = lwmqtt_read_byte(&buf_ptr, buf_end, &header);
   if (err != LWMQTT_SUCCESS) {
     return err;
-  } else if (lwmqtt_read_bits(header, 0xF0, 4) != LWMQTT_SUBACK_PACKET) {
+  }
+
+  // check packet type
+  if (lwmqtt_read_bits(header, 4, 4) != LWMQTT_SUBACK_PACKET) {
     return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
@@ -669,8 +700,12 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len
 
   // prepare header
   uint8_t header = 0;
-  lwmqtt_write_bits(&header, LWMQTT_UNSUBSCRIBE_PACKET, 0xF0, 4);
-  lwmqtt_write_bits(&header, 1, 0x6, 1);
+
+  // set packet type
+  lwmqtt_write_bits(&header, LWMQTT_UNSUBSCRIBE_PACKET, 4, 4);
+
+  // set qos
+  lwmqtt_write_bits(&header, LWMQTT_QOS1, 1, 2);
 
   // write header
   err = lwmqtt_write_byte(&buf_ptr, buf_end, header);

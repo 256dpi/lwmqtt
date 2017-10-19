@@ -4,24 +4,24 @@
 #include <lwmqtt.h>
 
 /**
- * Reads one ore more bits in a byte.
+ * Reads bits from a byte.
  *
- * @param byte - The byte to read bits from.
- * @param mask - The bits to include in the read.
- * @param shift - The required shift after the read.
+ * @param byte - The byte to read from.
+ * @param pos - The position of the first bit.
+ * @param num - The number of bits to read.
  * @return The read bits as a byte.
  */
-uint8_t lwmqtt_read_bits(uint8_t byte, uint8_t mask, uint8_t shift);
+uint8_t lwmqtt_read_bits(uint8_t byte, uint8_t pos, uint8_t num);
 
 /**
- * Writes on ore more bits in a byte.
+ * Write bits to a byte.
  *
  * @param byte - The byte to write bits to.
- * @param value - The to be written bits as a byte.
- * @param mask - The bits to include in the write.
- * @param shift - The required shift before the write.
+ * @param value - The bits to write as a byte.
+ * @param pos - The position of the first bit.
+ * @param num - The number of bits to write.
  */
-void lwmqtt_write_bits(uint8_t *byte, uint8_t value, uint8_t mask, uint8_t shift);
+void lwmqtt_write_bits(uint8_t *byte, uint8_t value, uint8_t pos, uint8_t num);
 
 /**
  * Reads arbitrary data from the specified buffer. The pointer is incremented by bytes read.
