@@ -30,10 +30,10 @@ void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_
   client->network_write = write;
 }
 
-void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *network_timer, lwmqtt_timer_set_t set,
+void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *command_timer, lwmqtt_timer_set_t set,
                        lwmqtt_timer_get_t get) {
   client->keep_alive_timer = keep_alive_timer;
-  client->command_timer = network_timer;
+  client->command_timer = command_timer;
   client->timer_set = set;
   client->timer_get = get;
 
@@ -253,7 +253,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
       // decode pubrec packet
       bool dup;
       uint16_t packet_id;
-      err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, packet_type, &dup, &packet_id);
+      err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, LWMQTT_PUBREC_PACKET, &dup, &packet_id);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -279,7 +279,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
       // decode pubrec packet
       bool dup;
       uint16_t packet_id;
-      err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, packet_type, &dup, &packet_id);
+      err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, LWMQTT_PUBREL_PACKET, &dup, &packet_id);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -343,7 +343,7 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *client, lwmqtt_packet_ty
 }
 
 lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, uint32_t timeout) {
-  // set timeout
+  // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // cycle until timeout has been reached
@@ -358,7 +358,7 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, uint32_t ti
 
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, uint32_t timeout) {
-  // set timer to command timeout
+  // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // save keep alive interval (take 75% to be a little earlier than actually needed)
@@ -409,7 +409,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
 
 lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, lwmqtt_qos_t *qos,
                               uint32_t timeout) {
-  // set timeout
+  // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // encode subscribe packet
@@ -460,7 +460,7 @@ lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic
 }
 
 lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, uint32_t timeout) {
-  // set timer
+  // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // encode unsubscribe packet
@@ -489,7 +489,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_strin
   // decode unsuback packet
   bool dup;
   uint16_t packet_id;
-  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, &packet_type, &dup, &packet_id);
+  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, LWMQTT_UNSUBACK_PACKET, &dup, &packet_id);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -503,7 +503,7 @@ lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t top
 
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message,
                             uint32_t timeout) {
-  // set timer
+  // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // add packet id if at least qos 1
@@ -550,7 +550,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
 
   // decode ack packet
   bool dup;
-  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, &packet_type, &dup, &packet_id);
+  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, ack_type, &dup, &packet_id);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -559,7 +559,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
 }
 
 lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, uint32_t timeout) {
-  // set timer
+  // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // encode disconnect packet
@@ -579,7 +579,7 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, uint32_t timeout) {
 }
 
 lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout) {
-  // set timer
+  // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // return immediately if keep alive interval is zero
