@@ -2,6 +2,12 @@
 
 #include "helpers.h"
 
+uint8_t lwmqtt_read_bits(uint8_t byte, uint8_t mask, uint8_t shift) { return (byte & mask) >> shift; }
+
+void lwmqtt_write_bits(uint8_t *byte, uint8_t value, uint8_t mask, uint8_t shift) {
+  *byte = (*byte & ~mask) | (value << shift);
+}
+
 lwmqtt_err_t lwmqtt_read_data(uint8_t **buf, const uint8_t *buf_end, uint8_t **data, size_t len) {
   // check zero length
   if (len == 0) {
