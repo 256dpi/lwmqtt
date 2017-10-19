@@ -121,13 +121,13 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   uint8_t flags = 0;
 
   // set clean session
-  lwmqtt_write_bits(&flags, (uint8_t)(options.clean_session ? 1 : 0), 1, 1);
+  lwmqtt_write_bits(&flags, (uint8_t)(options.clean_session), 1, 1);
 
   // set will flags if present
   if (will != NULL) {
     lwmqtt_write_bits(&flags, 1, 2, 1);
     lwmqtt_write_bits(&flags, will->qos, 3, 2);
-    lwmqtt_write_bits(&flags, (uint8_t)(will->retained ? 1 : 0), 5, 1);
+    lwmqtt_write_bits(&flags, (uint8_t)(will->retained), 5, 1);
   }
 
   // set username flag if present
@@ -355,7 +355,7 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
   lwmqtt_write_bits(&header, packet_type, 4, 4);
 
   // set dup
-  lwmqtt_write_bits(&header, (uint8_t)(dup ? 1 : 0), 3, 1);
+  lwmqtt_write_bits(&header, (uint8_t)(dup), 3, 1);
 
   // set qos
   lwmqtt_write_bits(&header, (uint8_t)(packet_type == LWMQTT_PUBREL_PACKET ? LWMQTT_QOS1 : LWMQTT_QOS0), 1, 2);
@@ -498,13 +498,13 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bo
   lwmqtt_write_bits(&header, LWMQTT_PUBLISH_PACKET, 4, 4);
 
   // set dup
-  lwmqtt_write_bits(&header, (uint8_t)(dup ? 1 : 0), 3, 1);
+  lwmqtt_write_bits(&header, (uint8_t)(dup), 3, 1);
 
   // set qos
   lwmqtt_write_bits(&header, msg.qos, 1, 2);
 
   // set retained
-  lwmqtt_write_bits(&header, (uint8_t)(msg.retained ? 1 : 0), 0, 1);
+  lwmqtt_write_bits(&header, (uint8_t)(msg.retained), 0, 1);
 
   // write header
   err = lwmqtt_write_byte(&buf_ptr, buf_end, header);
