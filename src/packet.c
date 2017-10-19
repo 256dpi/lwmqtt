@@ -300,7 +300,7 @@ lwmqtt_err_t lwmqtt_encode_zero(uint8_t *buf, size_t buf_len, size_t *len, lwmqt
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_t *packet_type, bool *dup,
+lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_t packet_type, bool *dup,
                                uint16_t *packet_id) {
   // prepare pointer
   uint8_t *buf_ptr = buf;
@@ -313,8 +313,10 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_
     return err;
   }
 
-  // get packet type
-  *packet_type = (lwmqtt_packet_type_t)lwmqtt_read_bits(header, 4, 4);
+  // check packet type
+  if (lwmqtt_read_bits(header, 4, 4) != packet_type) {
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
+  }
 
   // get dup
   *dup = lwmqtt_read_bits(header, 3, 1) == 1;

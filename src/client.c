@@ -253,7 +253,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
       // decode pubrec packet
       bool dup;
       uint16_t packet_id;
-      err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, packet_type, &dup, &packet_id);
+      err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, LWMQTT_PUBREC_PACKET, &dup, &packet_id);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -279,7 +279,7 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
       // decode pubrec packet
       bool dup;
       uint16_t packet_id;
-      err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, packet_type, &dup, &packet_id);
+      err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, LWMQTT_PUBREL_PACKET, &dup, &packet_id);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
@@ -489,7 +489,7 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_strin
   // decode unsuback packet
   bool dup;
   uint16_t packet_id;
-  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, &packet_type, &dup, &packet_id);
+  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, LWMQTT_UNSUBACK_PACKET, &dup, &packet_id);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -550,7 +550,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
 
   // decode ack packet
   bool dup;
-  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, &packet_type, &dup, &packet_id);
+  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, ack_type, &dup, &packet_id);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }

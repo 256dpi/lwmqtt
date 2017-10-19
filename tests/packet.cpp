@@ -249,13 +249,11 @@ TEST(AckTest, Decode1) {
       7,  // packet ID LSB
   };
 
-  lwmqtt_packet_type_t packet_type;
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
-  EXPECT_EQ(packet_type, LWMQTT_PUBACK_PACKET);
   EXPECT_EQ(dup, false);
   EXPECT_EQ(packet_id, 7);
 }
@@ -268,10 +266,9 @@ TEST(AckTest, DecodeError1) {
       7,  // packet ID LSB
   };
 
-  lwmqtt_packet_type_t packet_type;
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
@@ -284,10 +281,9 @@ TEST(AckTest, DecodeError2) {
           //  <- insufficient bytes
   };
 
-  lwmqtt_packet_type_t packet_type;
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, &packet_type, &dup, &packet_id);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
