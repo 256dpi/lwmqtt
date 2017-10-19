@@ -70,10 +70,8 @@ static lwmqtt_err_t lwmqtt_read_from_network(lwmqtt_client_t *client, size_t off
 
   // read while data is missing
   while (read < len) {
-    // get remaining time
+    // check remaining time
     int32_t remaining_time = client->timer_get(client->command_timer);
-
-    // check timeout
     if (remaining_time <= 0) {
       return LWMQTT_NETWORK_TIMEOUT;
     }
@@ -99,15 +97,13 @@ static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *client, size_t offs
 
   // write while data is left
   while (written < len) {
-    // get remaining time
+    // check remaining time
     int32_t remaining_time = client->timer_get(client->command_timer);
-
-    // check timeout
     if (remaining_time <= 0) {
       return LWMQTT_NETWORK_TIMEOUT;
     }
 
-    // read
+    // write
     size_t partial_write = 0;
     lwmqtt_err_t err = client->network_write(client->network, client->write_buf + offset + written, len - written,
                                              &partial_write, (uint32_t)remaining_time);
