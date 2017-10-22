@@ -40,6 +40,7 @@ set(TEST_FILES
         tests/client.cpp
         tests/helpers.cpp
         tests/packet.cpp
+        tests/string.cpp
         tests/tests.cpp)
 
 add_executable(tests ${TEST_FILES})
