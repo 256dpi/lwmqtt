@@ -13,7 +13,7 @@ static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t 
 }
 
 int main() {
-  lwmqtt_unix_network_t network;
+  lwmqtt_unix_network_t network = {0};
   lwmqtt_unix_timer_t timer1, timer2, timer3;
 
   lwmqtt_client_t client;
