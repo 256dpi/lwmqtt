@@ -437,7 +437,7 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
   }
 
   // check buffer capacity
-  if (buf_end - buf_ptr < rem_len) {
+  if ((uint32_t)(buf_end - buf_ptr) < rem_len) {
     return LWMQTT_BUFFER_TOO_SHORT;
   }
 
