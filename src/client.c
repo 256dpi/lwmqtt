@@ -223,9 +223,9 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
       // define ack packet
       lwmqtt_packet_type_t ack_type = LWMQTT_NO_PACKET;
       if (msg.qos == LWMQTT_QOS1) {
-        ack_type = LWMQTT_PUBREC_PACKET;
+        ack_type = LWMQTT_PUBACK_PACKET;
       } else if (msg.qos == LWMQTT_QOS2) {
-        ack_type = LWMQTT_PUBREL_PACKET;
+        ack_type = LWMQTT_PUBREC_PACKET;
       }
 
       // encode ack packet
