@@ -31,6 +31,10 @@ add_executable(example-sync examples/sync.c)
 target_link_libraries(example-sync lwmqtt)
 
 
+add_executable(example-async examples/async.c)
+
+target_link_libraries(example-async lwmqtt)
+
 set(TEST_FILES
         tests/client.cpp
         tests/helpers.cpp
