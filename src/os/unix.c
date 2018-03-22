@@ -129,7 +129,7 @@ lwmqtt_err_t lwmqtt_unix_network_select(lwmqtt_unix_network_t *network, bool *av
   // wait for data
   struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
   int result = select(1, &set, NULL, NULL, &t);
-  if (result < 1) {
+  if (result < 0) {
     return LWMQTT_NETWORK_FAILED_READ;
   }
 
