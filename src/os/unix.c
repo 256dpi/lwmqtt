@@ -120,6 +120,25 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *av
   return LWMQTT_SUCCESS;
 }
 
+lwmqtt_err_t lwmqtt_unix_network_select(lwmqtt_unix_network_t *network, bool *available, uint32_t timeout) {
+  // prepare set
+  fd_set set;
+  FD_ZERO(&set);
+  FD_SET(network->socket, &set);
+
+  // wait for data
+  struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
+  int result = select(1, &set, NULL, NULL, &t);
+  if (result < 1) {
+    return LWMQTT_NETWORK_FAILED_READ;
+  }
+
+  // set whether data is available
+  *available = FD_ISSET(network->socket, &set) == 1;
+
+  return LWMQTT_SUCCESS;
+}
+
 lwmqtt_err_t lwmqtt_unix_network_read(void *ref, uint8_t *buffer, size_t len, size_t *read, uint32_t timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
