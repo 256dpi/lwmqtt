@@ -364,6 +364,9 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, uint32_t ti
 /**
  * Will yield control to the client to keep the connection alive.
  *
+ * This functions must be called at a rate slightly lower than 25% of the configured keep alive. If keep alive is zero,
+ * the function must not be called at all.
+ *
  * @param client - The client object.
  * @param timeout - The command timeout.
  * @return An error value.
