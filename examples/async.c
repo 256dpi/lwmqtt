@@ -13,6 +13,8 @@ lwmqtt_unix_timer_t timer1, timer2;
 
 lwmqtt_client_t client;
 
+pthread_mutex_t mutex;
+
 static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
   printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload,
          (int)msg.payload_len);
@@ -28,6 +30,9 @@ static void *thread(void *_) {
       printf("failed lwmqtt_unix_network_select: %d\n", err);
       exit(1);
     }
+
+    // lock mutex
+    pthread_mutex_lock(&mutex);
 
     // process incoming data
     if (data) {
@@ -55,6 +60,9 @@ static void *thread(void *_) {
       printf("failed lwmqtt_keep_alive: %d\n", err);
       exit(1);
     }
+
+    // unlock mutex
+    pthread_mutex_unlock(&mutex);
   }
 }
 
@@ -99,9 +107,16 @@ int main() {
     exit(1);
   }
 
+  // initialize mutex
+  int r = pthread_mutex_init(&mutex, NULL);
+  if (r < 0) {
+    printf("failed pthread_mutex_init: %d\n", r);
+    exit(0);
+  }
+
   // run background thread
   pthread_t t;
-  int r = pthread_create(&t, NULL, thread, NULL);
+  r = pthread_create(&t, NULL, thread, NULL);
   if (r < 0) {
     printf("failed pthread_create: %d\n", r);
     exit(1);
@@ -115,11 +130,17 @@ int main() {
     // prepare message
     lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = false, .payload = (uint8_t *)("world"), .payload_len = 5};
 
+    // lock mutex
+    pthread_mutex_lock(&mutex);
+
     // publish message
     err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_publish: %d\n", err);
       exit(1);
     }
+
+    // unlock mutex
+    pthread_mutex_unlock(&mutex);
   }
 }
