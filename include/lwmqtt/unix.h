@@ -8,7 +8,9 @@
 /**
  * The UNIX timer object.
  */
-typedef struct { struct timeval end; } lwmqtt_unix_timer_t;
+typedef struct {
+  struct timeval end;
+} lwmqtt_unix_timer_t;
 
 /**
  * Callback to set the UNIX timer object.
@@ -27,7 +29,9 @@ int32_t lwmqtt_unix_timer_get(void *ref);
 /**
  * The UNIX network object.
  */
-typedef struct { int socket; } lwmqtt_unix_network_t;
+typedef struct {
+  int socket;
+} lwmqtt_unix_network_t;
 
 /**
  * Function to establish a UNIX network connection.
