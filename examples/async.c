@@ -34,23 +34,12 @@ static void *thread(void *_) {
     // lock mutex
     pthread_mutex_lock(&mutex);
 
-    // process incoming data
+    // process incoming data if available
     if (data) {
-      // get available data
-      size_t available = 0;
-      err = lwmqtt_unix_network_peek(&network, &available);
+      err = lwmqtt_yield(&client, 0, COMMAND_TIMEOUT);
       if (err != LWMQTT_SUCCESS) {
-        printf("failed lwmqtt_unix_network_peek: %d\n", err);
+        printf("failed lwmqtt_yield: %d\n", err);
         exit(1);
-      }
-
-      // process data
-      if (available > 0) {
-        err = lwmqtt_yield(&client, available, COMMAND_TIMEOUT);
-        if (err != LWMQTT_SUCCESS) {
-          printf("failed lwmqtt_yield: %d\n", err);
-          exit(1);
-        }
       }
     }
 
