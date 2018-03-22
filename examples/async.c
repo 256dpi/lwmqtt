@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <lwmqtt.h>
 #include <lwmqtt/unix.h>
 
 #define COMMAND_TIMEOUT 5000
