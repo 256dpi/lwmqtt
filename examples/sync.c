@@ -7,17 +7,18 @@
 #define COMMAND_TIMEOUT 5000
 #define MESSAGE_TIMEOUT 1000
 
+lwmqtt_unix_network_t network = {0};
+
+lwmqtt_unix_timer_t timer1, timer2, timer3;
+
+lwmqtt_client_t client;
+
 static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
   printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload,
          (int)msg.payload_len);
 }
 
 int main() {
-  lwmqtt_unix_network_t network = {0};
-  lwmqtt_unix_timer_t timer1, timer2, timer3;
-
-  lwmqtt_client_t client;
-
   lwmqtt_init(&client, malloc(512), 512, malloc(512), 512);
 
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
@@ -49,7 +50,7 @@ int main() {
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), LWMQTT_QOS0, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
-    printf("failed lwmqtt_subscribe: %d (%d)\n", err, return_code);
+    printf("failed lwmqtt_subscribe: %d\n", err);
     exit(1);
   }
 
