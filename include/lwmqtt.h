@@ -7,6 +7,10 @@
 
 /**
  * The error type used by all exposed APIs.
+ *
+ * If a function returns an error that operates on a connected client (e.g publish, keep_alive, etc.) the caller should
+ * switch into a disconnected state, close and cleanup the current connection and start over by creating a new
+ * connection.
  */
 typedef enum {
   LWMQTT_SUCCESS = 0,
