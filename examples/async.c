@@ -23,9 +23,9 @@ static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t 
 static void *thread(void *_) {
   // loop forever
   for (;;) {
-    // block until data is available (2s)
-    bool data = false;
-    lwmqtt_err_t err = lwmqtt_unix_network_select(&network, &data, 2000);
+    // block until data is available
+    bool available = false;
+    lwmqtt_err_t err = lwmqtt_unix_network_select(&network, &available, COMMAND_TIMEOUT);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_unix_network_select: %d\n", err);
       exit(1);
@@ -35,11 +35,23 @@ static void *thread(void *_) {
     pthread_mutex_lock(&mutex);
 
     // process incoming data if available
-    if (data) {
-      err = lwmqtt_yield(&client, 0, COMMAND_TIMEOUT);
+    if (available) {
+      // get available bytes
+      size_t available_bytes = 0;
+      err = lwmqtt_unix_network_peek(&network, &available_bytes);
       if (err != LWMQTT_SUCCESS) {
-        printf("failed lwmqtt_yield: %d\n", err);
+        printf("failed lwmqtt_unix_network_peek: %d\n", err);
         exit(1);
+      }
+
+      // yield client only if there is still data to read since select might unblock because of incoming ack packets
+      // that are already handled until we get to this point
+      if (available_bytes > 0) {
+        err = lwmqtt_yield(&client, available_bytes, COMMAND_TIMEOUT);
+        if (err != LWMQTT_SUCCESS) {
+          printf("failed lwmqtt_yield: %d\n", err);
+          exit(1);
+        }
       }
     }
 
