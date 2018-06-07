@@ -174,6 +174,80 @@ TEST(ConnectTest, Encode2) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
+TEST(ConnectTest, Encode3) {
+  uint8_t pkt[50] = {
+      LWMQTT_CONNECT_PACKET << 4,
+      48,
+      0,  // Protocol String MSB
+      4,  // Protocol String LSB
+      'M',
+      'Q',
+      'T',
+      'T',
+      4,    // Protocol level 4
+      140,  // Connect Flags
+      0,    // Keep Alive MSB
+      10,   // Keep Alive LSB
+      0,    // Client ID MSB
+      7,    // Client ID LSB
+      's',
+      'u',
+      'r',
+      'g',
+      'e',
+      'm',
+      'q',
+      0,  // Will Topic MSB
+      4,  // Will Topic LSB
+      'w',
+      'i',
+      'l',
+      'l',
+      0,   // Will Message MSB
+      12,  // Will Message LSB
+      's',
+      'e',
+      'n',
+      'd',
+      ' ',
+      'm',
+      'e',
+      ' ',
+      'h',
+      'o',
+      'm',
+      'e',
+      0,  // Username ID MSB
+      7,  // Username ID LSB
+      's',
+      'u',
+      'r',
+      'g',
+      'e',
+      'm',
+      'q',
+  };
+
+  uint8_t buf[62];
+
+  lwmqtt_will_t will = lwmqtt_default_will;
+  will.topic = lwmqtt_string("will");
+  will.payload = lwmqtt_string("send me home");
+  will.qos = LWMQTT_QOS1;
+
+  lwmqtt_options_t opts = lwmqtt_default_options;
+  opts.clean_session = false;
+  opts.keep_alive = 10;
+  opts.client_id = lwmqtt_string("surgemq");
+  opts.username = lwmqtt_string("surgemq");
+
+  size_t len;
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 62, &len, opts, &will);
+
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_ARRAY_EQ(pkt, buf, len);
+}
+
 TEST(ConnectTest, EncodeError1) {
   uint8_t buf[4];  // <- too small buffer
 
