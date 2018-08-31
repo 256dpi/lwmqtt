@@ -1,6 +1,6 @@
 {
   "name": "LWMQTT",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "keywords": "mqtt, iot",
   "description": "The Light Weight MQTT library implements a MQTT 3.1.1 client that is optimized to be used in embedded and constraint systems. It can be used with any operating system and network stack and only requires a handful of callbacks for a full integration.",
   "frameworks": "*",
