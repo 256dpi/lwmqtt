@@ -6,4 +6,4 @@ fmt:
 	clang-format -i tests/*.cpp -style="{BasedOnStyle: Google, ColumnLimit: 120}"
 
 gtest:
-	git clone --depth 1 https://github.com/google/googletest.git gtest
+	git clone --branc v1.8.1 --depth 1 https://github.com/google/googletest.git gtest
