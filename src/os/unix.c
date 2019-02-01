@@ -156,6 +156,11 @@ lwmqtt_err_t lwmqtt_unix_network_read(void *ref, uint8_t *buffer, size_t len, si
     return LWMQTT_NETWORK_FAILED_READ;
   }
 
+  // prevent counting down if error is EAGAIN
+  if (bytes < 0) {
+    bytes = 0;
+  }
+
   // increment counter
   *read += bytes;
 
@@ -177,6 +182,11 @@ lwmqtt_err_t lwmqtt_unix_network_write(void *ref, uint8_t *buffer, size_t len, s
   int bytes = (int)send(n->socket, buffer, len, 0);
   if (bytes < 0 && errno != EAGAIN) {
     return LWMQTT_NETWORK_FAILED_WRITE;
+  }
+
+  // prevent counting down if error is EAGAIN
+  if (bytes < 0) {
+    bytes = 0;
   }
 
   // increment counter
