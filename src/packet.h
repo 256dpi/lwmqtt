@@ -53,23 +53,25 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32
  * @param buf - The buffer into which the packet will be encoded.
  * @param buf_len - The length of the specified buffer.
  * @param len - The encoded length of the packet.
+ * @param protocol - The MQTT protocol to use for this connection.
  * @param options - The options to be used to build the connect packet.
  * @param will - The last will and testament.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_options_t options,
-                                   lwmqtt_will_t *will);
+lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
+                                   lwmqtt_options_t options, lwmqtt_will_t *will);
 
 /**
  * Decodes a connack packet from the supplied buffer.
  *
  * @param buf - The raw buffer data.
  * @param buf_len - The length of the specified buffer.
+ * @param protocol - The protocol to parse the decode as.
  * @param session_present - The session present flag.
  * @param return_code - The return code.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_present,
+lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, lwmqtt_protocol_t protocol, bool *session_present,
                                    lwmqtt_return_code_t *return_code);
 
 /**
@@ -121,8 +123,8 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
  * @parma msg - The message.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint16_t *packet_id, lwmqtt_string_t *topic,
-                                   lwmqtt_message_t *msg);
+lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, lwmqtt_protocol_t protocol, bool *dup,
+                                   uint16_t *packet_id, lwmqtt_string_t *topic, lwmqtt_message_t *msg);
 
 /**
  * Encodes a publish packet into the supplied buffer.
@@ -136,8 +138,9 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
  * @param msg - The message.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bool dup, uint16_t packet_id,
-                                   lwmqtt_string_t topic, lwmqtt_message_t msg);
+lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol, bool dup,
+                                   uint16_t packet_id, lwmqtt_string_t topic, lwmqtt_message_t msg,
+                                   lwmqtt_properties_t props);
 
 /**
  * Encodes a subscribe packet into the supplied buffer.
@@ -151,8 +154,9 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bo
  * @param qos_levels - The array of requested QoS levels.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, uint16_t packet_id, int count,
-                                     lwmqtt_string_t *topic_filters, lwmqtt_qos_t *qos_levels);
+lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t prototocol,
+                                     uint16_t packet_id, int count, lwmqtt_string_t *topic_filters,
+                                     lwmqtt_qos_t *qos_levels, lwmqtt_properties_t props);
 
 /**
  * Decodes a suback packet from the supplied buffer.
@@ -165,8 +169,8 @@ lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, 
  * @param granted_qos_levels - The granted QoS levels.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet_id, int max_count, int *count,
-                                  lwmqtt_qos_t *granted_qos_levels);
+lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet_id, lwmqtt_protocol_t protocol,
+                                  int max_count, int *count, lwmqtt_qos_t *granted_qos_levels);
 
 /**
  * Encodes the supplied unsubscribe data into the supplied buffer, ready for sending

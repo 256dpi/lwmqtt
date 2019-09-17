@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+typedef enum { LWMQTT_MQTT311, LWMQTT_MQTT5 } lwmqtt_protocol_t;
+
 /**
  * The error type used by all exposed APIs.
  *
@@ -64,6 +66,59 @@ int lwmqtt_strcmp(lwmqtt_string_t a, const char *b);
  * The available QOS levels.
  */
 typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2, LWMQTT_QOS_FAILURE = 128 } lwmqtt_qos_t;
+
+typedef enum {
+  LWMQTT_PROP_PAYLOAD_FORMAT_INDICATOR = 0x01,
+  LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL = 0x02,
+  LWMQTT_PROP_CONTENT_TYPE = 0x03,
+  LWMQTT_PROP_RESPONSE_TOPIC = 0x08,
+  LWMQTT_PROP_CORRELATION_DATA = 0x09,
+  LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER = 0x0B,
+  LWMQTT_PROP_SESSION_EXPIRY_INTERVAL = 0x11,
+  LWMQTT_PROP_ASSIGNED_CLIENT_IDENTIFIER = 0x12,
+  LWMQTT_PROP_SERVER_KEEP_ALIVE = 0x13,
+  LWMQTT_PROP_AUTHENTICATION_METHOD = 0x15,
+  LWMQTT_PROP_AUTHENTICATION_DATA = 0x16,
+  LWMQTT_PROP_REQUEST_PROBLEM_INFORMATION = 0x17,
+  LWMQTT_PROP_WILL_DELAY_INTERVAL = 0x18,
+  LWMQTT_PROP_REQUEST_RESPONSE_INFORMATION = 0x19,
+  LWMQTT_PROP_RESPONSE_INFORMATION = 0x1A,
+  LWMQTT_PROP_SERVER_REFERENCE = 0x1C,
+  LWMQTT_PROP_REASON_STRING = 0x1F,
+  LWMQTT_PROP_RECEIVE_MAXIMUM = 0x21,
+  LWMQTT_PROP_TOPIC_ALIAS_MAXIMUM = 0x22,
+  LWMQTT_PROP_TOPIC_ALIAS = 0x23,
+  LWMQTT_PROP_MAXIMUM_QOS = 0x24,
+  LWMQTT_PROP_RETAIN_AVAILABLE = 0x25,
+  LWMQTT_PROP_USER_PROPERTY = 0x26,
+  LWMQTT_PROP_MAXIMUM_PACKET_SIZE = 0x27,
+  LWMQTT_PROP_WILDCARD_SUBSCRIPTION_AVAILABLE = 0x28,
+  LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER_AVAILABLE = 0x29,
+  LWMQTT_PROP_SHARED_SUBSCRIPTION_AVAILABLE = 0x2A,
+} lwmqtt_prop_t;
+
+typedef struct {
+  lwmqtt_prop_t prop;
+  union {
+    uint8_t byte;
+    uint32_t int32;
+    uint16_t int16;
+    int varint;
+    lwmqtt_string_t str;
+    struct {
+      lwmqtt_string_t k;
+      lwmqtt_string_t v;
+    } pair;
+  } value;
+} lwmqtt_property_t;
+
+typedef struct {
+  uint16_t len;
+  lwmqtt_property_t *props;
+} lwmqtt_properties_t;
+
+#define lwmqtt_empty_props \
+  { 0, NULL }
 
 /**
  * The message object used to publish and receive messages.
@@ -145,6 +200,8 @@ typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *client, void *ref, lwmqtt_str
  * The client object.
  */
 struct lwmqtt_client_t {
+  lwmqtt_protocol_t protocol;
+
   uint16_t last_packet_id;
   uint32_t keep_alive_interval;
   bool pong_pending;
@@ -179,6 +236,8 @@ struct lwmqtt_client_t {
  */
 void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_size, uint8_t *read_buf,
                  size_t read_buf_size);
+
+void lwmqtt_set_protocol(lwmqtt_client_t *client, lwmqtt_protocol_t prot);
 
 /**
  * Will set the network reference and callbacks for this client object.
@@ -246,13 +305,14 @@ typedef struct {
   bool clean_session;
   lwmqtt_string_t username;
   lwmqtt_string_t password;
+  lwmqtt_properties_t properties;
 } lwmqtt_options_t;
 
 /**
  * The default initializer for the options object.
  */
 #define lwmqtt_default_options \
-  { lwmqtt_default_string, 60, true, lwmqtt_default_string, lwmqtt_default_string }
+  { lwmqtt_default_string, 60, true, lwmqtt_default_string, lwmqtt_default_string, lwmqtt_empty_props }
 
 /**
  * The available return codes transported by the connack packet.
@@ -295,7 +355,8 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t msg, uint32_t timeout);
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t msg,
+                            lwmqtt_properties_t props, uint32_t timeout);
 
 /**
  * Will send a subscribe packet with multiple topic filters plus QOS levels and wait for the suback to complete.

@@ -26,12 +26,13 @@ int main() {
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, NULL, message_arrived);
+  lwmqtt_set_protocol(&client, LWMQTT_MQTT5);
 
   // configure message time
   lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
 
   // connect to broker
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "localhost", 1883);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_unix_network_connect: %d\n", err);
     exit(1);
@@ -91,10 +92,13 @@ int main() {
     // check if message is due
     if (lwmqtt_unix_timer_get(&timer3) <= 0) {
       // prepare message
-      lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = false, .payload = (uint8_t *)("world"), .payload_len = 5};
+      lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = true, .payload = (uint8_t *)("world"), .payload_len = 5};
 
       // publish message
-      err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
+      lwmqtt_property_t uprop = {.prop = LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL, .value = {.int32 = 30}};
+
+      lwmqtt_properties_t props = {1, &uprop};
+      err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, props, COMMAND_TIMEOUT);
       if (err != LWMQTT_SUCCESS) {
         printf("failed lwmqtt_keep_alive: %d\n", err);
         exit(1);

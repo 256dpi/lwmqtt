@@ -135,7 +135,8 @@ int main() {
     pthread_mutex_lock(&mutex);
 
     // publish message
-    err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
+    lwmqtt_properties_t props = lwmqtt_empty_props;
+    err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, props, COMMAND_TIMEOUT);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_publish: %d\n", err);
       exit(1);
