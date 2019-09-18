@@ -82,37 +82,44 @@ captureProps = map e
     e (PropSubscriptionIdentifierAvailable x) = peW8 0x29 x
     e (PropSharedSubscriptionAvailable x)     = peW8 0x2a x
 
-emitByteArrays :: [Prop] -> ([String], [Prop])
-emitByteArrays = go [] [] 0
+-- Emit the given list of properties as C code.
+genProperties :: [MT.Property] -> String
+genProperties props = mconcat [
+  "  ", encodePropList, "\n",
+  "  lwmqtt_properties_t props = {" <> show (length props) <> ", (lwmqtt_property_t*)&proplist};\n"
+  ]
+
   where
-    go :: [String] -> [Prop] -> Int -> [Prop] -> ([String], [Prop])
-    go l p _ []     = (reverse l, reverse p)
-    go l p n ((x@IProp{}):xs) = go l (x:p) n xs
-    go l p n ((SProp i s (_,bs)):xs) = go (newstr n bs:l) (SProp i s (n,bs):p) (n+1) xs
-    go l p n ((UProp i (_,bs1) (_,bs2)):xs) = go (newstr n bs1 : newstr (n+1) bs2 : l) (UProp i (n,bs1) (n+1,bs2):p) (n+2) xs
+    encodePropList = let (hdr, cp) = (emitByteArrays . captureProps) props in
+                       mconcat (map (<>"\n  ") hdr) <> "\n"
+                       <> "  lwmqtt_property_t proplist[] = {\n"
+                       <> mconcat (map (indent.e) cp)
+                       <> "  };\n"
+      where
+        emitByteArrays :: [Prop] -> ([String], [Prop])
+        emitByteArrays = go [] [] 0
+          where
+            go :: [String] -> [Prop] -> Int -> [Prop] -> ([String], [Prop])
+            go l p _ []     = (reverse l, reverse p)
+            go l p n ((x@IProp{}):xs) = go l (x:p) n xs
+            go l p n ((SProp i s (_,bs)):xs) = go (newstr n bs:l) (SProp i s (n,bs):p) (n+1) xs
+            go l p n ((UProp i (_,bs1) (_,bs2)):xs) = go (newstr n bs1 : newstr (n+1) bs2 : l) (UProp i (n,bs1) (n+1,bs2):p) (n+2) xs
 
-    newstr n s = "uint8_t bytes" <> show n <> "[] = {" <> hexa s <> "};"
+            newstr n s = "uint8_t bytes" <> show n <> "[] = {" <> hexa s <> "};"
 
-encodePropList :: [MT.Property] -> String
-encodePropList props = let (hdr, cp) = (emitByteArrays . captureProps) props in
-                         mconcat (map (<>"\n  ") hdr) <> "\n"
-                         <> "  lwmqtt_property_t proplist[] = {\n"
-                         <> mconcat (map (indent.e) cp)
-                         <> "  };\n"
-  where
-    e :: Prop -> String
-    e (IProp i n v) = prop i n (show v)
-    e (SProp i n (x,xv)) = prop i n (b x xv)
-    e (UProp i (k,kv) (v,vv)) = prop i "pair" ("{.k=" <> b k kv <> ", .v=" <> b v vv <> "}")
+        e :: Prop -> String
+        e (IProp i n v) = prop i n (show v)
+        e (SProp i n (x,xv)) = prop i n (b x xv)
+        e (UProp i (k,kv) (v,vv)) = prop i "pair" ("{.k=" <> b k kv <> ", .v=" <> b v vv <> "}")
 
-    prop i n v = "{.prop = (lwmqtt_prop_t)" <> show i <> ", .value = {." <> n <> " = " <> v <> "}},\n"
+        prop i n v = "{.prop = (lwmqtt_prop_t)" <> show i <> ", .value = {." <> n <> " = " <> v <> "}},\n"
 
-    indent = ("    " <>)
+        indent = ("    " <>)
 
-    b x xv = "{" <> show (BL.length xv) <> ", (char*)&bytes" <> show x <> "}"
+        b x xv = "{" <> show (BL.length xv) <> ", (char*)&bytes" <> show x <> "}"
 
-    p :: [BL.ByteString] -> [String]
-    p = map (map (toEnum . fromEnum) . BL.unpack)
+        p :: [BL.ByteString] -> [String]
+        p = map (map (toEnum . fromEnum) . BL.unpack)
 
 genPublishTest :: ProtocolLevel -> Int -> PublishRequest -> IO ()
 genPublishTest prot i p@PublishRequest{..} = do
@@ -133,8 +140,7 @@ genPublishTest prot i p@PublishRequest{..} = do
     "  uint8_t msg_bytes[] = {" <> hexa _pubBody <> "};\n",
     "  msg.payload = (unsigned char*)&msg_bytes;\n",
     "  msg.payload_len = " <> show (BL.length _pubBody) <> ";\n\n",
-    "  ", encodePropList _pubProps, "\n",
-    "  lwmqtt_properties_t props = {" <> show (length _pubProps) <> ", (lwmqtt_property_t*)&proplist};\n",
+    genProperties _pubProps,
     "  size_t len = 0;\n",
     "  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, " <> protlvl prot <> ", ",
     bool _pubDup, ", ", show _pubPktID,  ", topic, msg, props);\n\n",
