@@ -40,8 +40,16 @@ shortprot Protocol50  = "5"
 v311PubReq :: PublishRequest -> PublishRequest
 v311PubReq p50 = let (PublishPkt p) = v311mask (PublishPkt p50) in p
 
+v311SubReq :: SubscribeRequest -> SubscribeRequest
+v311SubReq p50 = let (SubscribePkt p) = v311mask (SubscribePkt p50) in p
+
 v311ConnReq :: ConnectRequest -> ConnectRequest
 v311ConnReq p50 = let (ConnPkt p) = v311mask (ConnPkt p50) in p
+
+-- Not currently supporting most of the options.
+simplifySubOptions :: SubscribeRequest -> SubscribeRequest
+simplifySubOptions (SubscribeRequest w subs props) = SubscribeRequest w ssubs props
+  where ssubs = map (\(x,o@SubOptions{..}) -> (x,subOptions{_subQoS=_subQoS})) subs
 
 userFix :: ConnectRequest -> ConnectRequest
 userFix = ufix . pfix
@@ -168,6 +176,42 @@ genPublishTest prot i p@PublishRequest{..} = do
     ]
   putStrLn "}\n"
 
+genSubTest :: ProtocolLevel -> Int -> SubscribeRequest -> IO ()
+genSubTest prot i p@(SubscribeRequest pid subs props) = do
+  let e = toByteString prot p
+
+  putStrLn $ "// " <> show p
+  putStrLn $ "TEST(Subscribe" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {"
+  putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
+
+  putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
+
+  putStrLn . mconcat $ [
+    encodeFilters,
+    encodeQos,
+    genProperties "props" props,
+    "  size_t len = 0;\n",
+    "  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, sizeof(buf), &len, ", protlvl prot, ", ",
+    show pid, ", ", show (length subs),  ", topic_filters, qos_levels, props);\n\n",
+    "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+    "  EXPECT_ARRAY_EQ(pkt, buf, len);"
+    ]
+  putStrLn "}\n"
+
+  where
+    encodeFilters = "lwmqtt_string_t topic_filters[" <> show (length subs) <> "];\n" <>
+                    (concatMap aSub $ zip [0..] subs)
+      where
+        aSub :: (Int, (BL.ByteString, SubOptions)) -> String
+        aSub (i, (s,_)) = mconcat [
+          encodeString ("topic_filter_s" <> show i) s,
+          "topic_filters[", show i, "] = topic_filter_s", show i, ";\n"
+          ]
+
+    encodeQos = "lwmqtt_qos_t qos_levels[] = {" <> intercalate ", " (map aQ $ zip [0..] subs) <> "};\n"
+      where
+        aQ (i, (_,SubOptions{..})) = qos _subQoS
+
 genConnectTest :: ProtocolLevel -> Int -> ConnectRequest -> IO ()
 genConnectTest prot i p@ConnectRequest{..} = do
   let e = toByteString prot p
@@ -246,10 +290,16 @@ extern "C" {
     }                                                                     \
   }
 |]
-  pubs <- replicateM 100 $ generate arbitrary
+  let numTests = 10
+
+  pubs <- replicateM numTests $ generate arbitrary
   mapM_ (uncurry $ genPublishTest Protocol311) $ zip [1..] (v311PubReq <$> pubs)
   mapM_ (uncurry $ genPublishTest Protocol50) $ zip [1..] pubs
 
-  conns <- replicateM 100 $ generate arbitrary
+  conns <- replicateM numTests $ generate arbitrary
   mapM_ (uncurry $ genConnectTest Protocol311) $ zip [1..] (userFix . v311ConnReq <$> conns)
   mapM_ (uncurry $ genConnectTest Protocol50) $ zip [1..] (userFix <$> conns)
+
+  subs <- replicateM 100 $ generate arbitrary
+  mapM_ (uncurry $ genSubTest Protocol311) $ zip [1..] (v311SubReq <$> subs)
+  mapM_ (uncurry $ genSubTest Protocol50) $ zip [1..] (simplifySubOptions <$> subs)
