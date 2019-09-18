@@ -102,12 +102,11 @@ static size_t proplen(lwmqtt_property_t prop) {
     case LWMQTT_PROP_RESPONSE_INFORMATION:
     case LWMQTT_PROP_SERVER_REFERENCE:
     case LWMQTT_PROP_REASON_STRING:
-      return 1 + str_wire_len(prop.value.str);
 
+    // Arbitrary blobs are the same encoding.
     case LWMQTT_PROP_CORRELATION_DATA:
     case LWMQTT_PROP_AUTHENTICATION_DATA:
-      // TODO: Binary data
-      return LWMQTT_MISSING_OR_WRONG_PACKET;
+      return 1 + str_wire_len(prop.value.str);
 
     case LWMQTT_PROP_USER_PROPERTY:
       return 1 + 2 + prop.value.pair.k.len + 2 + prop.value.pair.v.len;
@@ -159,13 +158,11 @@ static lwmqtt_err_t write_prop(uint8_t **buf, const uint8_t *buf_end, lwmqtt_pro
     case LWMQTT_PROP_RESPONSE_INFORMATION:
     case LWMQTT_PROP_SERVER_REFERENCE:
     case LWMQTT_PROP_REASON_STRING:
-      lwmqtt_write_string(buf, buf_end, prop.value.str);
-      break;
 
+    // Arbitrary blobs as the same encoding.
     case LWMQTT_PROP_CORRELATION_DATA:
     case LWMQTT_PROP_AUTHENTICATION_DATA:
-      // TODO: Binary data
-      return LWMQTT_MISSING_OR_WRONG_PACKET;
+      return lwmqtt_write_string(buf, buf_end, prop.value.str);
 
     case LWMQTT_PROP_USER_PROPERTY:
       lwmqtt_write_string(buf, buf_end, prop.value.pair.k);
