@@ -229,6 +229,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   // add will if present to remaining length
   if (will != NULL) {
     rem_len += will->topic.len + 2 + will->payload.len + 2;
+    rem_len += propslen(protocol, will->properties);
   }
 
   // add username if present to remaining length
@@ -311,6 +312,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
     return err;
   }
 
+  // write connection properties
   err = lwmqtt_write_props(&buf_ptr, buf_end, protocol, options.properties);
   if (err != LWMQTT_SUCCESS) {
     return err;
@@ -324,6 +326,11 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
 
   // write will if present
   if (will != NULL) {
+    err = lwmqtt_write_props(&buf_ptr, buf_end, protocol, will->properties);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+
     // write topic
     err = lwmqtt_write_string(&buf_ptr, buf_end, will->topic);
     if (err != LWMQTT_SUCCESS) {

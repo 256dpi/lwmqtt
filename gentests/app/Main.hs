@@ -8,6 +8,7 @@ import           Control.Monad          (replicateM)
 import qualified Data.ByteString.Char8  as BC
 import qualified Data.ByteString.Lazy   as BL
 import           Data.List              (intercalate)
+import           Data.Maybe             (isJust)
 import           Network.MQTT.Arbitrary
 import           Network.MQTT.Types     as MT
 import           Numeric                (showHex)
@@ -38,6 +39,19 @@ shortprot Protocol50  = "5"
 
 v311PubReq :: PublishRequest -> PublishRequest
 v311PubReq p50 = let (PublishPkt p) = v311mask (PublishPkt p50) in p
+
+v311ConnReq :: ConnectRequest -> ConnectRequest
+v311ConnReq p50 = let (ConnPkt p) = v311mask (ConnPkt p50) in p
+
+userFix :: ConnectRequest -> ConnectRequest
+userFix = ufix . pfix
+  where
+    ufix p@ConnectRequest{..}
+      | _username == (Just "") = p{_username=Nothing}
+      | otherwise = p
+    pfix p@ConnectRequest{..}
+      | _password == (Just "") = p{_password=Nothing}
+      | otherwise = p
 
 data Prop = IProp Int String Int
           | SProp Int String (Int,BL.ByteString)
@@ -83,16 +97,16 @@ captureProps = map e
     e (PropSharedSubscriptionAvailable x)     = peW8 0x2a x
 
 -- Emit the given list of properties as C code.
-genProperties :: [MT.Property] -> String
-genProperties props = mconcat [
+genProperties :: String -> [MT.Property] -> String
+genProperties name props = mconcat [
   "  ", encodePropList, "\n",
-  "  lwmqtt_properties_t props = {" <> show (length props) <> ", (lwmqtt_property_t*)&proplist};\n"
+  "  lwmqtt_properties_t ", name, " = {" <> show (length props) <> ", (lwmqtt_property_t*)&", name, "list};\n"
   ]
 
   where
     encodePropList = let (hdr, cp) = (emitByteArrays . captureProps) props in
                        mconcat (map (<>"\n  ") hdr) <> "\n"
-                       <> "  lwmqtt_property_t proplist[] = {\n"
+                       <> "  lwmqtt_property_t " <> name <> "list[] = {\n"
                        <> mconcat (map (indent.e) cp)
                        <> "  };\n"
       where
@@ -105,7 +119,7 @@ genProperties props = mconcat [
             go l p n ((SProp i s (_,bs)):xs) = go (newstr n bs:l) (SProp i s (n,bs):p) (n+1) xs
             go l p n ((UProp i (_,bs1) (_,bs2)):xs) = go (newstr n bs1 : newstr (n+1) bs2 : l) (UProp i (n,bs1) (n+1,bs2):p) (n+2) xs
 
-            newstr n s = "uint8_t bytes" <> show n <> "[] = {" <> hexa s <> "};"
+            newstr n s = "uint8_t bytes" <> name <> show n <> "[] = {" <> hexa s <> "};"
 
         e :: Prop -> String
         e (IProp i n v) = prop i n (show v)
@@ -116,10 +130,16 @@ genProperties props = mconcat [
 
         indent = ("    " <>)
 
-        b x xv = "{" <> show (BL.length xv) <> ", (char*)&bytes" <> show x <> "}"
+        b x xv = "{" <> show (BL.length xv) <> ", (char*)&bytes" <> name <> show x <> "}"
 
         p :: [BL.ByteString] -> [String]
         p = map (map (toEnum . fromEnum) . BL.unpack)
+
+encodeString :: String -> BL.ByteString -> String
+encodeString name bytes = mconcat [
+  "  uint8_t " <> name <> "_bytes[] = {" <> hexa bytes <> "};\n",
+  "  lwmqtt_string_t " <> name <> " = {" <> show (BL.length bytes) <> ", (char*)&" <> name <> "_bytes};\n"
+  ]
 
 genPublishTest :: ProtocolLevel -> Int -> PublishRequest -> IO ()
 genPublishTest prot i p@PublishRequest{..} = do
@@ -132,15 +152,14 @@ genPublishTest prot i p@PublishRequest{..} = do
   putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
 
   putStrLn . mconcat $ [
-    "  uint8_t topic_bytes[] = {" <> hexa _pubTopic <> "};\n",
-    "  lwmqtt_string_t topic = { " <> show (BL.length _pubTopic) <> ", (char*)&topic_bytes};\n",
+    encodeString "topic" _pubTopic,
     "  lwmqtt_message_t msg = lwmqtt_default_message;\n",
     "  msg.qos = " <> qos _pubQoS <> ";\n",
     "  msg.retained = " <> bool _pubRetain <> ";\n",
     "  uint8_t msg_bytes[] = {" <> hexa _pubBody <> "};\n",
     "  msg.payload = (unsigned char*)&msg_bytes;\n",
     "  msg.payload_len = " <> show (BL.length _pubBody) <> ";\n\n",
-    genProperties _pubProps,
+    genProperties "props" _pubProps,
     "  size_t len = 0;\n",
     "  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, " <> protlvl prot <> ", ",
     bool _pubDup, ", ", show _pubPktID,  ", topic, msg, props);\n\n",
@@ -148,6 +167,59 @@ genPublishTest prot i p@PublishRequest{..} = do
     "  EXPECT_ARRAY_EQ(pkt, buf, len);"
     ]
   putStrLn "}\n"
+
+genConnectTest :: ProtocolLevel -> Int -> ConnectRequest -> IO ()
+genConnectTest prot i p@ConnectRequest{..} = do
+  let e = toByteString prot p
+
+  putStrLn $ "// " <> show p
+  putStrLn $ "TEST(Connect" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {"
+  putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
+
+  putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
+
+  putStrLn . mconcat $ [
+    genProperties "props" _properties,
+    encodeWill _lastWill,
+    encodeOptions,
+    "size_t len = 0;\n",
+    "lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(buf), &len, " <> protlvl prot <> ", opts, ",
+    if isJust _lastWill then "&will" else "NULL", ");\n\n",
+    "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+    "EXPECT_ARRAY_EQ(pkt, buf, len);"
+    ]
+  putStrLn "}\n"
+
+  where
+    encodeWill Nothing = ""
+    encodeWill (Just LastWill{..}) = mconcat [
+      "lwmqtt_will_t will = lwmqtt_default_will;\n",
+      genProperties "willprops" _willProps,
+      encodeString "will_topic" _willTopic,
+      encodeString "will_payload" _willMsg,
+      "will.topic = will_topic;\n",
+      "will.payload   = will_payload;\n",
+      "will.qos = " <> qos _willQoS <> ";\n",
+      "will.retained = " <> bool _willRetain <> ";\n",
+      "will.properties = willprops;\n"
+      ]
+
+    encodeOptions = mconcat [
+      "lwmqtt_options_t opts = lwmqtt_default_options;\n",
+      "opts.properties = props;\n",
+      "opts.clean_session = " <> bool _cleanSession <> ";\n",
+      "opts.keep_alive = " <> show _keepAlive <> ";\n",
+      encodeString "client_id" _connID,
+      "opts.client_id = client_id;\n",
+      maybeString "username" _username,
+      maybeString "password" _password
+      ]
+
+      where maybeString _ Nothing = ""
+            maybeString n (Just b) = mconcat [
+              encodeString n b,
+              "opts.", n, " = ", n, ";\n"
+              ]
 
 main :: IO ()
 main = do
@@ -174,6 +246,10 @@ extern "C" {
     }                                                                     \
   }
 |]
-  x <- replicateM 100 $ generate arbitrary
-  mapM_ (\(i,p) -> genPublishTest Protocol311 i (v311PubReq p)) $ zip [1..] x
-  mapM_ (uncurry $ genPublishTest Protocol50) $ zip [1..] x
+  pubs <- replicateM 100 $ generate arbitrary
+  mapM_ (uncurry $ genPublishTest Protocol311) $ zip [1..] (v311PubReq <$> pubs)
+  mapM_ (uncurry $ genPublishTest Protocol50) $ zip [1..] pubs
+
+  conns <- replicateM 100 $ generate arbitrary
+  mapM_ (uncurry $ genConnectTest Protocol311) $ zip [1..] (userFix . v311ConnReq <$> conns)
+  mapM_ (uncurry $ genConnectTest Protocol50) $ zip [1..] (userFix <$> conns)

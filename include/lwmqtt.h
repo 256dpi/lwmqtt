@@ -288,13 +288,14 @@ typedef struct {
   lwmqtt_qos_t qos;
   bool retained;
   lwmqtt_string_t payload;
+  lwmqtt_properties_t properties;
 } lwmqtt_will_t;
 
 /**
  * The default initializer for the will object.
  */
 #define lwmqtt_default_will \
-  { lwmqtt_default_string, LWMQTT_QOS0, false, lwmqtt_default_string }
+  { lwmqtt_default_string, LWMQTT_QOS0, false, lwmqtt_default_string, lwmqtt_empty_props }
 
 /**
  * The object containing the connection options for a client.
