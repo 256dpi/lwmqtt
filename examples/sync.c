@@ -95,9 +95,14 @@ int main() {
       lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = true, .payload = (uint8_t *)("world"), .payload_len = 5};
 
       // publish message
-      lwmqtt_property_t uprop = {.prop = LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL, .value = {.int32 = 30}};
+      lwmqtt_property_t proplist[] = {
+                                   {.prop = LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL, .value = {.int32 = 30}},
+                                   {.prop = LWMQTT_PROP_USER_PROPERTY,
+                                    .value = {.pair = { .k = lwmqtt_string("hello from"),
+                                                        .v=lwmqtt_string("lwmqtt")}}},
+      };
 
-      lwmqtt_properties_t props = {1, &uprop};
+      lwmqtt_properties_t props = {2, (lwmqtt_property_t*)&proplist};
       err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, props, COMMAND_TIMEOUT);
       if (err != LWMQTT_SUCCESS) {
         printf("failed lwmqtt_keep_alive: %d\n", err);
