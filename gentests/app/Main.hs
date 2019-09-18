@@ -153,28 +153,59 @@ genPublishTest :: ProtocolLevel -> Int -> PublishRequest -> IO ()
 genPublishTest prot i p@PublishRequest{..} = do
   let e = toByteString prot p
 
-  putStrLn $ "// " <> show p
-  putStrLn $ "TEST(Publish" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {"
-  putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
+  encTest e
+  decTest e
 
-  putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
+  where
+    encTest e = do
+      putStrLn $ "// " <> show p
+      putStrLn $ "TEST(Publish" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {"
+      putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
 
-  putStrLn . mconcat $ [
-    encodeString "topic" _pubTopic,
-    "  lwmqtt_message_t msg = lwmqtt_default_message;\n",
-    "  msg.qos = " <> qos _pubQoS <> ";\n",
-    "  msg.retained = " <> bool _pubRetain <> ";\n",
-    "  uint8_t msg_bytes[] = {" <> hexa _pubBody <> "};\n",
-    "  msg.payload = (unsigned char*)&msg_bytes;\n",
-    "  msg.payload_len = " <> show (BL.length _pubBody) <> ";\n\n",
-    genProperties "props" _pubProps,
-    "  size_t len = 0;\n",
-    "  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, " <> protlvl prot <> ", ",
-    bool _pubDup, ", ", show _pubPktID,  ", topic, msg, props);\n\n",
-    "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
-    "  EXPECT_ARRAY_EQ(pkt, buf, len);"
-    ]
-  putStrLn "}\n"
+      putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
+
+      putStrLn . mconcat $ [
+        encodeString "topic" _pubTopic,
+        "  lwmqtt_message_t msg = lwmqtt_default_message;\n",
+        "  msg.qos = " <> qos _pubQoS <> ";\n",
+        "  msg.retained = " <> bool _pubRetain <> ";\n",
+        "  uint8_t msg_bytes[] = {" <> hexa _pubBody <> "};\n",
+        "  msg.payload = (unsigned char*)&msg_bytes;\n",
+        "  msg.payload_len = " <> show (BL.length _pubBody) <> ";\n\n",
+        genProperties "props" _pubProps,
+        "  size_t len = 0;\n",
+        "  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, " <> protlvl prot <> ", ",
+        bool _pubDup, ", ", show _pubPktID,  ", topic, msg, props);\n\n",
+        "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+        "  EXPECT_ARRAY_EQ(pkt, buf, len);",
+        "}\n"
+        ]
+
+    decTest e = do
+      putStrLn . mconcat $ [
+        "// ", show p, "\n",
+        "TEST(Publish" <> shortprot prot <> "QCTest, Decode" <> show i <> ") {\n",
+        "uint8_t pkt[] = {" <> hexa e <> "};\n",
+        "bool dup;\n",
+        "uint16_t packet_id;\n",
+        "lwmqtt_string_t topic;\n",
+        "lwmqtt_message_t msg;\n",
+        "lwmqtt_err_t err = lwmqtt_decode_publish(pkt, sizeof(pkt), ", protlvl prot, ", &dup, &packet_id, &topic, &msg);\n",
+        "\n",
+        "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+        encodeString "exp_topic" _pubTopic,
+        encodeString "exp_body" _pubBody,
+        "EXPECT_EQ(dup, ", bool _pubDup, ");\n",
+        "EXPECT_EQ(msg.qos, ", qos _pubQoS, ");\n",
+        "EXPECT_EQ(msg.retained, ", bool _pubRetain, ");\n",
+        "EXPECT_EQ(packet_id, ", show _pubPktID, ");\n",
+        "EXPECT_ARRAY_EQ(exp_topic_bytes, reinterpret_cast<uint8_t*>(topic.data), ", show (BL.length _pubTopic), ");\n",
+        "EXPECT_EQ(msg.payload_len, ", show (BL.length _pubBody), ");\n",
+        "EXPECT_ARRAY_EQ(exp_body_bytes, msg.payload, ", show (BL.length _pubBody), ");\n",
+        "lwmqtt_string_t x = exp_topic;\nx = exp_body;\n",
+        "}\n"
+        ]
+
 
 genSubTest :: ProtocolLevel -> Int -> SubscribeRequest -> IO ()
 genSubTest prot i p@(SubscribeRequest pid subs props) = do
@@ -300,6 +331,6 @@ extern "C" {
   mapM_ (uncurry $ genConnectTest Protocol311) $ zip [1..] (userFix . v311ConnReq <$> conns)
   mapM_ (uncurry $ genConnectTest Protocol50) $ zip [1..] (userFix <$> conns)
 
-  subs <- replicateM 100 $ generate arbitrary
+  subs <- replicateM numTests $ generate arbitrary
   mapM_ (uncurry $ genSubTest Protocol311) $ zip [1..] (v311SubReq <$> subs)
   mapM_ (uncurry $ genSubTest Protocol50) $ zip [1..] (simplifySubOptions <$> subs)
