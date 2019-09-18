@@ -270,7 +270,7 @@ TEST(ConnackTest, Decode1) {
 
   bool session_present;
   lwmqtt_return_code_t return_code;
-  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 4, LWMQTT_MQTT311,  &session_present, &return_code);
+  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 4, LWMQTT_MQTT311, &session_present, &return_code);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(session_present, false);
@@ -683,7 +683,8 @@ TEST(SubscribeTest, Encode1) {
   lwmqtt_qos_t qos_levels[3] = {LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2};
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 38, &len, LWMQTT_MQTT311, 7, 3, topic_filters, qos_levels, empty_props);
+  lwmqtt_err_t err =
+      lwmqtt_encode_subscribe(buf, 38, &len, LWMQTT_MQTT311, 7, 3, topic_filters, qos_levels, empty_props);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -698,7 +699,8 @@ TEST(SubscribeTest, EncodeError1) {
   lwmqtt_qos_t qos_levels[1] = {LWMQTT_QOS0};
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 2, &len, LWMQTT_MQTT311, 7, 1, topic_filters, qos_levels, empty_props);
+  lwmqtt_err_t err =
+      lwmqtt_encode_subscribe(buf, 2, &len, LWMQTT_MQTT311, 7, 1, topic_filters, qos_levels, empty_props);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
