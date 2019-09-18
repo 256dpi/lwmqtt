@@ -55,12 +55,6 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32
   return LWMQTT_SUCCESS;
 }
 
-static size_t str_wire_len(lwmqtt_string_t str) {
-  int ll = 0;
-  lwmqtt_varnum_length(str.len, &ll);
-  return ll + str.len;
-}
-
 static size_t proplen(lwmqtt_property_t prop) {
   int ll;
   switch (prop.prop) {
@@ -106,7 +100,7 @@ static size_t proplen(lwmqtt_property_t prop) {
     // Arbitrary blobs are the same encoding.
     case LWMQTT_PROP_CORRELATION_DATA:
     case LWMQTT_PROP_AUTHENTICATION_DATA:
-      return 1 + str_wire_len(prop.value.str);
+      return 3 + prop.value.str.len;
 
     case LWMQTT_PROP_USER_PROPERTY:
       return 1 + 2 + prop.value.pair.k.len + 2 + prop.value.pair.v.len;

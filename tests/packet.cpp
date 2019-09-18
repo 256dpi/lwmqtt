@@ -5,7 +5,7 @@ extern "C" {
 #include "../src/packet.h"
 }
 
-lwmqtt_properties_t empty_props = lwmqtt_empty_props;
+static lwmqtt_properties_t empty_props = lwmqtt_empty_props;
 
 #define EXPECT_ARRAY_EQ(reference, actual, element_count)                 \
   {                                                                       \
