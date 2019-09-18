@@ -28,35 +28,16 @@ qos QoS0 = "LWMQTT_QOS0"
 qos QoS1 = "LWMQTT_QOS1"
 qos QoS2 = "LWMQTT_QOS2"
 
+protlvl :: ProtocolLevel -> String
+protlvl Protocol311 = "LWMQTT_MQTT311"
+protlvl Protocol50  = "LWMQTT_MQTT5"
+
+shortprot :: ProtocolLevel -> String
+shortprot Protocol311 = "311"
+shortprot Protocol50  = "5"
+
 v311PubReq :: PublishRequest -> PublishRequest
 v311PubReq p50 = let (PublishPkt p) = v311mask (PublishPkt p50) in p
-
-genPublish311Test :: Int -> PublishRequest -> IO ()
-genPublish311Test i p@PublishRequest{..} = do
-  let e = toByteString Protocol311 p
-
-  putStrLn $ "// " <> show p
-  putStrLn $ "TEST(Publish311QCTest, Encode" <> show i <> ") {"
-  putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
-
-  putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
-
-  putStrLn . mconcat $ [
-    "  uint8_t topic_bytes[] = {" <> hexa _pubTopic <> "};\n",
-    "  lwmqtt_string_t topic = { " <> show (BL.length _pubTopic) <> ", (char*)&topic_bytes};\n",
-    "  lwmqtt_message_t msg = lwmqtt_default_message;\n",
-    "  msg.qos = " <> qos _pubQoS <> ";\n",
-    "  msg.retained = " <> bool _pubRetain <> ";\n",
-    "  uint8_t msg_bytes[] = {" <> hexa _pubBody <> "};\n",
-    "  msg.payload = (unsigned char*)&msg_bytes;\n",
-    "  msg.payload_len = " <> show (BL.length _pubBody) <> ";\n\n",
-    "  size_t len = 0;\n",
-    "  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, LWMQTT_MQTT311, ",
-    bool _pubDup, ", ", show _pubPktID,  ", topic, msg, empty_props);\n\n",
-    "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
-    "  EXPECT_ARRAY_EQ(pkt, buf, len);"
-    ]
-  putStrLn "}\n"
 
 data Prop = IProp Int String Int
           | SProp Int String (Int,BL.ByteString)
@@ -133,12 +114,12 @@ encodePropList props = let (hdr, cp) = (emitByteArrays . captureProps) props in
     p :: [BL.ByteString] -> [String]
     p = map (map (toEnum . fromEnum) . BL.unpack)
 
-genPublish50Test :: Int -> PublishRequest -> IO ()
-genPublish50Test i p@PublishRequest{..} = do
-  let e = toByteString Protocol50 p
+genPublishTest :: ProtocolLevel -> Int -> PublishRequest -> IO ()
+genPublishTest prot i p@PublishRequest{..} = do
+  let e = toByteString prot p
 
   putStrLn $ "// " <> show p
-  putStrLn $ "TEST(Publish50QCTest, Encode" <> show i <> ") {"
+  putStrLn $ "TEST(Publish" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {"
   putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
 
   putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
@@ -155,13 +136,12 @@ genPublish50Test i p@PublishRequest{..} = do
     "  ", encodePropList _pubProps, "\n",
     "  lwmqtt_properties_t props = {" <> show (length _pubProps) <> ", (lwmqtt_property_t*)&proplist};\n",
     "  size_t len = 0;\n",
-    "  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, LWMQTT_MQTT5, ",
+    "  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, " <> protlvl prot <> ", ",
     bool _pubDup, ", ", show _pubPktID,  ", topic, msg, props);\n\n",
     "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
     "  EXPECT_ARRAY_EQ(pkt, buf, len);"
     ]
   putStrLn "}\n"
-
 
 main :: IO ()
 main = do
@@ -181,8 +161,6 @@ extern "C" {
 #endif
 #endif
 
-static lwmqtt_properties_t empty_props = lwmqtt_empty_props;
-
 #define EXPECT_ARRAY_EQ(reference, actual, element_count)                 \
   {                                                                       \
     for (size_t cmp_i = 0; cmp_i < element_count; cmp_i++) {              \
@@ -191,14 +169,5 @@ static lwmqtt_properties_t empty_props = lwmqtt_empty_props;
   }
 |]
   x <- replicateM 100 $ generate arbitrary
-  mapM_ (\(i,p) -> genPublish311Test i (v311PubReq p)) $ zip [1..] x
-  mapM_ (uncurry genPublish50Test) $ zip [1..] x
-  genPublish50Test 0 (PublishRequest{
-                       _pubTopic = "surgemq",
-                       _pubBody = "send me home",
-                       _pubRetain = True,
-                       _pubQoS = QoS1,
-                       _pubDup = False,
-                       _pubPktID = 0,
-                       _pubProps = [PropMessageExpiryInterval 33,
-                                    PropReasonString "a reason"]})
+  mapM_ (\(i,p) -> genPublishTest Protocol311 i (v311PubReq p)) $ zip [1..] x
+  mapM_ (uncurry $ genPublishTest Protocol50) $ zip [1..] x
