@@ -146,17 +146,24 @@ encodeString name bytes = mconcat [
   "  lwmqtt_string_t " <> name <> " = {" <> show (BL.length bytes) <> ", (char*)&" <> name <> "_bytes};\n"
   ]
 
-genPublishTest :: ProtocolLevel -> Int -> PublishRequest -> IO ()
+genTestFunc :: (Show a, ByteMe a) => String -> String -> ProtocolLevel -> Int -> a -> String -> String
+genTestFunc tset tname prot i p body = let e = toByteString prot p in
+                                         mconcat [
+  "// ", show p, "\n",
+  "TEST(", tset, shortprot prot, "QCTest, ", tname, show i <> ") {\n",
+  "uint8_t pkt[] = {" <> hexa e <> "};\n",
+  body, "\n",
+  "}\n\n"
+  ]
+
+genPublishTest :: ProtocolLevel -> Int -> PublishRequest -> String
 genPublishTest prot i p@PublishRequest{..} =
-  mapM_ (putStrLn . ($toByteString prot p)) [encTest, decTest]
+  mconcat [encTest, decTest]
 
   where
-    encTest e = mconcat  [
-      "// ", show p, "\n",
-      "TEST(Publish" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {\n",
-      "uint8_t pkt[] = {" <> hexa e <> "};\n",
-      "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n",
+    encTest = genTestFunc "Publish" "Encode" prot i p $ mconcat [
       encodeString "topic" _pubTopic,
+      "\n  uint8_t buf[sizeof(pkt)+10] = { 0 };\n",
       "lwmqtt_message_t msg = lwmqtt_default_message;\n",
       "msg.qos = " <> qos _pubQoS <> ";\n",
       "msg.retained = " <> bool _pubRetain <> ";\n",
@@ -168,14 +175,10 @@ genPublishTest prot i p@PublishRequest{..} =
       "lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, " <> protlvl prot <> ", ",
       bool _pubDup, ", ", show _pubPktID,  ", topic, msg, props);\n\n",
       "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
-      "EXPECT_ARRAY_EQ(pkt, buf, len);",
-      "}\n\n"
+      "EXPECT_ARRAY_EQ(pkt, buf, len);"
       ]
 
-    decTest e = mconcat [
-        "// ", show p, "\n",
-        "TEST(Publish" <> shortprot prot <> "QCTest, Decode" <> show i <> ") {\n",
-        "uint8_t pkt[] = {" <> hexa e <> "};\n",
+    decTest = genTestFunc "Publish" "Decode" prot i p $ mconcat [
         "bool dup;\n",
         "uint16_t packet_id;\n",
         "lwmqtt_string_t topic;\n",
@@ -192,19 +195,14 @@ genPublishTest prot i p@PublishRequest{..} =
         "EXPECT_ARRAY_EQ(exp_topic_bytes, reinterpret_cast<uint8_t*>(topic.data), ", show (BL.length _pubTopic), ");\n",
         "EXPECT_EQ(msg.payload_len, ", show (BL.length _pubBody), ");\n",
         "EXPECT_ARRAY_EQ(exp_body_bytes, msg.payload, ", show (BL.length _pubBody), ");\n",
-        "lwmqtt_string_t x = exp_topic;\nx = exp_body;\n",
-        "}\n\n"
+        "lwmqtt_string_t x = exp_topic;\nx = exp_body;\n"
         ]
 
 
-genSubTest :: ProtocolLevel -> Int -> SubscribeRequest -> IO ()
+genSubTest :: ProtocolLevel -> Int -> SubscribeRequest -> String
 genSubTest prot i p@(SubscribeRequest pid subs props) = do
-  let e = toByteString prot p
-  putStrLn .  mconcat $ [
-    "// ", show p, "\n",
-    "TEST(Subscribe", shortprot prot, "QCTest, Encode" <> show i <> ") {\n",
-    "uint8_t pkt[] = {", hexa e, "};\n\n",
-    "uint8_t buf[", show (BL.length e + 10), "] = { 0 };\n",
+  genTestFunc "Subscribe" "Encode" prot i p $ mconcat [
+    "uint8_t buf[sizeof(pkt)+10] = { 0 };\n",
     encodeFilters,
     encodeQos,
     genProperties "props" props,
@@ -212,8 +210,7 @@ genSubTest prot i p@(SubscribeRequest pid subs props) = do
     "  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, sizeof(buf), &len, ", protlvl prot, ", ",
     show pid, ", ", show (length subs),  ", topic_filters, qos_levels, props);\n\n",
     "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
-    "  EXPECT_ARRAY_EQ(pkt, buf, len);\n",
-    "}\n"
+    "  EXPECT_ARRAY_EQ(pkt, buf, len);\n"
     ]
 
   where
@@ -230,14 +227,10 @@ genSubTest prot i p@(SubscribeRequest pid subs props) = do
       where
         aQ (_,SubOptions{..}) = qos _subQoS
 
-genConnectTest :: ProtocolLevel -> Int -> ConnectRequest -> IO ()
+genConnectTest :: ProtocolLevel -> Int -> ConnectRequest -> String
 genConnectTest prot i p@ConnectRequest{..} = do
-  let e = toByteString prot p
-  putStrLn . mconcat $ [
-    "// ", show p, "\n",
-    "TEST(Connect", shortprot prot, "QCTest, Encode" <> show i <> ") {\n",
-    "uint8_t pkt[] = {", hexa e, "};\n\n",
-    "uint8_t buf[", show (BL.length e + 10), "] = { 0 };\n",
+  genTestFunc "Connect" "Encode" prot i p $ mconcat [
+    "uint8_t buf[sizeof(pkt)+10] = { 0 };\n",
 
     genProperties "props" _properties,
     encodeWill _lastWill,
@@ -246,8 +239,8 @@ genConnectTest prot i p@ConnectRequest{..} = do
     "lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(buf), &len, " <> protlvl prot <> ", opts, ",
     if isJust _lastWill then "&will" else "NULL", ");\n\n",
     "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
-    "EXPECT_ARRAY_EQ(pkt, buf, len);\n",
-    "}\n"
+    "EXPECT_EQ(len, sizeof(pkt));\n",
+    "EXPECT_ARRAY_EQ(pkt, buf, len);\n"
     ]
 
   where
@@ -309,13 +302,17 @@ extern "C" {
   let numTests = 10
 
   pubs <- replicateM numTests $ generate arbitrary
-  mapM_ (uncurry $ genPublishTest Protocol311) $ zip [1..] (v311PubReq <$> pubs)
-  mapM_ (uncurry $ genPublishTest Protocol50) $ zip [1..] pubs
+  f genPublishTest Protocol311 (v311PubReq <$> pubs)
+  f genPublishTest Protocol50 pubs
 
   conns <- replicateM numTests $ generate arbitrary
-  mapM_ (uncurry $ genConnectTest Protocol311) $ zip [1..] (userFix . v311ConnReq <$> conns)
-  mapM_ (uncurry $ genConnectTest Protocol50) $ zip [1..] (userFix <$> conns)
+  f genConnectTest Protocol311 (userFix . v311ConnReq <$> conns)
+  f genConnectTest Protocol50 (userFix <$> conns)
 
   subs <- replicateM numTests $ generate arbitrary
-  mapM_ (uncurry $ genSubTest Protocol311) $ zip [1..] (v311SubReq <$> subs)
-  mapM_ (uncurry $ genSubTest Protocol50) $ zip [1..] (simplifySubOptions <$> subs)
+  f genSubTest Protocol311 (v311SubReq <$> subs)
+  f genSubTest Protocol50 (simplifySubOptions <$> subs)
+
+  where
+    f :: (ProtocolLevel -> Int -> a -> String) -> ProtocolLevel -> [a] -> IO ()
+    f g pl l = mapM_ putStrLn $ map (uncurry $ g pl) $ zip [1..] l
