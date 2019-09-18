@@ -55,10 +55,10 @@ userFix :: ConnectRequest -> ConnectRequest
 userFix = ufix . pfix
   where
     ufix p@ConnectRequest{..}
-      | _username == (Just "") = p{_username=Nothing}
+      | _username == Just "" = p{_username=Nothing}
       | otherwise = p
     pfix p@ConnectRequest{..}
-      | _password == (Just "") = p{_password=Nothing}
+      | _password == Just "" = p{_password=Nothing}
       | otherwise = p
 
 data Prop = IProp Int String Int
@@ -73,7 +73,7 @@ captureProps = map e
     peW32 i x = IProp i "int32" (fromEnum x)
     peUTF8 i x = SProp i "str" (0,x)
     peBin i x = SProp i "str" (0,x)
-    peVarInt i x = IProp i "varint" x
+    peVarInt i = IProp i "varint"
     pePair i k v = UProp i (0,k) (0,v)
 
     e (PropPayloadFormatIndicator x)          = peW8 0x01 x
@@ -123,9 +123,9 @@ genProperties name props = mconcat [
           where
             go :: [String] -> [Prop] -> Int -> [Prop] -> ([String], [Prop])
             go l p _ []     = (reverse l, reverse p)
-            go l p n ((x@IProp{}):xs) = go l (x:p) n xs
-            go l p n ((SProp i s (_,bs)):xs) = go (newstr n bs:l) (SProp i s (n,bs):p) (n+1) xs
-            go l p n ((UProp i (_,bs1) (_,bs2)):xs) = go (newstr n bs1 : newstr (n+1) bs2 : l) (UProp i (n,bs1) (n+1,bs2):p) (n+2) xs
+            go l p n (x@IProp{}:xs) = go l (x:p) n xs
+            go l p n (SProp i s (_,bs):xs) = go (newstr n bs:l) (SProp i s (n,bs):p) (n+1) xs
+            go l p n (UProp i (_,bs1) (_,bs2):xs) = go (newstr n bs1 : newstr (n+1) bs2 : l) (UProp i (n,bs1) (n+1,bs2):p) (n+2) xs
 
             newstr n s = "uint8_t bytes" <> name <> show n <> "[] = {" <> hexa s <> "};"
 
@@ -140,9 +140,6 @@ genProperties name props = mconcat [
 
         b x xv = "{" <> show (BL.length xv) <> ", (char*)&bytes" <> name <> show x <> "}"
 
-        p :: [BL.ByteString] -> [String]
-        p = map (map (toEnum . fromEnum) . BL.unpack)
-
 encodeString :: String -> BL.ByteString -> String
 encodeString name bytes = mconcat [
   "  uint8_t " <> name <> "_bytes[] = {" <> hexa bytes <> "};\n",
@@ -150,39 +147,32 @@ encodeString name bytes = mconcat [
   ]
 
 genPublishTest :: ProtocolLevel -> Int -> PublishRequest -> IO ()
-genPublishTest prot i p@PublishRequest{..} = do
-  let e = toByteString prot p
-
-  encTest e
-  decTest e
+genPublishTest prot i p@PublishRequest{..} =
+  mapM_ (putStrLn . ($toByteString prot p)) [encTest, decTest]
 
   where
-    encTest e = do
-      putStrLn $ "// " <> show p
-      putStrLn $ "TEST(Publish" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {"
-      putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
+    encTest e = mconcat  [
+      "// ", show p, "\n",
+      "TEST(Publish" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {\n",
+      "uint8_t pkt[] = {" <> hexa e <> "};\n",
+      "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n",
+      encodeString "topic" _pubTopic,
+      "lwmqtt_message_t msg = lwmqtt_default_message;\n",
+      "msg.qos = " <> qos _pubQoS <> ";\n",
+      "msg.retained = " <> bool _pubRetain <> ";\n",
+      "uint8_t msg_bytes[] = {" <> hexa _pubBody <> "};\n",
+      "msg.payload = (unsigned char*)&msg_bytes;\n",
+      "msg.payload_len = " <> show (BL.length _pubBody) <> ";\n\n",
+      genProperties "props" _pubProps,
+      "size_t len = 0;\n",
+      "lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, " <> protlvl prot <> ", ",
+      bool _pubDup, ", ", show _pubPktID,  ", topic, msg, props);\n\n",
+      "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+      "EXPECT_ARRAY_EQ(pkt, buf, len);",
+      "}\n\n"
+      ]
 
-      putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
-
-      putStrLn . mconcat $ [
-        encodeString "topic" _pubTopic,
-        "  lwmqtt_message_t msg = lwmqtt_default_message;\n",
-        "  msg.qos = " <> qos _pubQoS <> ";\n",
-        "  msg.retained = " <> bool _pubRetain <> ";\n",
-        "  uint8_t msg_bytes[] = {" <> hexa _pubBody <> "};\n",
-        "  msg.payload = (unsigned char*)&msg_bytes;\n",
-        "  msg.payload_len = " <> show (BL.length _pubBody) <> ";\n\n",
-        genProperties "props" _pubProps,
-        "  size_t len = 0;\n",
-        "  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, " <> protlvl prot <> ", ",
-        bool _pubDup, ", ", show _pubPktID,  ", topic, msg, props);\n\n",
-        "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
-        "  EXPECT_ARRAY_EQ(pkt, buf, len);",
-        "}\n"
-        ]
-
-    decTest e = do
-      putStrLn . mconcat $ [
+    decTest e = mconcat [
         "// ", show p, "\n",
         "TEST(Publish" <> shortprot prot <> "QCTest, Decode" <> show i <> ") {\n",
         "uint8_t pkt[] = {" <> hexa e <> "};\n",
@@ -203,21 +193,18 @@ genPublishTest prot i p@PublishRequest{..} = do
         "EXPECT_EQ(msg.payload_len, ", show (BL.length _pubBody), ");\n",
         "EXPECT_ARRAY_EQ(exp_body_bytes, msg.payload, ", show (BL.length _pubBody), ");\n",
         "lwmqtt_string_t x = exp_topic;\nx = exp_body;\n",
-        "}\n"
+        "}\n\n"
         ]
 
 
 genSubTest :: ProtocolLevel -> Int -> SubscribeRequest -> IO ()
 genSubTest prot i p@(SubscribeRequest pid subs props) = do
   let e = toByteString prot p
-
-  putStrLn $ "// " <> show p
-  putStrLn $ "TEST(Subscribe" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {"
-  putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
-
-  putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
-
-  putStrLn . mconcat $ [
+  putStrLn .  mconcat $ [
+    "// ", show p, "\n",
+    "TEST(Subscribe", shortprot prot, "QCTest, Encode" <> show i <> ") {\n",
+    "uint8_t pkt[] = {", hexa e, "};\n\n",
+    "uint8_t buf[", show (BL.length e + 10), "] = { 0 };\n",
     encodeFilters,
     encodeQos,
     genProperties "props" props,
@@ -225,13 +212,13 @@ genSubTest prot i p@(SubscribeRequest pid subs props) = do
     "  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, sizeof(buf), &len, ", protlvl prot, ", ",
     show pid, ", ", show (length subs),  ", topic_filters, qos_levels, props);\n\n",
     "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
-    "  EXPECT_ARRAY_EQ(pkt, buf, len);"
+    "  EXPECT_ARRAY_EQ(pkt, buf, len);\n",
+    "}\n"
     ]
-  putStrLn "}\n"
 
   where
     encodeFilters = "lwmqtt_string_t topic_filters[" <> show (length subs) <> "];\n" <>
-                    (concatMap aSub $ zip [0..] subs)
+                    concatMap aSub (zip [0..] subs)
       where
         aSub :: (Int, (BL.ByteString, SubOptions)) -> String
         aSub (i', (s,_)) = mconcat [
@@ -246,14 +233,12 @@ genSubTest prot i p@(SubscribeRequest pid subs props) = do
 genConnectTest :: ProtocolLevel -> Int -> ConnectRequest -> IO ()
 genConnectTest prot i p@ConnectRequest{..} = do
   let e = toByteString prot p
-
-  putStrLn $ "// " <> show p
-  putStrLn $ "TEST(Connect" <> shortprot prot <> "QCTest, Encode" <> show i <> ") {"
-  putStrLn $ "  uint8_t pkt[] = {" <> hexa e <> "};"
-
-  putStrLn $ "\n  uint8_t buf[" <> show (BL.length e + 10) <> "] = { 0 };\n"
-
   putStrLn . mconcat $ [
+    "// ", show p, "\n",
+    "TEST(Connect", shortprot prot, "QCTest, Encode" <> show i <> ") {\n",
+    "uint8_t pkt[] = {", hexa e, "};\n\n",
+    "uint8_t buf[", show (BL.length e + 10), "] = { 0 };\n",
+
     genProperties "props" _properties,
     encodeWill _lastWill,
     encodeOptions,
@@ -261,9 +246,9 @@ genConnectTest prot i p@ConnectRequest{..} = do
     "lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(buf), &len, " <> protlvl prot <> ", opts, ",
     if isJust _lastWill then "&will" else "NULL", ");\n\n",
     "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
-    "EXPECT_ARRAY_EQ(pkt, buf, len);"
+    "EXPECT_ARRAY_EQ(pkt, buf, len);\n",
+    "}\n"
     ]
-  putStrLn "}\n"
 
   where
     encodeWill Nothing = ""
