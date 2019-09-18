@@ -234,14 +234,14 @@ genSubTest prot i p@(SubscribeRequest pid subs props) = do
                     (concatMap aSub $ zip [0..] subs)
       where
         aSub :: (Int, (BL.ByteString, SubOptions)) -> String
-        aSub (i, (s,_)) = mconcat [
-          encodeString ("topic_filter_s" <> show i) s,
-          "topic_filters[", show i, "] = topic_filter_s", show i, ";\n"
+        aSub (i', (s,_)) = mconcat [
+          encodeString ("topic_filter_s" <> show i') s,
+          "topic_filters[", show i', "] = topic_filter_s", show i', ";\n"
           ]
 
-    encodeQos = "lwmqtt_qos_t qos_levels[] = {" <> intercalate ", " (map aQ $ zip [0..] subs) <> "};\n"
+    encodeQos = "lwmqtt_qos_t qos_levels[] = {" <> intercalate ", " (map aQ subs) <> "};\n"
       where
-        aQ (i, (_,SubOptions{..})) = qos _subQoS
+        aQ (_,SubOptions{..}) = qos _subQoS
 
 genConnectTest :: ProtocolLevel -> Int -> ConnectRequest -> IO ()
 genConnectTest prot i p@ConnectRequest{..} = do
