@@ -471,8 +471,8 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, lwmqtt_qos_t *qos,
-                              uint32_t timeout) {
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter,
+                              lwmqtt_sub_options_t *opts, uint32_t timeout) {
   // set command timer
   client->timer_set(client->command_timer, timeout);
 
@@ -480,7 +480,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
   size_t len;
   lwmqtt_properties_t props = lwmqtt_empty_props;
   lwmqtt_err_t err = lwmqtt_encode_subscribe(client->write_buf, client->write_buf_size, &len, client->protocol,
-                                             lwmqtt_get_next_packet_id(client), count, topic_filter, qos, props);
+                                             lwmqtt_get_next_packet_id(client), count, topic_filter, opts, props);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -520,9 +520,9 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_qos_t qos,
+lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_sub_options_t opts,
                                   uint32_t timeout) {
-  return lwmqtt_subscribe(client, 1, &topic_filter, &qos, timeout);
+  return lwmqtt_subscribe(client, 1, &topic_filter, &opts, timeout);
 }
 
 lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, uint32_t timeout) {

@@ -102,7 +102,8 @@ int main() {
   printf("connected!\n");
 
   // subscribe to topic
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), subopts, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_subscribe: %d\n", err);
     exit(1);

@@ -46,11 +46,6 @@ v311SubReq p50 = let (SubscribePkt p) = v311mask (SubscribePkt p50) in p
 v311ConnReq :: ConnectRequest -> ConnectRequest
 v311ConnReq p50 = let (ConnPkt p) = v311mask (ConnPkt p50) in p
 
--- Not currently supporting most of the options.
-simplifySubOptions :: SubscribeRequest -> SubscribeRequest
-simplifySubOptions (SubscribeRequest w subs props) = SubscribeRequest w ssubs props
-  where ssubs = map (\(x,o@SubOptions{..}) -> (x,subOptions{_subQoS=_subQoS})) subs
-
 userFix :: ConnectRequest -> ConnectRequest
 userFix = ufix . pfix
   where
@@ -208,7 +203,7 @@ genSubTest prot i p@(SubscribeRequest pid subs props) = do
     genProperties "props" props,
     "  size_t len = 0;\n",
     "  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, sizeof(buf), &len, ", protlvl prot, ", ",
-    show pid, ", ", show (length subs),  ", topic_filters, qos_levels, props);\n\n",
+    show pid, ", ", show (length subs),  ", topic_filters, sub_opts, props);\n\n",
     "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
     "  EXPECT_ARRAY_EQ(pkt, buf, len);\n"
     ]
@@ -223,9 +218,20 @@ genSubTest prot i p@(SubscribeRequest pid subs props) = do
           "topic_filters[", show i', "] = topic_filter_s", show i', ";\n"
           ]
 
-    encodeQos = "lwmqtt_qos_t qos_levels[] = {" <> intercalate ", " (map aQ subs) <> "};\n"
+    encodeQos = "lwmqtt_sub_options_t sub_opts["<> show (length subs) <> "];\n" <> (concatMap subvals $ zip [0..] subs)
       where
-        aQ (_,SubOptions{..}) = qos _subQoS
+        subvals :: (Int,(BL.ByteString, SubOptions)) -> String
+        subvals (subi,(_,SubOptions{..})) = mconcat [
+          si, "qos = ", qos _subQoS, ";\n",
+          si, "retain_handling = ", rh _retainHandling, ";\n",
+          si, "retain_as_published = ", bool _retainAsPublished, ";\n",
+          si, "no_local = ", bool _noLocal, ";\n"
+          ]
+          where
+            si = "sub_opts[" <> show subi <> "]."
+            rh SendOnSubscribe      = "LWMQTT_SUB_SEND_ON_SUB"
+            rh SendOnSubscribeNew   = "LWMQTT_SUB_SEND_ON_SUB_NEW"
+            rh DoNotSendOnSubscribe = "LWMQTT_SUB_NO_SEND_ON_SUB"
 
 genConnectTest :: ProtocolLevel -> Int -> ConnectRequest -> String
 genConnectTest prot i p@ConnectRequest{..} = do
@@ -311,7 +317,7 @@ extern "C" {
 
   subs <- replicateM numTests $ generate arbitrary
   f genSubTest Protocol311 (v311SubReq <$> subs)
-  f genSubTest Protocol50 (simplifySubOptions <$> subs)
+  f genSubTest Protocol50 subs
 
   where
     f :: (ProtocolLevel -> Int -> a -> String) -> ProtocolLevel -> [a] -> IO ()

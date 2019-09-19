@@ -69,7 +69,8 @@ TEST(Client, PublishSubscribeQOS0) {
   err = lwmqtt_connect(&client, data, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -128,7 +129,9 @@ TEST(Client, PublishSubscribeQOS1) {
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS1, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  subopts.qos = LWMQTT_QOS1;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -187,7 +190,9 @@ TEST(Client, PublishSubscribeQOS2) {
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS2, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  subopts.qos = LWMQTT_QOS2;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -246,7 +251,8 @@ TEST(Client, BufferOverflow) {
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_message_t msg = lwmqtt_default_message;
@@ -312,7 +318,8 @@ TEST(Client, OverflowDropping) {
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -372,7 +379,8 @@ TEST(Client, BigBuffersAndPayload) {
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -431,8 +439,9 @@ TEST(Client, MultipleSubscriptions) {
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
   lwmqtt_string_t topic_filters[2] = {lwmqtt_string("foo"), lwmqtt_string("lwmqtt")};
-  lwmqtt_qos_t qos_levels[2] = {LWMQTT_QOS0, LWMQTT_QOS0};
+  lwmqtt_sub_options_t qos_levels[2] = {subopts, subopts};
 
   err = lwmqtt_subscribe(&client, 2, topic_filters, qos_levels, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);

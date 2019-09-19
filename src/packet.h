@@ -151,12 +151,12 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, lw
  * @param packet_id - The packet id.
  * @param count - The number of members in the topic_filters and qos_levels array.
  * @param topic_filters - The array of topic filter.
- * @param qos_levels - The array of requested QoS levels.
+ * @param sub_options - The array of requested subscription options.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t prototocol,
                                      uint16_t packet_id, int count, lwmqtt_string_t *topic_filters,
-                                     lwmqtt_qos_t *qos_levels, lwmqtt_properties_t props);
+                                     lwmqtt_sub_options_t *sub_options, lwmqtt_properties_t props);
 
 /**
  * Decodes a suback packet from the supplied buffer.

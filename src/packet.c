@@ -741,9 +741,14 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, lw
   return LWMQTT_SUCCESS;
 }
 
+static uint8_t encode_sub_opt(lwmqtt_sub_options_t opt) {
+  return (uint8_t)opt.qos | ((uint8_t)opt.retain_handling << 4) | (opt.retain_as_published ? 0x08 : 0) |
+         (opt.no_local ? 0x04 : 0);
+}
+
 lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
                                      uint16_t packet_id, int count, lwmqtt_string_t *topic_filters,
-                                     lwmqtt_qos_t *qos_levels, lwmqtt_properties_t props) {
+                                     lwmqtt_sub_options_t *sub_options, lwmqtt_properties_t props) {
   // prepare pointer
   uint8_t *buf_ptr = buf;
   uint8_t *buf_end = buf + buf_len;
@@ -801,8 +806,8 @@ lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, 
       return err;
     }
 
-    // write qos level
-    err = lwmqtt_write_byte(&buf_ptr, buf_end, (uint8_t)qos_levels[i]);
+    // write subscription options
+    err = lwmqtt_write_byte(&buf_ptr, buf_end, encode_sub_opt(sub_options[i]));
     if (err != LWMQTT_SUCCESS) {
       return err;
     }

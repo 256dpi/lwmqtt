@@ -631,6 +631,11 @@ TEST(SubackTest, DecodeError1) {
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
+TEST(SubscribeTest, OptionSize) {
+  lwmqtt_sub_options_t subopts = {LWMQTT_QOS0, LWMQTT_SUB_SEND_ON_SUB, 0, 0};
+  EXPECT_EQ(sizeof(subopts), 1);
+}
+
 TEST(SubscribeTest, Encode1) {
   uint8_t pkt[38] = {
       LWMQTT_SUBSCRIBE_PACKET << 4u | 2,
@@ -680,11 +685,13 @@ TEST(SubscribeTest, Encode1) {
   topic_filters[1] = lwmqtt_string("/a/b/#/c");
   topic_filters[2] = lwmqtt_string("/a/b/#/cdd");
 
-  lwmqtt_qos_t qos_levels[3] = {LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2};
+  lwmqtt_sub_options_t sub_opts[3] = {lwmqtt_default_sub_options, lwmqtt_default_sub_options,
+                                      lwmqtt_default_sub_options};
+  sub_opts[1].qos = LWMQTT_QOS1;
+  sub_opts[2].qos = LWMQTT_QOS2;
 
   size_t len;
-  lwmqtt_err_t err =
-      lwmqtt_encode_subscribe(buf, 38, &len, LWMQTT_MQTT311, 7, 3, topic_filters, qos_levels, empty_props);
+  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 38, &len, LWMQTT_MQTT311, 7, 3, topic_filters, sub_opts, empty_props);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -696,11 +703,10 @@ TEST(SubscribeTest, EncodeError1) {
   lwmqtt_string_t topic_filters[1];
   topic_filters[0] = lwmqtt_string("surgemq");
 
-  lwmqtt_qos_t qos_levels[1] = {LWMQTT_QOS0};
+  lwmqtt_sub_options_t sub_opts[1] = {lwmqtt_default_sub_options};
 
   size_t len;
-  lwmqtt_err_t err =
-      lwmqtt_encode_subscribe(buf, 2, &len, LWMQTT_MQTT311, 7, 1, topic_filters, qos_levels, empty_props);
+  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 2, &len, LWMQTT_MQTT311, 7, 1, topic_filters, sub_opts, empty_props);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }

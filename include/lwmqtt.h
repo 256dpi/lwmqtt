@@ -65,7 +65,28 @@ int lwmqtt_strcmp(lwmqtt_string_t a, const char *b);
 /**
  * The available QOS levels.
  */
-typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2, LWMQTT_QOS_FAILURE = 128 } lwmqtt_qos_t;
+typedef enum __attribute__((__packed__)) {
+  LWMQTT_QOS0 = 0,
+  LWMQTT_QOS1 = 1,
+  LWMQTT_QOS2 = 2,
+  LWMQTT_QOS_FAILURE = 128
+} lwmqtt_qos_t;
+
+typedef enum __attribute__((__packed__)) {
+  LWMQTT_SUB_SEND_ON_SUB = 0,
+  LWMQTT_SUB_SEND_ON_SUB_NEW = 1,
+  LWMQTT_SUB_NO_SEND_ON_SUB = 2
+} lwmqtt_retain_handling_t;
+
+typedef struct {
+  lwmqtt_qos_t qos : 3;
+  lwmqtt_retain_handling_t retain_handling : 3;
+  bool retain_as_published : 1;
+  bool no_local : 1;
+} lwmqtt_sub_options_t;
+
+#define lwmqtt_default_sub_options \
+  { LWMQTT_QOS0, LWMQTT_SUB_SEND_ON_SUB, false, false }
 
 typedef enum {
   LWMQTT_PROP_PAYLOAD_FORMAT_INDICATOR = 0x01,
@@ -367,12 +388,12 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
  * @param client - The client object.
  * @param count - The number of topic filters and QOS levels.
  * @param topic_filter - The list of topic filters.
- * @param qos - The list of QOS levels.
+ * @param opts - The list of subscription options.
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, lwmqtt_qos_t *qos,
-                              uint32_t timeout);
+lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter,
+                              lwmqtt_sub_options_t *opts, uint32_t timeout);
 
 /**
  * Will send a subscribe packet with a single topic filter plus QOS level and wait for the suback to complete.
@@ -381,11 +402,11 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
  *
  * @param client - The client object.
  * @param topic_filter - The topic filter.
- * @param qos - The QOS level.
+ * @param qos - The subscription options.
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_qos_t qos,
+lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_sub_options_t opts,
                                   uint32_t timeout);
 
 /**
