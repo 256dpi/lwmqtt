@@ -235,11 +235,11 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   // add username if present to remaining length
   if (options.username.len > 0) {
     rem_len += options.username.len + 2;
+  }
 
-    // add password if present to remaining length
-    if (options.password.len > 0) {
-      rem_len += options.password.len + 2;
-    }
+  // add password if present to remaining length
+  if ((options.username.len > 0 || protocol == LWMQTT_MQTT5) && options.password.len > 0) {
+    rem_len += options.password.len + 2;
   }
 
   // check remaining length length
@@ -293,11 +293,10 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   // set username flag if present
   if (options.username.len > 0) {
     lwmqtt_write_bits(&flags, 1, 7, 1);
+  }
 
-    // set password flag if present
-    if (options.password.len > 0) {
-      lwmqtt_write_bits(&flags, 1, 6, 1);
-    }
+  if ((options.username.len > 0 || protocol == LWMQTT_MQTT5) && options.password.len > 0) {
+    lwmqtt_write_bits(&flags, 1, 6, 1);
   }
 
   // write flags
@@ -359,7 +358,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   }
 
   // write password if present
-  if (options.username.len > 0 && options.password.len > 0) {
+  if ((options.username.len > 0 || protocol == LWMQTT_MQTT5) && options.password.len > 0) {
     err = lwmqtt_write_string(&buf_ptr, buf_end, options.password);
     if (err != LWMQTT_SUCCESS) {
       return err;

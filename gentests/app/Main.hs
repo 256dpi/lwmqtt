@@ -299,7 +299,7 @@ extern "C" {
     }                                                                     \
   }
 |]
-  let numTests = 10
+  let numTests = 30
 
   pubs <- replicateM numTests $ generate arbitrary
   f genPublishTest Protocol311 (v311PubReq <$> pubs)
