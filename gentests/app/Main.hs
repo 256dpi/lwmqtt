@@ -43,6 +43,9 @@ v311PubReq p50 = let (PublishPkt p) = v311mask (PublishPkt p50) in p
 v311SubReq :: SubscribeRequest -> SubscribeRequest
 v311SubReq p50 = let (SubscribePkt p) = v311mask (SubscribePkt p50) in p
 
+v311SubACKReq :: SubscribeResponse -> SubscribeResponse
+v311SubACKReq p50 = let (SubACKPkt p) = v311mask (SubACKPkt p50) in p
+
 v311ConnReq :: ConnectRequest -> ConnectRequest
 v311ConnReq p50 = let (ConnPkt p) = v311mask (ConnPkt p50) in p
 
@@ -280,6 +283,38 @@ genConnectTest prot i p@ConnectRequest{..} = do
               "opts.", n, " = ", n, ";\n"
               ]
 
+genSubACKTest :: ProtocolLevel -> Int -> SubscribeResponse -> String
+genSubACKTest prot i p@(SubscribeResponse pid res _props) = do
+  let ll = show (length res)
+  genTestFunc "SubACK" "Decode" prot i p $ mconcat [
+    "uint16_t packet_id;\n",
+    "int count;\n",
+    "lwmqtt_qos_t granted_qos_levels[", ll, "];\n",
+    "lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id,",
+    protlvl prot, ", ", ll, ", &count, granted_qos_levels);\n",
+    "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+    "EXPECT_EQ(packet_id, ", show pid, ");\n",
+    "EXPECT_EQ(count, ", ll, ");\n",
+    concatMap checkQos (zip [0..] res)
+    ]
+
+    where
+      checkQos :: (Int,Either SubErr QoS) -> String
+      checkQos (qi,q) = "EXPECT_EQ(granted_qos_levels[" <> show qi <> "], " <> qq prot q <> ");\n"
+      qq Protocol311 (Left _) = "0x80"
+      qq Protocol50 (Left x)  = q5 x
+      qq _ (Right q)          = qos q
+
+      q5 SubErrUnspecifiedError                    =  "0x80"
+      q5 SubErrImplementationSpecificError         =  "0x83"
+      q5 SubErrNotAuthorized                       =  "0x87"
+      q5 SubErrTopicFilterInvalid                  =  "0x8F"
+      q5 SubErrPacketIdentifierInUse               =  "0x91"
+      q5 SubErrQuotaExceeded                       =  "0x97"
+      q5 SubErrSharedSubscriptionsNotSupported     =  "0x9E"
+      q5 SubErrSubscriptionIdentifiersNotSupported =  "0xA1"
+      q5 SubErrWildcardSubscriptionsNotSupported   =  "0xA2"
+
 main :: IO ()
 main = do
   putStrLn [r|#include <gtest/gtest.h>
@@ -318,6 +353,11 @@ extern "C" {
   subs <- replicateM numTests $ generate arbitrary
   f genSubTest Protocol311 (v311SubReq <$> subs)
   f genSubTest Protocol50 subs
+
+  subax <- replicateM numTests $ generate arbitrary
+  f genSubACKTest Protocol311 (v311SubACKReq <$> subax)
+  f genSubACKTest Protocol50 subax
+
 
   where
     f :: (ProtocolLevel -> Int -> a -> String) -> ProtocolLevel -> [a] -> IO ()

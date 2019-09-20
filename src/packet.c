@@ -843,9 +843,10 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
+  uint8_t *end = buf_ptr + rem_len;
 
   // check remaining length (packet id + min. one suback code)
-  if (protocol == LWMQTT_MQTT311 && rem_len < 3) {
+  if (rem_len < 3) {
     return LWMQTT_REMAINING_LENGTH_MISMATCH;
   }
 
@@ -855,8 +856,14 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
     return err;
   }
 
+  lwmqtt_properties_t props;
+  err = decode_props(&buf_ptr, buf_end, protocol, &props);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
   // read all suback codes
-  for (*count = 0; *count < (int)rem_len - 2; (*count)++) {
+  for (*count = 0; buf_ptr < end; (*count)++) {
     // check max count
     if (*count > max_count) {
       return LWMQTT_SUBACK_ARRAY_OVERFLOW;
@@ -881,7 +888,7 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
         granted_qos_levels[*count] = LWMQTT_QOS2;
         break;
       default:
-        granted_qos_levels[*count] = LWMQTT_QOS_FAILURE;
+        granted_qos_levels[*count] = protocol == LWMQTT_MQTT311 ? 0x80 : (lwmqtt_qos_t)raw_qos_level;
         break;
     }
   }
