@@ -15,7 +15,8 @@ lwmqtt_client_t client;
 
 pthread_mutex_t mutex;
 
-static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
+static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg,
+                            lwmqtt_serialized_properties_t props) {
   printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload,
          (int)msg.payload_len);
 }

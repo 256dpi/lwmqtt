@@ -124,7 +124,8 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, lwmqtt_protocol_t protocol, bool *dup,
-                                   uint16_t *packet_id, lwmqtt_string_t *topic, lwmqtt_message_t *msg);
+                                   uint16_t *packet_id, lwmqtt_string_t *topic, lwmqtt_message_t *msg,
+                                   lwmqtt_serialized_properties_t *props);
 
 /**
  * Encodes a publish packet into the supplied buffer.

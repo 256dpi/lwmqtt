@@ -19,7 +19,8 @@ const char *custom_ref = "cool";
 
 static lwmqtt_properties_t empty_props = lwmqtt_empty_props;
 
-static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lwmqtt_message_t m) {
+static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lwmqtt_message_t m,
+                            lwmqtt_serialized_properties_t props) {
   ASSERT_EQ(ref, custom_ref);
 
   int res = lwmqtt_strcmp(t, "lwmqtt");
@@ -32,7 +33,8 @@ static void message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lw
   counter++;
 }
 
-static void big_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lwmqtt_message_t m) {
+static void big_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lwmqtt_message_t m,
+                                lwmqtt_serialized_properties_t props) {
   ASSERT_EQ(ref, custom_ref);
 
   int res = lwmqtt_strcmp(t, "lwmqtt");

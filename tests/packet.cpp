@@ -422,7 +422,8 @@ TEST(PublishTest, Decode1) {
   uint16_t packet_id;
   lwmqtt_string_t topic;
   lwmqtt_message_t msg;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 25, LWMQTT_MQTT311, &dup, &packet_id, &topic, &msg);
+  lwmqtt_serialized_properties_t props;
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 25, LWMQTT_MQTT311, &dup, &packet_id, &topic, &msg, &props);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, true);
@@ -465,7 +466,8 @@ TEST(PublishTest, Decode2) {
   uint16_t packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
   lwmqtt_message_t msg;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 23, LWMQTT_MQTT311, &dup, &packet_id, &topic, &msg);
+  lwmqtt_serialized_properties_t props;
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 23, LWMQTT_MQTT311, &dup, &packet_id, &topic, &msg, &props);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, false);
@@ -487,7 +489,8 @@ TEST(PublishTest, DecodeError1) {
   uint16_t packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
   lwmqtt_message_t msg;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 2, LWMQTT_MQTT311, &dup, &packet_id, &topic, &msg);
+  lwmqtt_serialized_properties_t props;
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 2, LWMQTT_MQTT311, &dup, &packet_id, &topic, &msg, &props);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }

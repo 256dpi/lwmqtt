@@ -555,7 +555,7 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
 }
 
 static lwmqtt_err_t decode_props(uint8_t **buf, const uint8_t *buf_len, lwmqtt_protocol_t protocol,
-                                 lwmqtt_properties_t *props) {
+                                 lwmqtt_serialized_properties_t *props) {
   if (protocol == LWMQTT_MQTT311) {
     return LWMQTT_SUCCESS;
   }
@@ -564,13 +564,16 @@ static lwmqtt_err_t decode_props(uint8_t **buf, const uint8_t *buf_len, lwmqtt_p
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
-  // TODO:  Actually grab them instead of just skipping over
+  props->size = (size_t)prop_len;
+  props->start = *buf;
+
   *buf += prop_len;
   return LWMQTT_SUCCESS;
 }
 
 lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, lwmqtt_protocol_t protocol, bool *dup,
-                                   uint16_t *packet_id, lwmqtt_string_t *topic, lwmqtt_message_t *msg) {
+                                   uint16_t *packet_id, lwmqtt_string_t *topic, lwmqtt_message_t *msg,
+                                   lwmqtt_serialized_properties_t *props) {
   // prepare pointer
   uint8_t *buf_ptr = buf;
   uint8_t *buf_end = buf + buf_len;
@@ -645,8 +648,7 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, lwmqtt_protocol
     *packet_id = 0;
   }
 
-  lwmqtt_properties_t props;
-  err = decode_props(&buf_ptr, buf_end, protocol, &props);
+  err = decode_props(&buf_ptr, buf_end, protocol, props);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -856,7 +858,7 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
     return err;
   }
 
-  lwmqtt_properties_t props;
+  lwmqtt_serialized_properties_t props;
   err = decode_props(&buf_ptr, buf_end, protocol, &props);
   if (err != LWMQTT_SUCCESS) {
     return err;

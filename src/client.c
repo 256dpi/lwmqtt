@@ -266,15 +266,16 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
       uint16_t packet_id;
       lwmqtt_string_t topic;
       lwmqtt_message_t msg;
+      lwmqtt_serialized_properties_t props;
       err = lwmqtt_decode_publish(client->read_buf, client->read_buf_size, client->protocol, &dup, &packet_id, &topic,
-                                  &msg);
+                                  &msg, &props);
       if (err != LWMQTT_SUCCESS) {
         return err;
       }
 
       // call callback if set
       if (client->callback != NULL) {
-        client->callback(client, client->callback_ref, topic, msg);
+        client->callback(client, client->callback_ref, topic, msg, props);
       }
 
       // break early on qos zero
