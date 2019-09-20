@@ -71,7 +71,7 @@ captureProps = map e
     peW32 i x = IProp i "int32" (fromEnum x)
     peUTF8 i x = SProp i "str" (0,x)
     peBin i x = SProp i "str" (0,x)
-    peVarInt i = IProp i "varint"
+    peVarInt i = IProp i "int32"
     pePair i k v = UProp i (0,k) (0,v)
 
     e (PropPayloadFormatIndicator x)          = peW8 0x01 x

@@ -124,7 +124,6 @@ typedef struct {
     uint8_t byte;
     uint32_t int32;
     uint16_t int16;
-    int varint;
     lwmqtt_string_t str;
     struct {
       lwmqtt_string_t k;
@@ -480,5 +479,9 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, uint32_t ti
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout);
+
+typedef void (*lwmqtt_prop_callback_t)(void *ref, lwmqtt_property_t prop);
+
+lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t props, lwmqtt_prop_callback_t cb);
 
 #endif  // LWMQTT_H

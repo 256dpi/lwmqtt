@@ -684,3 +684,95 @@ lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout) {
 
   return LWMQTT_SUCCESS;
 }
+
+lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t props, lwmqtt_prop_callback_t cb) {
+  uint8_t *p = props.start;
+  uint8_t *end = p + props.size;
+  lwmqtt_err_t err;
+
+  while (p < end) {
+    lwmqtt_property_t prop;
+    err = lwmqtt_read_byte(&p, end, (uint8_t *)&prop.prop);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+
+    switch (prop.prop) {
+        // one byte
+      case LWMQTT_PROP_PAYLOAD_FORMAT_INDICATOR:
+      case LWMQTT_PROP_REQUEST_PROBLEM_INFORMATION:
+      case LWMQTT_PROP_MAXIMUM_QOS:
+      case LWMQTT_PROP_RETAIN_AVAILABLE:
+      case LWMQTT_PROP_REQUEST_RESPONSE_INFORMATION:
+      case LWMQTT_PROP_WILDCARD_SUBSCRIPTION_AVAILABLE:
+      case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER_AVAILABLE:
+      case LWMQTT_PROP_SHARED_SUBSCRIPTION_AVAILABLE:
+        err = lwmqtt_read_byte(&p, end, &prop.value.byte);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
+        break;
+
+        // two byte int
+      case LWMQTT_PROP_SERVER_KEEP_ALIVE:
+      case LWMQTT_PROP_RECEIVE_MAXIMUM:
+      case LWMQTT_PROP_TOPIC_ALIAS_MAXIMUM:
+      case LWMQTT_PROP_TOPIC_ALIAS:
+        err = lwmqtt_read_num(&p, end, &prop.value.int16);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
+        break;
+
+        // 4 byte int
+      case LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL:
+      case LWMQTT_PROP_SESSION_EXPIRY_INTERVAL:
+      case LWMQTT_PROP_WILL_DELAY_INTERVAL:
+      case LWMQTT_PROP_MAXIMUM_PACKET_SIZE:
+        err = lwmqtt_read_num32(&p, end, &prop.value.int32);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
+        break;
+
+        // Variable byte int
+      case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER:
+        err = lwmqtt_read_varnum(&p, end, &prop.value.int32);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
+        break;
+
+        // UTF-8 string
+      case LWMQTT_PROP_CONTENT_TYPE:
+      case LWMQTT_PROP_RESPONSE_TOPIC:
+      case LWMQTT_PROP_ASSIGNED_CLIENT_IDENTIFIER:
+      case LWMQTT_PROP_AUTHENTICATION_METHOD:
+      case LWMQTT_PROP_RESPONSE_INFORMATION:
+      case LWMQTT_PROP_SERVER_REFERENCE:
+      case LWMQTT_PROP_REASON_STRING:
+
+        // Arbitrary blobs as the same encoding.
+      case LWMQTT_PROP_CORRELATION_DATA:
+      case LWMQTT_PROP_AUTHENTICATION_DATA:
+        err = lwmqtt_read_string(&p, end, &prop.value.str);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
+        break;
+
+      case LWMQTT_PROP_USER_PROPERTY:
+        err = lwmqtt_read_string(&p, end, &prop.value.pair.k);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
+        err = lwmqtt_read_string(&p, end, &prop.value.pair.v);
+        if (err != LWMQTT_SUCCESS) {
+          return err;
+        }
+    }
+    cb(ref, prop);
+  }
+
+  return LWMQTT_SUCCESS;
+}

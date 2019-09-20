@@ -101,6 +101,18 @@ lwmqtt_err_t lwmqtt_write_num32(uint8_t **buf, const uint8_t *buf_end, uint32_t 
   return LWMQTT_SUCCESS;
 }
 
+lwmqtt_err_t lwmqtt_read_num32(uint8_t **buf, const uint8_t *buf_end, uint32_t *num) {
+  if ((size_t)(buf_end - (*buf)) < 4) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  }
+
+  // read four byte integer
+  *num = ((uint32_t)(*buf)[0] << 24) | ((uint32_t)(*buf)[1] << 16) | ((uint32_t)(*buf)[2] << 8) | (uint32_t)(*buf)[3];
+
+  *buf += 4;
+  return LWMQTT_SUCCESS;
+}
+
 lwmqtt_err_t lwmqtt_read_string(uint8_t **buf, const uint8_t *buf_end, lwmqtt_string_t *str) {
   // read length
   uint16_t len;

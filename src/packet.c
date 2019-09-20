@@ -85,7 +85,7 @@ static size_t proplen(lwmqtt_property_t prop) {
 
     // Variable byte int
     case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER:
-      lwmqtt_varnum_length(prop.value.varint, &ll);
+      lwmqtt_varnum_length(prop.value.int32, &ll);
       return 1 + ll;
 
     // UTF-8 string
@@ -142,7 +142,7 @@ static lwmqtt_err_t write_prop(uint8_t **buf, const uint8_t *buf_end, lwmqtt_pro
 
     // Variable byte int
     case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER:
-      return lwmqtt_write_varnum(buf, buf_end, prop.value.varint);
+      return lwmqtt_write_varnum(buf, buf_end, prop.value.int32);
 
     // UTF-8 string
     case LWMQTT_PROP_CONTENT_TYPE:

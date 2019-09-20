@@ -67,6 +67,8 @@ lwmqtt_err_t lwmqtt_write_num(uint8_t **buf, const uint8_t *buf_end, uint16_t nu
 
 lwmqtt_err_t lwmqtt_write_num32(uint8_t **buf, const uint8_t *buf_end, uint32_t num);
 
+lwmqtt_err_t lwmqtt_read_num32(uint8_t **buf, const uint8_t *buf_end, uint32_t *num);
+
 /**
  * Reads a string from the specified buffer into the passed object. The pointer is incremented by the bytes read.
  *
