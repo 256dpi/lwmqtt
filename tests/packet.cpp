@@ -327,7 +327,9 @@ TEST(AckTest, Decode1) {
 
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
+  uint8_t status;
+  lwmqtt_serialized_properties_t props;
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_MQTT311, LWMQTT_PUBACK_PACKET, &dup, &packet_id, &status, &props);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, false);
@@ -344,7 +346,9 @@ TEST(AckTest, DecodeError1) {
 
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
+  uint8_t status;
+  lwmqtt_serialized_properties_t props;
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_MQTT311, LWMQTT_PUBACK_PACKET, &dup, &packet_id, &status, &props);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
@@ -359,7 +363,9 @@ TEST(AckTest, DecodeError2) {
 
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
+  uint8_t status;
+  lwmqtt_serialized_properties_t props;
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_MQTT311, LWMQTT_PUBACK_PACKET, &dup, &packet_id, &status, &props);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
@@ -374,7 +380,7 @@ TEST(AckTest, Encode1) {
   uint8_t buf[4];
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_ack(buf, 4, &len, LWMQTT_PUBACK_PACKET, 0, 7);
+  lwmqtt_err_t err = lwmqtt_encode_ack(buf, 4, &len, LWMQTT_MQTT311, LWMQTT_PUBACK_PACKET, 0, 7, 0, empty_props);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -384,7 +390,7 @@ TEST(AckTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_ack(buf, 2, &len, LWMQTT_PUBACK_PACKET, 0, 7);
+  lwmqtt_err_t err = lwmqtt_encode_ack(buf, 2, &len, LWMQTT_MQTT311, LWMQTT_PUBACK_PACKET, 0, 7, 0, empty_props);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }

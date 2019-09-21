@@ -40,6 +40,22 @@ shortprot Protocol50  = "5"
 v311PubReq :: PublishRequest -> PublishRequest
 v311PubReq p50 = let (PublishPkt p) = v311mask (PublishPkt p50) in p
 
+data PubACKs = ACK PubACK | REC PubREC | REL PubREL | COMP PubCOMP deriving(Show, Eq)
+
+instance Arbitrary PubACKs where
+  arbitrary = oneof [
+    ACK <$> arbitrary,
+    REC <$> arbitrary,
+    REL <$> arbitrary,
+    COMP <$> arbitrary
+    ]
+
+v311ACKs :: PubACKs -> PubACKs
+v311ACKs (ACK p50)  = let (PubACKPkt a) = v311mask (PubACKPkt p50) in ACK a
+v311ACKs (REC p50)  = let (PubRECPkt a) = v311mask (PubRECPkt p50) in REC a
+v311ACKs (REL p50)  = let (PubRELPkt a) = v311mask (PubRELPkt p50) in REL a
+v311ACKs (COMP p50) = let (PubCOMPPkt a) = v311mask (PubCOMPPkt p50) in COMP a
+
 v311SubReq :: SubscribeRequest -> SubscribeRequest
 v311SubReq p50 = let (SubscribePkt p) = v311mask (SubscribePkt p50) in p
 
@@ -416,6 +432,61 @@ genDiscoTest prot i p@(DisconnectRequest rsn props) = do
     dr DiscoSubscriptionIdentifiersNotSupported = 0xa1
     dr DiscoWildcardSubscriptionsNotSupported   = 0xa2
 
+genPubACKTest :: ProtocolLevel -> Int -> PubACKs -> String
+genPubACKTest prot i pkt = enc <> dec
+
+  where
+    enc = tf (name pkt) "Encode" $ mconcat [
+      "uint8_t buf[sizeof(pkt)+10];\n",
+      genProperties "props" props,
+      "size_t len;\n",
+      "lwmqtt_err_t err = lwmqtt_encode_ack(buf, sizeof(buf), &len, ", protlvl prot, ", ", cname pkt, ", 0, ", show pid, ", ", show st, ", props);\n",
+      "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+      "EXPECT_EQ(len, sizeof(pkt));\n",
+      "EXPECT_ARRAY_EQ(pkt, buf, len);\n"
+      ]
+    dec = tf (name pkt) "Decode" $ mconcat [
+      "uint16_t packet_id;\n",
+      "uint8_t status;\n",
+      "lwmqtt_serialized_properties_t props;\n",
+      "bool dup;\n",
+      "lwmqtt_err_t err = lwmqtt_decode_ack(pkt, sizeof(pkt), ", protlvl prot, ", ", cname pkt, ", &dup, &packet_id, &status, &props);\n",
+      "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+      "EXPECT_EQ(packet_id, ", show pid, ");\n",
+      "EXPECT_EQ(status, ", show st, ");\n"
+      ]
+
+    name = ("PubACK" <>) . head . words . show
+    val (ACK x)  = toByteString prot x
+    val (REC x)  = toByteString prot x
+    val (REL x)  = toByteString prot x
+    val (COMP x) = toByteString prot x
+
+    pid = let (p,_,_) = parts pkt in p
+    st = let (_,s,_) = parts pkt in s
+    props = let (_,_,p) = parts pkt in p
+
+    parts (ACK (PubACK a b p))   = (a,b,p)
+    parts (REC (PubREC a b p))   = (a,b,p)
+    parts (REL (PubREL a b p))   = (a,b,p)
+    parts (COMP (PubCOMP a b p)) = (a,b,p)
+
+    cname (ACK _)  = "LWMQTT_PUBACK_PACKET"
+    cname (REC _)  = "LWMQTT_PUBREC_PACKET"
+    cname (REL _)  = "LWMQTT_PUBREL_PACKET"
+    cname (COMP _) = "LWMQTT_PUBCOMP_PACKET"
+
+    -- this is genTestFunc specialized to be more informative here.
+    tf test tname body = let e = val pkt in
+                                         mconcat [
+      "// ", show pkt, "\n",
+      "TEST(", test, shortprot prot, "QCTest, ", tname, show i <> ") {\n",
+      "uint8_t pkt[] = {" <> hexa e <> "};\n",
+      body, "\n",
+      "}\n\n"
+      ]
+
+
 main :: IO ()
 main = do
   putStrLn [r|#include <gtest/gtest.h>
@@ -446,6 +517,10 @@ extern "C" {
   pubs <- replicateM numTests $ generate arbitrary
   f genPublishTest Protocol311 (v311PubReq <$> pubs)
   f genPublishTest Protocol50 pubs
+
+  pubax <- replicateM numTests $ generate arbitrary
+  f genPubACKTest Protocol311 (v311ACKs <$> pubax)
+  f genPubACKTest Protocol50 pubax
 
   conns <- replicateM numTests $ generate arbitrary
   f genConnectTest Protocol311 (userFix . v311ConnReq <$> conns)

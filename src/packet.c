@@ -1,5 +1,8 @@
 #include "packet.h"
 
+static lwmqtt_err_t decode_props(uint8_t **buf, const uint8_t *buf_len, lwmqtt_protocol_t protocol,
+                                 lwmqtt_serialized_properties_t *props);
+
 lwmqtt_err_t lwmqtt_detect_packet_type(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_t *packet_type) {
   // set default packet type
   *packet_type = LWMQTT_NO_PACKET;
@@ -311,11 +314,15 @@ lwmqtt_err_t lwmqtt_encode_zero(uint8_t *buf, size_t buf_len, size_t *len, lwmqt
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_t packet_type, bool *dup,
-                               uint16_t *packet_id) {
+lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_protocol_t protocol,
+                               lwmqtt_packet_type_t packet_type, bool *dup, uint16_t *packet_id, uint8_t *status,
+                               lwmqtt_serialized_properties_t *props) {
   // prepare pointer
   uint8_t *buf_ptr = buf;
   uint8_t *buf_end = buf + buf_len;
+
+  *status = 0;
+  props->size = 0;
 
   // read header
   uint8_t header = 0;
@@ -340,7 +347,7 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_
   }
 
   // check remaining length
-  if (rem_len != 2) {
+  if (protocol == LWMQTT_MQTT311 && rem_len != 2) {
     return LWMQTT_REMAINING_LENGTH_MISMATCH;
   }
 
@@ -350,11 +357,29 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_
     return err;
   }
 
+  rem_len -= 2;
+
+  if (rem_len > 0) {
+    lwmqtt_err_t err = lwmqtt_read_byte(&buf_ptr, buf_end, status);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+    rem_len--;
+  }
+
+  if (rem_len > 0) {
+    err = decode_props(&buf_ptr, buf_end, protocol, props);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+  }
+
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_packet_type_t packet_type, bool dup,
-                               uint16_t packet_id) {
+lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
+                               lwmqtt_packet_type_t packet_type, bool dup, uint16_t packet_id, uint8_t status,
+                               lwmqtt_properties_t props) {
   // prepare pointer
   uint8_t *buf_ptr = buf;
   uint8_t *buf_end = buf + buf_len;
@@ -377,8 +402,13 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
     return err;
   }
 
+  size_t rem_len = 2 + (protocol == LWMQTT_MQTT5 ? 1 : 0);
+  if (props.len > 0) {
+    rem_len += lwmqtt_propslen(protocol, props);
+  }
+
   // write remaining length
-  err = lwmqtt_write_varnum(&buf_ptr, buf_end, 2);
+  err = lwmqtt_write_varnum(&buf_ptr, buf_end, rem_len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -387,6 +417,20 @@ lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt
   err = lwmqtt_write_num(&buf_ptr, buf_end, packet_id);
   if (err != LWMQTT_SUCCESS) {
     return err;
+  }
+
+  if (protocol == LWMQTT_MQTT5) {
+    err = lwmqtt_write_byte(&buf_ptr, buf_end, status);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+  }
+
+  if (props.len > 0) {
+    err = lwmqtt_write_props(&buf_ptr, buf_end, protocol, props);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
   }
 
   // set written length
