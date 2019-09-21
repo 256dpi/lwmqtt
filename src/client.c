@@ -526,14 +526,15 @@ lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic
   return lwmqtt_subscribe(client, 1, &topic_filter, &opts, timeout);
 }
 
-lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, uint32_t timeout) {
+lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter,
+                                lwmqtt_properties_t props, uint32_t timeout) {
   // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // encode unsubscribe packet
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(client->write_buf, client->write_buf_size, &len,
-                                               lwmqtt_get_next_packet_id(client), count, topic_filter);
+  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(client->write_buf, client->write_buf_size, &len, client->protocol,
+                                               lwmqtt_get_next_packet_id(client), count, topic_filter, props);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -564,8 +565,9 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_strin
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, uint32_t timeout) {
-  return lwmqtt_unsubscribe(client, 1, &topic_filter, timeout);
+lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_properties_t props,
+                                    uint32_t timeout) {
+  return lwmqtt_unsubscribe(client, 1, &topic_filter, props, timeout);
 }
 
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message,

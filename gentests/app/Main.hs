@@ -43,6 +43,9 @@ v311PubReq p50 = let (PublishPkt p) = v311mask (PublishPkt p50) in p
 v311SubReq :: SubscribeRequest -> SubscribeRequest
 v311SubReq p50 = let (SubscribePkt p) = v311mask (SubscribePkt p50) in p
 
+v311UnsubReq :: UnsubscribeRequest -> UnsubscribeRequest
+v311UnsubReq p50 = let (UnsubscribePkt p) = v311mask (UnsubscribePkt p50) in p
+
 v311SubACKReq :: SubscribeResponse -> SubscribeResponse
 v311SubACKReq p50 = let (SubACKPkt p) = v311mask (SubACKPkt p50) in p
 
@@ -200,6 +203,26 @@ genPublishTest prot i p@PublishRequest{..} =
         "lwmqtt_string_t x = exp_topic;\nx = exp_body;\n"
         ]
 
+genUnsubTest :: ProtocolLevel -> Int -> UnsubscribeRequest -> String
+genUnsubTest prot i p@(UnsubscribeRequest pid subs props) = do
+  genTestFunc "Unsubscribe" "Encode" prot i p $ mconcat [
+    "uint8_t buf[sizeof(pkt)+10] = { 0 };\n",
+    genProperties "props" props,
+    encodeFilters,
+    "size_t len;\n",
+    "lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, sizeof(buf), &len, ", protlvl prot, ", ", show pid, ", ",
+    show (length subs), ", topic_filters, props);\n",
+    "  EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+    "  EXPECT_ARRAY_EQ(pkt, buf, len);\n"
+    ]
+  where
+    encodeFilters = "lwmqtt_string_t topic_filters[" <> show (length subs) <> "];\n" <>
+                    concatMap aSub (zip [0..] subs)
+      where aSub :: (Int, BL.ByteString) -> String
+            aSub (i', t) = mconcat [
+              encodeString ("topic_filter_s" <> show i') t,
+              "topic_filters[", show i', "] = topic_filter_s", show i', ";\n"
+              ]
 
 genSubTest :: ProtocolLevel -> Int -> SubscribeRequest -> String
 genSubTest prot i p@(SubscribeRequest pid subs props) = do
@@ -405,8 +428,12 @@ extern "C" {
   f genSubACKTest Protocol311 (v311SubACKReq <$> subax)
   f genSubACKTest Protocol50 subax
 
+  unsubs <- replicateM numTests $ generate arbitrary
+  f genUnsubTest Protocol311 (v311UnsubReq <$> unsubs)
+  f genUnsubTest Protocol50 unsubs
+
   discos <- replicateM numTests $ generate arbitrary
-  f genDiscoTest Protocol311 (v311DiscoClean <$> discos)
+  f genDiscoTest Protocol311 (take 2 $ v311DiscoClean <$> discos) -- these are all the same
   f genDiscoTest Protocol50 discos
 
   where

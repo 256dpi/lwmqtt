@@ -739,14 +739,15 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len, uint16_t packet_id, int count,
-                                       lwmqtt_string_t *topic_filters) {
+lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
+                                       uint16_t packet_id, int count, lwmqtt_string_t *topic_filters,
+                                       lwmqtt_properties_t props) {
   // prepare pointer
   uint8_t *buf_ptr = buf;
   uint8_t *buf_end = buf + buf_len;
 
   // calculate remaining length
-  uint32_t rem_len = 2;
+  uint32_t rem_len = 2 + lwmqtt_propslen(protocol, props);
   for (int i = 0; i < count; i++) {
     rem_len += 2 + topic_filters[i].len;
   }
@@ -781,6 +782,11 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len
 
   // write packet id
   err = lwmqtt_write_num(&buf_ptr, buf_end, packet_id);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  err = lwmqtt_write_props(&buf_ptr, buf_end, protocol, props);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }

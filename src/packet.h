@@ -187,7 +187,8 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
  * @param topic_filters - The array of topic filters.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len, uint16_t packet_id, int count,
-                                       lwmqtt_string_t *topic_filters);
+lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
+                                       uint16_t packet_id, int count, lwmqtt_string_t *topic_filters,
+                                       lwmqtt_properties_t props);
 
 #endif  // LWMQTT_PACKET_H

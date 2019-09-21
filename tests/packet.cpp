@@ -761,7 +761,7 @@ TEST(UnsubscribeTest, Encode1) {
   topic_filters[2] = lwmqtt_string("/a/b/#/cdd");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 38, &len, 7, 3, topic_filters);
+  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 38, &len, LWMQTT_MQTT311, 7, 3, topic_filters, empty_props);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -774,7 +774,7 @@ TEST(UnsubscribeTest, EncodeError1) {
   topic_filters[0] = lwmqtt_string("surgemq");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 2, &len, 7, 1, topic_filters);
+  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 2, &len, LWMQTT_MQTT311, 7, 1, topic_filters, empty_props);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
