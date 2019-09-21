@@ -374,6 +374,10 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_protocol_t p
     }
   }
 
+  if (*status != 0) {
+    return LWMQTT_PUBACK_NACKED;
+  }
+
   return LWMQTT_SUCCESS;
 }
 

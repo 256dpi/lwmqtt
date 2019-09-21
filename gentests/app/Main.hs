@@ -451,7 +451,7 @@ genPubACKTest prot i pkt = enc <> dec
       "lwmqtt_serialized_properties_t props;\n",
       "bool dup;\n",
       "lwmqtt_err_t err = lwmqtt_decode_ack(pkt, sizeof(pkt), ", protlvl prot, ", ", cname pkt, ", &dup, &packet_id, &status, &props);\n",
-      "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+      "EXPECT_EQ(err, ", exst st, ");\n",
       "EXPECT_EQ(packet_id, ", show pid, ");\n",
       "EXPECT_EQ(status, ", show st, ");\n"
       ]
@@ -465,6 +465,9 @@ genPubACKTest prot i pkt = enc <> dec
     pid = let (p,_,_) = parts pkt in p
     st = let (_,s,_) = parts pkt in s
     props = let (_,_,p) = parts pkt in p
+
+    exst 0 = "LWMQTT_SUCCESS"
+    exst _ = "LWMQTT_PUBACK_NACKED"
 
     parts (ACK (PubACK a b p))   = (a,b,p)
     parts (REC (PubREC a b p))   = (a,b,p)
