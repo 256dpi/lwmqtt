@@ -46,8 +46,11 @@ v311SubReq p50 = let (SubscribePkt p) = v311mask (SubscribePkt p50) in p
 v311UnsubReq :: UnsubscribeRequest -> UnsubscribeRequest
 v311UnsubReq p50 = let (UnsubscribePkt p) = v311mask (UnsubscribePkt p50) in p
 
-v311SubACKReq :: SubscribeResponse -> SubscribeResponse
-v311SubACKReq p50 = let (SubACKPkt p) = v311mask (SubACKPkt p50) in p
+v311SubACK :: SubscribeResponse -> SubscribeResponse
+v311SubACK p50 = let (SubACKPkt p) = v311mask (SubACKPkt p50) in p
+
+v311UnsubACK :: UnsubscribeResponse -> UnsubscribeResponse
+v311UnsubACK p50 = let (UnsubACKPkt p) = v311mask (UnsubACKPkt p50) in p
 
 v311ConnReq :: ConnectRequest -> ConnectRequest
 v311ConnReq p50 = let (ConnPkt p) = v311mask (ConnPkt p50) in p
@@ -342,6 +345,34 @@ genSubACKTest prot i p@(SubscribeResponse pid res _props) = do
       q5 SubErrSubscriptionIdentifiersNotSupported =  "0xA1"
       q5 SubErrWildcardSubscriptionsNotSupported   =  "0xA2"
 
+genUnsubACKTest :: ProtocolLevel -> Int -> UnsubscribeResponse -> String
+genUnsubACKTest prot i p@(UnsubscribeResponse pid _props res) = do
+  let ll = show (length res)
+  genTestFunc "UnsubACK" "Decode" prot i p $ mconcat [
+    "uint16_t packet_id;\n",
+    "int count;\n",
+    "lwmqtt_unsubscribe_status_t statuses[", ll, "];\n",
+    "lwmqtt_err_t err = lwmqtt_decode_unsuback(pkt, sizeof(pkt), &packet_id,",
+    protlvl prot, ", ", ll, ", &count, statuses);\n",
+    "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+    "EXPECT_EQ(packet_id, ", show pid, ");\n",
+    "EXPECT_EQ(count, ", ll, ");\n",
+    concatMap checkStatus (zip [0..] res)
+    ]
+
+    where
+      checkStatus :: (Int,UnsubStatus) -> String
+      checkStatus (qi,q) = "EXPECT_EQ(statuses[" <> show qi <> "], " <> b q <> ");\n"
+
+      b UnsubSuccess                     = "LWMQTT_UNSUB_SUCCESS"
+      b UnsubNoSubscriptionExisted       = "LWMQTT_UNSUB_NO_SUB_EXISTED"
+      b UnsubUnspecifiedError            = "LWMQTT_UNSUB_UNSPECIFIED_ERROR"
+      b UnsubImplementationSpecificError = "LWMQTT_UNSUB_IMPL_SPECIFIC_ERROR"
+      b UnsubNotAuthorized               = "LWMQTT_UNSUB_NOT_AUTHORIZED"
+      b UnsubTopicFilterInvalid          = "LWMQTT_UNSUB_TOPIC_FILTER_INVALID"
+      b UnsubPacketIdentifierInUse       = "LWMQTT_UNSUB_PACKET_ID_IN_USE"
+
+
 genDiscoTest :: ProtocolLevel -> Int -> DisconnectRequest -> String
 genDiscoTest prot i p@(DisconnectRequest rsn props) = do
   genTestFunc "Disco" "Encode" prot i p $ mconcat [
@@ -425,12 +456,16 @@ extern "C" {
   f genSubTest Protocol50 subs
 
   subax <- replicateM numTests $ generate arbitrary
-  f genSubACKTest Protocol311 (v311SubACKReq <$> subax)
+  f genSubACKTest Protocol311 (v311SubACK <$> subax)
   f genSubACKTest Protocol50 subax
 
   unsubs <- replicateM numTests $ generate arbitrary
   f genUnsubTest Protocol311 (v311UnsubReq <$> unsubs)
   f genUnsubTest Protocol50 unsubs
+
+  unsubax <- replicateM numTests $ generate arbitrary
+  f genUnsubACKTest Protocol311 (v311UnsubACK <$> unsubax)
+  f genUnsubACKTest Protocol50 unsubax
 
   discos <- replicateM numTests $ generate arbitrary
   f genDiscoTest Protocol311 (take 2 $ v311DiscoClean <$> discos) -- these are all the same

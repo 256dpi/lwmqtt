@@ -739,6 +739,71 @@ lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet
   return LWMQTT_SUCCESS;
 }
 
+lwmqtt_err_t lwmqtt_decode_unsuback(uint8_t *buf, size_t buf_len, uint16_t *packet_id, lwmqtt_protocol_t protocol,
+                                    int max_count, int *count, lwmqtt_unsubscribe_status_t *statuses) {
+  // prepare pointer
+  uint8_t *buf_ptr = buf;
+  uint8_t *buf_end = buf + buf_len;
+
+  // read header
+  uint8_t header;
+  lwmqtt_err_t err = lwmqtt_read_byte(&buf_ptr, buf_end, &header);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  // check packet type
+  if (lwmqtt_read_bits(header, 4, 4) != LWMQTT_UNSUBACK_PACKET) {
+    return LWMQTT_MISSING_OR_WRONG_PACKET;
+  }
+
+  // read remaining length
+  uint32_t rem_len;
+  err = lwmqtt_read_varnum(&buf_ptr, buf_end, &rem_len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+  uint8_t *end = buf_ptr + rem_len;
+
+  // read packet id
+  err = lwmqtt_read_num(&buf_ptr, buf_end, packet_id);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  if (protocol == LWMQTT_MQTT311) {
+    for (int i = 0; i < max_count; i++) {
+      statuses[i] = LWMQTT_UNSUB_SUCCESS;
+    }
+    *count = max_count;
+    return LWMQTT_SUCCESS;
+  }
+
+  lwmqtt_serialized_properties_t props = {0, 0};
+  err = decode_props(&buf_ptr, buf_end, protocol, &props);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  // read all suback codes
+  for (*count = 0; buf_ptr < end; (*count)++) {
+    // check max count
+    if (*count > max_count) {
+      return LWMQTT_SUBACK_ARRAY_OVERFLOW;
+    }
+
+    // read qos level
+    uint8_t st;
+    err = lwmqtt_read_byte(&buf_ptr, buf_end, &st);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+    statuses[*count] = (lwmqtt_unsubscribe_status_t)st;
+  }
+
+  return LWMQTT_SUCCESS;
+}
+
 lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
                                        uint16_t packet_id, int count, lwmqtt_string_t *topic_filters,
                                        lwmqtt_properties_t props) {

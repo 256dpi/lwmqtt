@@ -513,6 +513,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
 
   // check suback codes
   for (int i = 0; i < suback_count; i++) {
+    // TODO:  Reverse this and just consider successes.
     if (granted_qos[i] == LWMQTT_QOS_FAILURE) {
       return LWMQTT_FAILED_SUBSCRIPTION;
     }
@@ -555,11 +556,20 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_strin
   }
 
   // decode unsuback packet
-  bool dup;
   uint16_t packet_id;
-  err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, LWMQTT_UNSUBACK_PACKET, &dup, &packet_id);
+  int ret_count;
+  lwmqtt_unsubscribe_status_t statuses[count];
+  err = lwmqtt_decode_unsuback(client->read_buf, client->read_buf_size, &packet_id, client->protocol, count, &ret_count,
+                               statuses);
   if (err != LWMQTT_SUCCESS) {
     return err;
+  }
+
+  for (int i = 0; i < ret_count; i++) {
+    if (statuses[i] != LWMQTT_UNSUB_SUCCESS) {
+      // TODO:  It might be nice to bubble this up (or the properties?)
+      return LWMQTT_FAILED_UNSUBSCRIPTION;
+    }
   }
 
   return LWMQTT_SUCCESS;

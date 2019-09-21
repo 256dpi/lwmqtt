@@ -176,6 +176,9 @@ lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, 
 lwmqtt_err_t lwmqtt_decode_suback(uint8_t *buf, size_t buf_len, uint16_t *packet_id, lwmqtt_protocol_t protocol,
                                   int max_count, int *count, lwmqtt_qos_t *granted_qos_levels);
 
+lwmqtt_err_t lwmqtt_decode_unsuback(uint8_t *buf, size_t buf_len, uint16_t *packet_id, lwmqtt_protocol_t protocol,
+                                    int max_count, int *count, lwmqtt_unsubscribe_status_t *statuses);
+
 /**
  * Encodes the supplied unsubscribe data into the supplied buffer, ready for sending
  *

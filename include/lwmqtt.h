@@ -29,6 +29,7 @@ typedef enum {
   LWMQTT_FAILED_SUBSCRIPTION = -11,
   LWMQTT_SUBACK_ARRAY_OVERFLOW = -12,
   LWMQTT_PONG_TIMEOUT = -13,
+  LWMQTT_FAILED_UNSUBSCRIPTION = -14,
 } lwmqtt_err_t;
 
 /**
@@ -413,6 +414,16 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
  */
 lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_sub_options_t opts,
                                   uint32_t timeout);
+
+typedef enum {
+  LWMQTT_UNSUB_SUCCESS = 0,
+  LWMQTT_UNSUB_NO_SUB_EXISTED = 0x11,
+  LWMQTT_UNSUB_UNSPECIFIED_ERROR = 0x80,
+  LWMQTT_UNSUB_IMPL_SPECIFIC_ERROR = 0x83,
+  LWMQTT_UNSUB_NOT_AUTHORIZED = 0x87,
+  LWMQTT_UNSUB_TOPIC_FILTER_INVALID = 0x8f,
+  LWMQTT_UNSUB_PACKET_ID_IN_USE = 0x91,
+} lwmqtt_unsubscribe_status_t;
 
 /**
  * Will send an unsubscribe packet with multiple topic filters and wait for the unsuback to complete.
