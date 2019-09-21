@@ -101,7 +101,7 @@ TEST(Client, PublishSubscribeQOS0) {
   err = lwmqtt_unsubscribe_one(&client, lwmqtt_string("lwmqtt"), COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  err = lwmqtt_disconnect(&client, 0, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
@@ -162,7 +162,7 @@ TEST(Client, PublishSubscribeQOS1) {
   err = lwmqtt_unsubscribe_one(&client, lwmqtt_string("lwmqtt"), COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  err = lwmqtt_disconnect(&client, 0, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
@@ -223,7 +223,7 @@ TEST(Client, PublishSubscribeQOS2) {
   err = lwmqtt_unsubscribe_one(&client, lwmqtt_string("lwmqtt"), COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  err = lwmqtt_disconnect(&client, 0, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
@@ -287,7 +287,7 @@ TEST(Client, BufferOverflow) {
     }
   }
 
-  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  err = lwmqtt_disconnect(&client, 0, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
@@ -348,7 +348,7 @@ TEST(Client, OverflowDropping) {
     }
   }
 
-  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  err = lwmqtt_disconnect(&client, 0, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   ASSERT_EQ(counter, 0);
@@ -411,7 +411,7 @@ TEST(Client, BigBuffersAndPayload) {
   err = lwmqtt_unsubscribe_one(&client, lwmqtt_string("lwmqtt"), COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  err = lwmqtt_disconnect(&client, 0, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
@@ -474,7 +474,7 @@ TEST(Client, MultipleSubscriptions) {
   err = lwmqtt_unsubscribe(&client, 2, topic_filters, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  err = lwmqtt_disconnect(&client, 0, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);

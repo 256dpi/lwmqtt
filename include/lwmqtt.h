@@ -446,7 +446,7 @@ lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t top
  * @param timeout - The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, uint32_t timeout);
+lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, uint8_t reason, lwmqtt_properties_t props, uint32_t timeout);
 
 /**
  * Will yield control to the client and receive incoming packets from the network.

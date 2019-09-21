@@ -75,7 +75,7 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, lwmqtt_protocol
                                    lwmqtt_return_code_t *return_code);
 
 /**
- * Encodes a zero (disconnect, pingreq) packet into the supplied buffer.
+ * Encodes a zero (pingreq) packet into the supplied buffer.
  *
  * @param buf - The buffer into which the packet will be encoded.
  * @param buf_len - The length of the specified buffer.
@@ -84,6 +84,9 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, lwmqtt_protocol
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_encode_zero(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_packet_type_t packet_type);
+
+lwmqtt_err_t lwmqtt_encode_disconnect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
+                                      uint8_t reason, lwmqtt_properties_t props);
 
 /**
  * Decodes an ack (puback, pubrec, pubrel, pubcomp, unsuback) packet from the supplied buffer.

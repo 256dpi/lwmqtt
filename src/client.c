@@ -625,24 +625,18 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, uint32_t timeout) {
+lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, uint8_t reason, lwmqtt_properties_t props, uint32_t timeout) {
   // set command timer
   client->timer_set(client->command_timer, timeout);
 
-  // encode disconnect packet
-  size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_zero(client->write_buf, client->write_buf_size, &len, LWMQTT_DISCONNECT_PACKET);
+  size_t len = 0;
+  lwmqtt_err_t err =
+      lwmqtt_encode_disconnect(client->write_buf, client->write_buf_size, &len, client->protocol, reason, props);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
-  // send disconnected packet
-  err = lwmqtt_send_packet_in_buffer(client, len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
-  }
-
-  return LWMQTT_SUCCESS;
+  return lwmqtt_send_packet_in_buffer(client, len);
 }
 
 lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout) {

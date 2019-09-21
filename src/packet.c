@@ -55,165 +55,6 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32
   return LWMQTT_SUCCESS;
 }
 
-static size_t proplen(lwmqtt_property_t prop) {
-  int ll;
-  switch (prop.prop) {
-    // one byte
-    case LWMQTT_PROP_PAYLOAD_FORMAT_INDICATOR:
-    case LWMQTT_PROP_REQUEST_PROBLEM_INFORMATION:
-    case LWMQTT_PROP_MAXIMUM_QOS:
-    case LWMQTT_PROP_RETAIN_AVAILABLE:
-    case LWMQTT_PROP_REQUEST_RESPONSE_INFORMATION:
-    case LWMQTT_PROP_WILDCARD_SUBSCRIPTION_AVAILABLE:
-    case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER_AVAILABLE:
-    case LWMQTT_PROP_SHARED_SUBSCRIPTION_AVAILABLE:
-      return 2;
-
-    // two byte int
-    case LWMQTT_PROP_SERVER_KEEP_ALIVE:
-    case LWMQTT_PROP_RECEIVE_MAXIMUM:
-    case LWMQTT_PROP_TOPIC_ALIAS_MAXIMUM:
-    case LWMQTT_PROP_TOPIC_ALIAS:
-      return 3;
-
-    // 4 byte int
-    case LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL:
-    case LWMQTT_PROP_SESSION_EXPIRY_INTERVAL:
-    case LWMQTT_PROP_WILL_DELAY_INTERVAL:
-    case LWMQTT_PROP_MAXIMUM_PACKET_SIZE:
-      return 5;
-
-    // Variable byte int
-    case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER:
-      lwmqtt_varnum_length(prop.value.int32, &ll);
-      return 1 + ll;
-
-    // UTF-8 string
-    case LWMQTT_PROP_CONTENT_TYPE:
-    case LWMQTT_PROP_RESPONSE_TOPIC:
-    case LWMQTT_PROP_ASSIGNED_CLIENT_IDENTIFIER:
-    case LWMQTT_PROP_AUTHENTICATION_METHOD:
-    case LWMQTT_PROP_RESPONSE_INFORMATION:
-    case LWMQTT_PROP_SERVER_REFERENCE:
-    case LWMQTT_PROP_REASON_STRING:
-
-    // Arbitrary blobs are the same encoding.
-    case LWMQTT_PROP_CORRELATION_DATA:
-    case LWMQTT_PROP_AUTHENTICATION_DATA:
-      return 3 + prop.value.str.len;
-
-    case LWMQTT_PROP_USER_PROPERTY:
-      return 1 + 2 + prop.value.pair.k.len + 2 + prop.value.pair.v.len;
-  }
-  return 0;
-}
-
-static lwmqtt_err_t write_prop(uint8_t **buf, const uint8_t *buf_end, lwmqtt_property_t prop) {
-  lwmqtt_err_t err = lwmqtt_write_byte(buf, buf_end, prop.prop);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
-  }
-
-  switch (prop.prop) {
-    // one byte
-    case LWMQTT_PROP_PAYLOAD_FORMAT_INDICATOR:
-    case LWMQTT_PROP_REQUEST_PROBLEM_INFORMATION:
-    case LWMQTT_PROP_MAXIMUM_QOS:
-    case LWMQTT_PROP_RETAIN_AVAILABLE:
-    case LWMQTT_PROP_REQUEST_RESPONSE_INFORMATION:
-    case LWMQTT_PROP_WILDCARD_SUBSCRIPTION_AVAILABLE:
-    case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER_AVAILABLE:
-    case LWMQTT_PROP_SHARED_SUBSCRIPTION_AVAILABLE:
-      return lwmqtt_write_byte(buf, buf_end, prop.value.byte);
-
-    // two byte int
-    case LWMQTT_PROP_SERVER_KEEP_ALIVE:
-    case LWMQTT_PROP_RECEIVE_MAXIMUM:
-    case LWMQTT_PROP_TOPIC_ALIAS_MAXIMUM:
-    case LWMQTT_PROP_TOPIC_ALIAS:
-      return lwmqtt_write_num(buf, buf_end, prop.value.int16);
-
-    // 4 byte int
-    case LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL:
-    case LWMQTT_PROP_SESSION_EXPIRY_INTERVAL:
-    case LWMQTT_PROP_WILL_DELAY_INTERVAL:
-    case LWMQTT_PROP_MAXIMUM_PACKET_SIZE:
-      return lwmqtt_write_num32(buf, buf_end, prop.value.int32);
-
-    // Variable byte int
-    case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER:
-      return lwmqtt_write_varnum(buf, buf_end, prop.value.int32);
-
-    // UTF-8 string
-    case LWMQTT_PROP_CONTENT_TYPE:
-    case LWMQTT_PROP_RESPONSE_TOPIC:
-    case LWMQTT_PROP_ASSIGNED_CLIENT_IDENTIFIER:
-    case LWMQTT_PROP_AUTHENTICATION_METHOD:
-    case LWMQTT_PROP_RESPONSE_INFORMATION:
-    case LWMQTT_PROP_SERVER_REFERENCE:
-    case LWMQTT_PROP_REASON_STRING:
-
-    // Arbitrary blobs as the same encoding.
-    case LWMQTT_PROP_CORRELATION_DATA:
-    case LWMQTT_PROP_AUTHENTICATION_DATA:
-      return lwmqtt_write_string(buf, buf_end, prop.value.str);
-
-    case LWMQTT_PROP_USER_PROPERTY:
-      lwmqtt_write_string(buf, buf_end, prop.value.pair.k);
-      lwmqtt_write_string(buf, buf_end, prop.value.pair.v);
-  }
-
-  return LWMQTT_SUCCESS;
-}
-
-// Length of the properties, not including their length.
-static size_t propsintlen(lwmqtt_properties_t props) {
-  uint32_t l = 0;
-
-  for (int i = 0; i < props.len; i++) {
-    l += proplen(props.props[i]);
-  }
-
-  return l;
-}
-
-// Length of a properties set as it may appear on the wire (including
-// the length of the length).
-static size_t propslen(lwmqtt_protocol_t prot, lwmqtt_properties_t props) {
-  if (prot == LWMQTT_MQTT311) {
-    return 0;
-  }
-
-  uint32_t l = propsintlen(props);
-  int ll;
-  // lwmqtt_err_t err =
-  lwmqtt_varnum_length(l, &ll);
-
-  return l + ll;
-}
-
-static lwmqtt_err_t lwmqtt_write_props(uint8_t **buf, const uint8_t *buf_end, lwmqtt_protocol_t prot,
-                                       lwmqtt_properties_t props) {
-  if (prot == LWMQTT_MQTT311) {
-    return LWMQTT_SUCCESS;
-  }
-
-  size_t len = propsintlen(props);
-  lwmqtt_err_t err = lwmqtt_write_varnum(buf, buf_end, len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
-  }
-
-  for (int i = 0; i < props.len; i++) {
-    err = write_prop(buf, buf_end, props.props[i]);
-    if (err != LWMQTT_SUCCESS) {
-      return err;
-    }
-  }
-
-  return LWMQTT_SUCCESS;
-}
-
 lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
                                    lwmqtt_options_t options, lwmqtt_will_t *will) {
   // prepare pointers
@@ -221,7 +62,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   uint8_t *buf_end = buf + buf_len;
 
   // fixed header is 10
-  uint32_t rem_len = 10 + propslen(protocol, options.properties);
+  uint32_t rem_len = 10 + lwmqtt_propslen(protocol, options.properties);
 
   // add client id to remaining length
   rem_len += options.client_id.len + 2;
@@ -229,7 +70,7 @@ lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lw
   // add will if present to remaining length
   if (will != NULL) {
     rem_len += will->topic.len + 2 + will->payload.len + 2;
-    rem_len += propslen(protocol, will->properties);
+    rem_len += lwmqtt_propslen(protocol, will->properties);
   }
 
   // add username if present to remaining length
@@ -673,7 +514,7 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, lw
   uint8_t *buf_end = buf + buf_len;
 
   // calculate remaining length
-  uint32_t rem_len = 2 + topic.len + (uint32_t)msg.payload_len + propslen(protocol, props);
+  uint32_t rem_len = 2 + topic.len + (uint32_t)msg.payload_len + lwmqtt_propslen(protocol, props);
   if (msg.qos > 0) {
     rem_len += 2;
   }
@@ -756,7 +597,7 @@ lwmqtt_err_t lwmqtt_encode_subscribe(uint8_t *buf, size_t buf_len, size_t *len, 
   uint8_t *buf_end = buf + buf_len;
 
   // calculate remaining length
-  uint32_t rem_len = 2 + propslen(protocol, props);
+  uint32_t rem_len = 2 + lwmqtt_propslen(protocol, props);
   for (int i = 0; i < count; i++) {
     rem_len += 2 + topic_filters[i].len + 1;
   }
@@ -955,5 +796,43 @@ lwmqtt_err_t lwmqtt_encode_unsubscribe(uint8_t *buf, size_t buf_len, size_t *len
   // set length
   *len = buf_ptr - buf;
 
+  return LWMQTT_SUCCESS;
+}
+
+lwmqtt_err_t lwmqtt_encode_disconnect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_protocol_t protocol,
+                                      uint8_t reason, lwmqtt_properties_t props) {
+  uint8_t *buf_ptr = buf;
+  uint8_t *buf_end = buf_ptr + buf_len;
+
+  uint8_t header = 0;
+  lwmqtt_write_bits(&header, LWMQTT_DISCONNECT_PACKET, 4, 4);
+  lwmqtt_err_t err = lwmqtt_write_byte(&buf_ptr, buf_end, header);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  uint32_t rem_len = 0;
+  if (protocol == LWMQTT_MQTT5) {
+    rem_len = 1 + lwmqtt_propslen(protocol, props);
+  }
+
+  err = lwmqtt_write_varnum(&buf_ptr, buf_end, rem_len);
+  if (err != LWMQTT_SUCCESS) {
+    return err;
+  }
+
+  if (protocol == LWMQTT_MQTT5) {
+    err = lwmqtt_write_byte(&buf_ptr, buf_end, reason);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+
+    err = lwmqtt_write_props(&buf_ptr, buf_end, protocol, props);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+  }
+
+  *len = buf_ptr - buf;
   return LWMQTT_SUCCESS;
 }

@@ -49,6 +49,9 @@ v311SubACKReq p50 = let (SubACKPkt p) = v311mask (SubACKPkt p50) in p
 v311ConnReq :: ConnectRequest -> ConnectRequest
 v311ConnReq p50 = let (ConnPkt p) = v311mask (ConnPkt p50) in p
 
+v311DiscoClean :: DisconnectRequest -> DisconnectRequest
+v311DiscoClean p50 = let (DisconnectPkt p) = v311mask (DisconnectPkt p50) in p
+
 userFix :: ConnectRequest -> ConnectRequest
 userFix = ufix . pfix
   where
@@ -316,6 +319,49 @@ genSubACKTest prot i p@(SubscribeResponse pid res _props) = do
       q5 SubErrSubscriptionIdentifiersNotSupported =  "0xA1"
       q5 SubErrWildcardSubscriptionsNotSupported   =  "0xA2"
 
+genDiscoTest :: ProtocolLevel -> Int -> DisconnectRequest -> String
+genDiscoTest prot i p@(DisconnectRequest rsn props) = do
+  genTestFunc "Disco" "Encode" prot i p $ mconcat [
+    "uint8_t buf[sizeof(pkt)+10] = { 0 };\n",
+    genProperties "props" props,
+    "size_t len = 0;\n",
+    "lwmqtt_err_t err = lwmqtt_encode_disconnect(buf, sizeof(buf), &len, ", protlvl prot, ", ", show (dr rsn), ", props);\n",
+    "EXPECT_EQ(err, LWMQTT_SUCCESS);\n",
+    "EXPECT_EQ(len, sizeof(pkt));\n",
+    "EXPECT_ARRAY_EQ(pkt, buf, len);\n"
+    ]
+
+  where
+    dr DiscoNormalDisconnection                 = 0x00
+    dr DiscoDisconnectWithWill                  = 0x04
+    dr DiscoUnspecifiedError                    = 0x80
+    dr DiscoMalformedPacket                     = 0x81
+    dr DiscoProtocolError                       = 0x82
+    dr DiscoImplementationSpecificError         = 0x83
+    dr DiscoNotAuthorized                       = 0x87
+    dr DiscoServerBusy                          = 0x89
+    dr DiscoServershuttingDown                  = 0x8B
+    dr DiscoKeepAliveTimeout                    = 0x8D
+    dr DiscoSessiontakenOver                    = 0x8e
+    dr DiscoTopicFilterInvalid                  = 0x8f
+    dr DiscoTopicNameInvalid                    = 0x90
+    dr DiscoReceiveMaximumExceeded              = 0x93
+    dr DiscoTopicAliasInvalid                   = 0x94
+    dr DiscoPacketTooLarge                      = 0x95
+    dr DiscoMessageRateTooHigh                  = 0x96
+    dr DiscoQuotaExceeded                       = 0x97
+    dr DiscoAdministrativeAction                = 0x98
+    dr DiscoPayloadFormatInvalid                = 0x99
+    dr DiscoRetainNotSupported                  = 0x9a
+    dr DiscoQoSNotSupported                     = 0x9b
+    dr DiscoUseAnotherServer                    = 0x9c
+    dr DiscoServerMoved                         = 0x9d
+    dr DiscoSharedSubscriptionsNotSupported     = 0x9e
+    dr DiscoConnectionRateExceeded              = 0x9f
+    dr DiscoMaximumConnectTime                  = 0xa0
+    dr DiscoSubscriptionIdentifiersNotSupported = 0xa1
+    dr DiscoWildcardSubscriptionsNotSupported   = 0xa2
+
 main :: IO ()
 main = do
   putStrLn [r|#include <gtest/gtest.h>
@@ -359,6 +405,9 @@ extern "C" {
   f genSubACKTest Protocol311 (v311SubACKReq <$> subax)
   f genSubACKTest Protocol50 subax
 
+  discos <- replicateM numTests $ generate arbitrary
+  f genDiscoTest Protocol311 (v311DiscoClean <$> discos)
+  f genDiscoTest Protocol50 discos
 
   where
     f :: (ProtocolLevel -> Int -> a -> String) -> ProtocolLevel -> [a] -> IO ()

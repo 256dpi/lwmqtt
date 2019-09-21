@@ -138,4 +138,9 @@ lwmqtt_err_t lwmqtt_read_varnum(uint8_t **buf, const uint8_t *buf_end, uint32_t 
  */
 lwmqtt_err_t lwmqtt_write_varnum(uint8_t **buf, const uint8_t *buf_end, uint32_t varnum);
 
+size_t lwmqtt_propslen(lwmqtt_protocol_t prot, lwmqtt_properties_t props);
+
+lwmqtt_err_t lwmqtt_write_props(uint8_t **buf, const uint8_t *buf_end, lwmqtt_protocol_t prot,
+                                lwmqtt_properties_t props);
+
 #endif
