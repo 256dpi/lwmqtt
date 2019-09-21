@@ -691,19 +691,22 @@ lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout) {
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t props, lwmqtt_prop_callback_t cb) {
+lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t props, lwmqtt_property_callbacks_t cb) {
   uint8_t *p = props.start;
   uint8_t *end = p + props.size;
   lwmqtt_err_t err;
 
   while (p < end) {
-    lwmqtt_property_t prop;
-    err = lwmqtt_read_byte(&p, end, (uint8_t *)&prop.prop);
+    uint8_t prop, bval;
+    uint16_t i16val;
+    uint32_t i32val;
+    lwmqtt_string_t strval, k, v;
+    err = lwmqtt_read_byte(&p, end, &prop);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
 
-    switch (prop.prop) {
+    switch (prop) {
         // one byte
       case LWMQTT_PROP_PAYLOAD_FORMAT_INDICATOR:
       case LWMQTT_PROP_REQUEST_PROBLEM_INFORMATION:
@@ -713,9 +716,12 @@ lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t p
       case LWMQTT_PROP_WILDCARD_SUBSCRIPTION_AVAILABLE:
       case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER_AVAILABLE:
       case LWMQTT_PROP_SHARED_SUBSCRIPTION_AVAILABLE:
-        err = lwmqtt_read_byte(&p, end, &prop.value.byte);
+        err = lwmqtt_read_byte(&p, end, &bval);
         if (err != LWMQTT_SUCCESS) {
           return err;
+        }
+        if (cb.byte_prop) {
+          cb.byte_prop(ref, prop, bval);
         }
         break;
 
@@ -724,9 +730,12 @@ lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t p
       case LWMQTT_PROP_RECEIVE_MAXIMUM:
       case LWMQTT_PROP_TOPIC_ALIAS_MAXIMUM:
       case LWMQTT_PROP_TOPIC_ALIAS:
-        err = lwmqtt_read_num(&p, end, &prop.value.int16);
+        err = lwmqtt_read_num(&p, end, &i16val);
         if (err != LWMQTT_SUCCESS) {
           return err;
+        }
+        if (cb.int16_prop) {
+          cb.int16_prop(ref, prop, i16val);
         }
         break;
 
@@ -735,17 +744,23 @@ lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t p
       case LWMQTT_PROP_SESSION_EXPIRY_INTERVAL:
       case LWMQTT_PROP_WILL_DELAY_INTERVAL:
       case LWMQTT_PROP_MAXIMUM_PACKET_SIZE:
-        err = lwmqtt_read_num32(&p, end, &prop.value.int32);
+        err = lwmqtt_read_num32(&p, end, &i32val);
         if (err != LWMQTT_SUCCESS) {
           return err;
+        }
+        if (cb.int32_prop) {
+          cb.int32_prop(ref, prop, i32val);
         }
         break;
 
         // Variable byte int
       case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER:
-        err = lwmqtt_read_varnum(&p, end, &prop.value.int32);
+        err = lwmqtt_read_varnum(&p, end, &i32val);
         if (err != LWMQTT_SUCCESS) {
           return err;
+        }
+        if (cb.int32_prop) {
+          cb.int32_prop(ref, prop, i32val);
         }
         break;
 
@@ -761,23 +776,32 @@ lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t p
         // Arbitrary blobs as the same encoding.
       case LWMQTT_PROP_CORRELATION_DATA:
       case LWMQTT_PROP_AUTHENTICATION_DATA:
-        err = lwmqtt_read_string(&p, end, &prop.value.str);
+        err = lwmqtt_read_string(&p, end, &strval);
         if (err != LWMQTT_SUCCESS) {
           return err;
+        }
+        if (cb.str_prop) {
+          cb.str_prop(ref, prop, strval);
         }
         break;
 
       case LWMQTT_PROP_USER_PROPERTY:
-        err = lwmqtt_read_string(&p, end, &prop.value.pair.k);
+        err = lwmqtt_read_string(&p, end, &k);
         if (err != LWMQTT_SUCCESS) {
           return err;
         }
-        err = lwmqtt_read_string(&p, end, &prop.value.pair.v);
+        err = lwmqtt_read_string(&p, end, &v);
         if (err != LWMQTT_SUCCESS) {
           return err;
         }
+        if (cb.user_prop) {
+          cb.user_prop(ref, k, v);
+        }
+        break;
+
+      default:
+        return LWMQTT_MISSING_OR_WRONG_PACKET;
     }
-    cb(ref, prop);
   }
 
   return LWMQTT_SUCCESS;

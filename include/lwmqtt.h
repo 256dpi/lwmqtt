@@ -493,8 +493,14 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, uint32_t ti
  */
 lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout);
 
-typedef void (*lwmqtt_prop_callback_t)(void *ref, lwmqtt_property_t prop);
+typedef struct {
+  void (*byte_prop)(void *ref, lwmqtt_prop_t prop, uint8_t value);
+  void (*int16_prop)(void *ref, lwmqtt_prop_t prop, int16_t value);
+  void (*int32_prop)(void *ref, lwmqtt_prop_t prop, int32_t value);
+  void (*str_prop)(void *ref, lwmqtt_prop_t prop, lwmqtt_string_t value);
+  void (*user_prop)(void *ref, lwmqtt_string_t key, lwmqtt_string_t val);
+} lwmqtt_property_callbacks_t;
 
-lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t props, lwmqtt_prop_callback_t cb);
+lwmqtt_err_t lwmqtt_property_visitor(void *ref, lwmqtt_serialized_properties_t props, lwmqtt_property_callbacks_t cb);
 
 #endif  // LWMQTT_H

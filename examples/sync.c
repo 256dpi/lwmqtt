@@ -13,60 +13,24 @@ lwmqtt_unix_timer_t timer1, timer2, timer3;
 
 lwmqtt_client_t client;
 
-static void prop_printer(void *ref, lwmqtt_property_t prop) {
-  switch (prop.prop) {
-      // one byte
-    case LWMQTT_PROP_PAYLOAD_FORMAT_INDICATOR:
-    case LWMQTT_PROP_REQUEST_PROBLEM_INFORMATION:
-    case LWMQTT_PROP_MAXIMUM_QOS:
-    case LWMQTT_PROP_RETAIN_AVAILABLE:
-    case LWMQTT_PROP_REQUEST_RESPONSE_INFORMATION:
-    case LWMQTT_PROP_WILDCARD_SUBSCRIPTION_AVAILABLE:
-    case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER_AVAILABLE:
-    case LWMQTT_PROP_SHARED_SUBSCRIPTION_AVAILABLE:
-      printf("  Property %x (byte): 0x%x\n", prop.prop, prop.value.byte);
-      break;
+static void prop_byte_printer(void *ref, lwmqtt_prop_t prop, uint8_t value) {
+  printf("  Property %x (byte): 0x%x\n", prop, value);
+}
 
-      // two byte int
-    case LWMQTT_PROP_SERVER_KEEP_ALIVE:
-    case LWMQTT_PROP_RECEIVE_MAXIMUM:
-    case LWMQTT_PROP_TOPIC_ALIAS_MAXIMUM:
-    case LWMQTT_PROP_TOPIC_ALIAS:
-      printf("  Property %x (int): %d\n", prop.prop, prop.value.int16);
-      break;
+static void prop_int16_printer(void *ref, lwmqtt_prop_t prop, int16_t value) {
+  printf("  Property %x (int): %d\n", prop, value);
+}
 
-      // 4 byte int
-    case LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL:
-    case LWMQTT_PROP_SESSION_EXPIRY_INTERVAL:
-    case LWMQTT_PROP_WILL_DELAY_INTERVAL:
-    case LWMQTT_PROP_MAXIMUM_PACKET_SIZE:
-      printf("  Property %x (int32): %d\n", prop.prop, prop.value.int32);
-      break;
+static void prop_int32_printer(void *ref, lwmqtt_prop_t prop, int32_t value) {
+  printf("  Property %x (int32): %d\n", prop, value);
+}
 
-      // Variable byte int
-    case LWMQTT_PROP_SUBSCRIPTION_IDENTIFIER:
-      printf("  Property %x (varint): %d\n", prop.prop, prop.value.int32);
-      break;
+static void prop_str_printer(void *ref, lwmqtt_prop_t prop, lwmqtt_string_t value) {
+  printf("  Property %x (string): %.*s\n", prop, (int)value.len, value.data);
+}
 
-      // UTF-8 string
-    case LWMQTT_PROP_CONTENT_TYPE:
-    case LWMQTT_PROP_RESPONSE_TOPIC:
-    case LWMQTT_PROP_ASSIGNED_CLIENT_IDENTIFIER:
-    case LWMQTT_PROP_AUTHENTICATION_METHOD:
-    case LWMQTT_PROP_RESPONSE_INFORMATION:
-    case LWMQTT_PROP_SERVER_REFERENCE:
-    case LWMQTT_PROP_REASON_STRING:
-
-      // Arbitrary blobs as the same encoding.
-    case LWMQTT_PROP_CORRELATION_DATA:
-    case LWMQTT_PROP_AUTHENTICATION_DATA:
-      printf("  Property %x (string): %.*s\n", prop.prop, prop.value.str.len, prop.value.str.data);
-      break;
-
-    case LWMQTT_PROP_USER_PROPERTY:
-      printf("  User property: k=%.*s, v=%.*s\n", prop.value.pair.k.len, prop.value.pair.k.data, prop.value.pair.v.len,
-             prop.value.pair.v.data);
-  }
+static void prop_user_printer(void *ref, lwmqtt_string_t k, lwmqtt_string_t v) {
+  printf("  User property: k=%.*s, v=%.*s\n", (int)k.len, k.data, (int)v.len, v.data);
 }
 
 static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg,
@@ -74,7 +38,16 @@ static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t
   printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload,
          (int)msg.payload_len);
 
-  lwmqtt_property_visitor(NULL, props, prop_printer);
+  lwmqtt_property_callbacks_t cb = {
+      .byte_prop = prop_byte_printer,
+      .int16_prop = prop_int16_printer,
+      .int32_prop = prop_int32_printer,
+      .str_prop = prop_str_printer,
+      .user_prop = prop_user_printer,
+  };
+  if (lwmqtt_property_visitor(NULL, props, cb) != LWMQTT_SUCCESS) {
+    exit(1);
+  }
 }
 
 int main() {
