@@ -72,7 +72,7 @@ TEST(Client, PublishSubscribeQOS0) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -133,7 +133,7 @@ TEST(Client, PublishSubscribeQOS1) {
 
   lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
   subopts.qos = LWMQTT_QOS1;
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -194,7 +194,7 @@ TEST(Client, PublishSubscribeQOS2) {
 
   lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
   subopts.qos = LWMQTT_QOS2;
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -254,7 +254,7 @@ TEST(Client, BufferOverflow) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_message_t msg = lwmqtt_default_message;
@@ -321,7 +321,7 @@ TEST(Client, OverflowDropping) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -382,7 +382,7 @@ TEST(Client, BigBuffersAndPayload) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), subopts, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;
@@ -445,7 +445,7 @@ TEST(Client, MultipleSubscriptions) {
   lwmqtt_string_t topic_filters[2] = {lwmqtt_string("foo"), lwmqtt_string("lwmqtt")};
   lwmqtt_sub_options_t qos_levels[2] = {subopts, subopts};
 
-  err = lwmqtt_subscribe(&client, 2, topic_filters, qos_levels, COMMAND_TIMEOUT);
+  err = lwmqtt_subscribe(&client, 2, topic_filters, qos_levels, empty_props, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   counter = 0;

@@ -90,7 +90,8 @@ int main() {
 
   // subscribe to topic
   lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), subopts, COMMAND_TIMEOUT);
+  lwmqtt_properties_t subprops = lwmqtt_empty_props;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), subopts, subprops, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_subscribe: %d\n", err);
     exit(1);

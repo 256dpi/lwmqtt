@@ -400,7 +400,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter,
-                              lwmqtt_sub_options_t *opts, uint32_t timeout);
+                              lwmqtt_sub_options_t *opts, lwmqtt_properties_t props, uint32_t timeout);
 
 /**
  * Will send a subscribe packet with a single topic filter plus QOS level and wait for the suback to complete.
@@ -414,7 +414,7 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_sub_options_t opts,
-                                  uint32_t timeout);
+                                  lwmqtt_properties_t props, uint32_t timeout);
 
 typedef enum {
   LWMQTT_UNSUB_SUCCESS = 0,
