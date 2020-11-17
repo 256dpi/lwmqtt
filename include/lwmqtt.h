@@ -271,7 +271,8 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
                             lwmqtt_return_code_t *return_code, uint32_t timeout);
 
 /**
- * Will send a publish packet and wait for all acks to complete.
+ * Will send a publish packet and wait for all acks to complete. If the encoded packet is bigger than the write buffer
+ * the function will return LWMQTT_BUFFER_TOO_SHORT without attempting to send the packet.
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
