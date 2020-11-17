@@ -163,6 +163,9 @@ struct lwmqtt_client_t {
   void *command_timer;
   lwmqtt_timer_set_t timer_set;
   lwmqtt_timer_get_t timer_get;
+
+  bool drop_overflow;
+  uint32_t *overflow_counter;
 };
 
 /**
@@ -207,6 +210,16 @@ void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *co
  * @param cb - The callback to be called.
  */
 void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t cb);
+
+/**
+ * Will configure the client to drop packets that overflow the read buffer. If a counter is provided it will be
+ * incremented with each dropped packet.
+ *
+ * @param client - The client.
+ * @param enabled - Whether dropping is enabled.
+ * @param counter - The dropped packet counter.
+ */
+void lwmqtt_drop_overflow(lwmqtt_client_t *client, bool enabled, uint32_t *counter);
 
 /**
  * The object defining the last will of a client.
