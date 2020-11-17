@@ -64,7 +64,7 @@ TEST(Client, PublishSubscribeQOS0) {
   data.password = lwmqtt_string("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, data, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, data, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -123,7 +123,7 @@ TEST(Client, PublishSubscribeQOS1) {
   options.password = lwmqtt_string("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS1, COMMAND_TIMEOUT);
@@ -182,7 +182,7 @@ TEST(Client, PublishSubscribeQOS2) {
   options.password = lwmqtt_string("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS2, COMMAND_TIMEOUT);
@@ -241,7 +241,7 @@ TEST(Client, BufferOverflowProtection) {
   options.password = lwmqtt_string("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -296,7 +296,7 @@ TEST(Client, BigBuffersAndPayload) {
   options.password = lwmqtt_string("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -355,7 +355,7 @@ TEST(Client, MultipleSubscriptions) {
   options.password = lwmqtt_string("try");
 
   lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, options, NULL, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_string_t topic_filters[2] = {lwmqtt_string("foo"), lwmqtt_string("lwmqtt")};

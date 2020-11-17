@@ -13,7 +13,7 @@ extern "C" {
   }
 
 TEST(DetectPacketType, Valid) {
-  uint8_t h = LWMQTT_CONNACK_PACKET << 4;
+  uint8_t h = LWMQTT_CONNACK_PACKET << 4u;
   lwmqtt_packet_type_t p;
   lwmqtt_err_t err = lwmqtt_detect_packet_type(&h, 1, &p);
   EXPECT_EQ(p, LWMQTT_CONNACK_PACKET);
@@ -60,7 +60,7 @@ TEST(DetectRemainingLength, Overflow) {
 
 TEST(ConnectTest, Encode1) {
   uint8_t pkt[62] = {
-      LWMQTT_CONNECT_PACKET << 4,
+      LWMQTT_CONNECT_PACKET << 4u,
       60,
       0,  // Protocol String MSB
       4,  // Protocol String LSB
@@ -147,7 +147,7 @@ TEST(ConnectTest, Encode1) {
 
 TEST(ConnectTest, Encode2) {
   uint8_t pkt[14] = {
-      LWMQTT_CONNECT_PACKET << 4,
+      LWMQTT_CONNECT_PACKET << 4u,
       12,
       0,  // Protocol String MSB
       4,  // Protocol String LSB
@@ -168,7 +168,7 @@ TEST(ConnectTest, Encode2) {
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 14, &len, opts, NULL);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 14, &len, opts, nullptr);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -176,7 +176,7 @@ TEST(ConnectTest, Encode2) {
 
 TEST(ConnectTest, Encode3) {
   uint8_t pkt[50] = {
-      LWMQTT_CONNECT_PACKET << 4,
+      LWMQTT_CONNECT_PACKET << 4u,
       48,
       0,  // Protocol String MSB
       4,  // Protocol String LSB
@@ -254,14 +254,14 @@ TEST(ConnectTest, EncodeError1) {
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 4, &len, opts, NULL);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 4, &len, opts, nullptr);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(ConnackTest, Decode1) {
   uint8_t pkt[4] = {
-      LWMQTT_CONNACK_PACKET << 4, 2,
+      LWMQTT_CONNACK_PACKET << 4u, 2,
       0,  // session not present
       0,  // connection accepted
   };
@@ -277,7 +277,7 @@ TEST(ConnackTest, Decode1) {
 
 TEST(ConnackTest, DecodeError1) {
   uint8_t pkt[4] = {
-      LWMQTT_CONNACK_PACKET << 4,
+      LWMQTT_CONNACK_PACKET << 4u,
       3,  // <-- wrong size
       0,  // session not present
       0,  // connection accepted
@@ -292,7 +292,7 @@ TEST(ConnackTest, DecodeError1) {
 
 TEST(ConnackTest, DecodeError2) {
   uint8_t pkt[3] = {
-      LWMQTT_CONNACK_PACKET << 4, 3,
+      LWMQTT_CONNACK_PACKET << 4u, 3,
       0,  // session not present
           // <- missing packet size
   };
@@ -305,7 +305,7 @@ TEST(ConnackTest, DecodeError2) {
 }
 
 TEST(ZeroTest, Encode1) {
-  uint8_t pkt[2] = {LWMQTT_PINGREQ_PACKET << 4, 0};
+  uint8_t pkt[2] = {LWMQTT_PINGREQ_PACKET << 4u, 0};
 
   uint8_t buf[2];
 
@@ -318,7 +318,7 @@ TEST(ZeroTest, Encode1) {
 
 TEST(AckTest, Decode1) {
   uint8_t pkt[4] = {
-      LWMQTT_PUBACK_PACKET << 4, 2,
+      LWMQTT_PUBACK_PACKET << 4u, 2,
       0,  // packet ID MSB
       7,  // packet ID LSB
   };
@@ -334,7 +334,7 @@ TEST(AckTest, Decode1) {
 
 TEST(AckTest, DecodeError1) {
   uint8_t pkt[4] = {
-      LWMQTT_PUBACK_PACKET << 4,
+      LWMQTT_PUBACK_PACKET << 4u,
       1,  // <-- wrong remaining length
       0,  // packet ID MSB
       7,  // packet ID LSB
@@ -349,7 +349,7 @@ TEST(AckTest, DecodeError1) {
 
 TEST(AckTest, DecodeError2) {
   uint8_t pkt[3] = {
-      LWMQTT_PUBACK_PACKET << 4,
+      LWMQTT_PUBACK_PACKET << 4u,
       1,  // <-- wrong remaining length
       0,  // packet ID MSB
           //  <- insufficient bytes
@@ -364,7 +364,7 @@ TEST(AckTest, DecodeError2) {
 
 TEST(AckTest, Encode1) {
   uint8_t pkt[4] = {
-      LWMQTT_PUBACK_PACKET << 4, 2,
+      LWMQTT_PUBACK_PACKET << 4u, 2,
       0,  // packet ID MSB
       7,  // packet ID LSB
   };
@@ -389,7 +389,7 @@ TEST(AckTest, EncodeError1) {
 
 TEST(PublishTest, Decode1) {
   uint8_t pkt[25] = {
-      LWMQTT_PUBLISH_PACKET << 4 | 11,
+      LWMQTT_PUBLISH_PACKET << 4u | 11,
       23,
       0,  // topic name MSB
       7,  // topic name LSB
@@ -434,7 +434,7 @@ TEST(PublishTest, Decode1) {
 
 TEST(PublishTest, Decode2) {
   uint8_t pkt[23] = {
-      LWMQTT_PUBLISH_PACKET << 4,
+      LWMQTT_PUBLISH_PACKET << 4u,
       21,
       0,  // topic name MSB
       7,  // topic name LSB
@@ -477,7 +477,7 @@ TEST(PublishTest, Decode2) {
 
 TEST(PublishTest, DecodeError1) {
   uint8_t pkt[2] = {
-      LWMQTT_PUBLISH_PACKET << 4,
+      LWMQTT_PUBLISH_PACKET << 4u,
       2,  // <-- too much
   };
 
@@ -492,7 +492,7 @@ TEST(PublishTest, DecodeError1) {
 
 TEST(PublishTest, Encode1) {
   uint8_t pkt[25] = {
-      LWMQTT_PUBLISH_PACKET << 4 | 11,
+      LWMQTT_PUBLISH_PACKET << 4u | 11,
       23,
       0,  // topic name MSB
       7,  // topic name LSB
@@ -537,7 +537,7 @@ TEST(PublishTest, Encode1) {
 
 TEST(PublishTest, Encode2) {
   uint8_t pkt[23] = {
-      LWMQTT_PUBLISH_PACKET << 4,
+      LWMQTT_PUBLISH_PACKET << 4u,
       21,
       0,  // topic name MSB
       7,  // topic name LSB
@@ -592,7 +592,7 @@ TEST(PublishTest, EncodeError1) {
 
 TEST(SubackTest, Decode1) {
   uint8_t pkt[8] = {
-      LWMQTT_SUBACK_PACKET << 4,
+      LWMQTT_SUBACK_PACKET << 4u,
       4,
       0,  // packet ID MSB
       7,  // packet ID LSB
@@ -614,7 +614,7 @@ TEST(SubackTest, Decode1) {
 
 TEST(SubackTest, DecodeError1) {
   uint8_t pkt[5] = {
-      LWMQTT_SUBACK_PACKET << 4,
+      LWMQTT_SUBACK_PACKET << 4u,
       1,  // <- wrong remaining length
       0,  // packet ID MSB
       7,  // packet ID LSB
@@ -631,7 +631,7 @@ TEST(SubackTest, DecodeError1) {
 
 TEST(SubscribeTest, Encode1) {
   uint8_t pkt[38] = {
-      LWMQTT_SUBSCRIBE_PACKET << 4 | 2,
+      LWMQTT_SUBSCRIBE_PACKET << 4u | 2,
       36,
       0,  // packet ID MSB
       7,  // packet ID LSB
@@ -703,7 +703,7 @@ TEST(SubscribeTest, EncodeError1) {
 
 TEST(UnsubscribeTest, Encode1) {
   uint8_t pkt[35] = {
-      LWMQTT_UNSUBSCRIBE_PACKET << 4 | 2,
+      LWMQTT_UNSUBSCRIBE_PACKET << 4u | 2,
       33,
       0,  // packet ID MSB
       7,  // packet ID LSB
