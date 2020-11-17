@@ -13,7 +13,7 @@ lwmqtt_unix_timer_t timer1, timer2, timer3;
 
 lwmqtt_client_t client;
 
-static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
+static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
   printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload,
          (int)msg.payload_len);
 }

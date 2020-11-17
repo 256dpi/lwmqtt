@@ -2,7 +2,9 @@
 
 #include "helpers.h"
 
-uint8_t lwmqtt_read_bits(uint8_t byte, int pos, int num) { return (byte & (uint8_t)((~(0xFF << (uint8_t)num)) << (uint8_t)pos)) >> (uint8_t)pos; }
+uint8_t lwmqtt_read_bits(uint8_t byte, int pos, int num) {
+  return (byte & (uint8_t)((~(0xFF << (uint8_t)num)) << (uint8_t)pos)) >> (uint8_t)pos;
+}
 
 void lwmqtt_write_bits(uint8_t *byte, uint8_t value, int pos, int num) {
   *byte = (*byte & ~(uint8_t)((~(0xFFu << (uint8_t)num)) << (uint8_t)pos)) | (value << (uint8_t)pos);
