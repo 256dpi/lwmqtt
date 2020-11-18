@@ -99,34 +99,31 @@ static lwmqtt_err_t lwmqtt_read_from_network(lwmqtt_client_t *client, size_t off
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_drain(lwmqtt_client_t *client, size_t amount) {
-  // prepare counter
-  size_t left = amount;
-
-  // read while data is missing
-  while (left > 0) {
+static lwmqtt_err_t lwmqtt_drain_network(lwmqtt_client_t *client, size_t amount) {
+  // read while data is left
+  while (amount > 0) {
     // check remaining time
     int32_t remaining_time = client->timer_get(client->command_timer);
     if (remaining_time <= 0) {
       return LWMQTT_NETWORK_TIMEOUT;
     }
 
-    // get length
-    size_t len = left;
-    if (left > client->read_buf_size) {
-      len = client->read_buf_size;
+    // get max read
+    size_t max_read = amount;
+    if (max_read > client->read_buf_size) {
+      max_read = client->read_buf_size;
     }
 
     // read
     size_t partial_read = 0;
     lwmqtt_err_t err =
-        client->network_read(client->network, client->read_buf, len, &partial_read, (uint32_t)remaining_time);
+        client->network_read(client->network, client->read_buf, max_read, &partial_read, (uint32_t)remaining_time);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
 
     // decrement counter
-    left -= partial_read;
+    amount -= partial_read;
   }
 
   return LWMQTT_SUCCESS;
@@ -203,11 +200,23 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *client, size_t
   }
 
   // handle overflow
-  if (1 + len + rem_len > client->read_buf_size) {
+  if (client->drop_overflow && 1 + len + rem_len > client->read_buf_size) {
+    // drain network
+    err = lwmqtt_drain_network(client, rem_len);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
+
+    // unset packet
     *packet_type = LWMQTT_NO_PACKET;
     *read = 0;
-    *client->overflow_counter += 1;
-    return lwmqtt_drain(client, rem_len);
+
+    // increment if counter is available
+    if (client->overflow_counter != NULL) {
+      *client->overflow_counter += 1;
+    }
+
+    return LWMQTT_SUCCESS;
   }
 
   // read the rest of the buffer if needed
