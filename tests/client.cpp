@@ -55,13 +55,13 @@ TEST(Client, PublishSubscribeQOS0) {
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t data = lwmqtt_default_options;
   data.client_id = lwmqtt_string("lwmqtt");
-  data.username = lwmqtt_string("try");
-  data.password = lwmqtt_string("try");
+  data.username = lwmqtt_string("public");
+  data.password = lwmqtt_string("public");
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, data, nullptr, &return_code, COMMAND_TIMEOUT);
@@ -114,13 +114,13 @@ TEST(Client, PublishSubscribeQOS1) {
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
-  options.username = lwmqtt_string("try");
-  options.password = lwmqtt_string("try");
+  options.username = lwmqtt_string("public");
+  options.password = lwmqtt_string("public");
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
@@ -173,13 +173,13 @@ TEST(Client, PublishSubscribeQOS2) {
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
-  options.username = lwmqtt_string("try");
-  options.password = lwmqtt_string("try");
+  options.username = lwmqtt_string("public");
+  options.password = lwmqtt_string("public");
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
@@ -232,13 +232,13 @@ TEST(Client, BufferOverflow) {
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
-  options.username = lwmqtt_string("try");
-  options.password = lwmqtt_string("try");
+  options.username = lwmqtt_string("public");
+  options.password = lwmqtt_string("public");
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
@@ -298,13 +298,13 @@ TEST(Client, OverflowDropping) {
   uint32_t dropped = 0;
   lwmqtt_drop_overflow(&client, true, &dropped);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
-  options.username = lwmqtt_string("try");
-  options.password = lwmqtt_string("try");
+  options.username = lwmqtt_string("public");
+  options.password = lwmqtt_string("public");
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
@@ -358,13 +358,13 @@ TEST(Client, BigBuffersAndPayload) {
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, big_message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
-  options.username = lwmqtt_string("try");
-  options.password = lwmqtt_string("try");
+  options.username = lwmqtt_string("public");
+  options.password = lwmqtt_string("public");
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
@@ -417,13 +417,13 @@ TEST(Client, MultipleSubscriptions) {
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
-  options.username = lwmqtt_string("try");
-  options.password = lwmqtt_string("try");
+  options.username = lwmqtt_string("public");
+  options.password = lwmqtt_string("public");
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);

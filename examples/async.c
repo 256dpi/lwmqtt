@@ -77,7 +77,7 @@ int main() {
   lwmqtt_set_callback(&client, NULL, message_arrived);
 
   // connect to broker
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "public.cloud.shiftr.io", 1883);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_unix_network_connect: %d\n", err);
     exit(1);
@@ -86,8 +86,8 @@ int main() {
   // set options
   lwmqtt_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
-  options.username = lwmqtt_string("try");
-  options.password = lwmqtt_string("try");
+  options.username = lwmqtt_string("public");
+  options.password = lwmqtt_string("public");
   options.keep_alive = 10;
 
   // send connect packet
