@@ -1,2 +1,6 @@
 cmake-build-debug/
 gtest/
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+.vscode
