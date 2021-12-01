@@ -28,6 +28,8 @@ add_library(lwmqtt ${SOURCE_FILES})
 
 add_executable(example-sync examples/sync.c)
 
+add_library(lwmqtt_d SHARED ${SOURCE_FILES})
+
 target_link_libraries(example-sync lwmqtt)
 
 
@@ -36,11 +38,11 @@ add_executable(example-async examples/async.c)
 target_link_libraries(example-async lwmqtt pthread)
 
 set(TEST_FILES
-        tests/client.cpp
-        tests/helpers.cpp
-        tests/packet.cpp
-        tests/string.cpp
-        tests/tests.cpp)
+        tests1/client.cpp
+        tests1/helpers.cpp
+        tests1/packet.cpp
+        tests1/string.cpp
+        tests1/tests.cpp)
 
 add_executable(tests ${TEST_FILES})
 
