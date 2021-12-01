@@ -305,7 +305,9 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
     }
 
     // handle all other packets
-    default: { break; }
+    default: {
+      break;
+    }
   }
 
   return LWMQTT_SUCCESS;

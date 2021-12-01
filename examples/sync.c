@@ -1,8 +1,7 @@
+#include <lwmqtt/unix.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include <lwmqtt/unix.h>
 
 #define COMMAND_TIMEOUT 5000
 #define MESSAGE_TIMEOUT 1000

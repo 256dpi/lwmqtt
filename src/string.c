@@ -1,6 +1,5 @@
-#include <string.h>
-
 #include <lwmqtt.h>
+#include <string.h>
 
 lwmqtt_string_t lwmqtt_string(const char *str) {
   // check for null

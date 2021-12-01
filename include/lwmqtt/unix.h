@@ -1,9 +1,8 @@
 #ifndef LWMQTT_UNIX_H
 #define LWMQTT_UNIX_H
 
-#include <sys/time.h>
-
 #include <lwmqtt.h>
+#include <sys/time.h>
 
 /**
  * The UNIX timer object.

@@ -1,12 +1,11 @@
 #include <arpa/inet.h>
 #include <errno.h>
+#include <lwmqtt/unix.h>
 #include <memory.h>
 #include <netdb.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-
-#include <lwmqtt/unix.h>
 
 void lwmqtt_unix_timer_set(void *ref, uint32_t timeout) {
   // cast timer reference

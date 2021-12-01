@@ -1,6 +1,6 @@
-#include <string.h>
-
 #include "helpers.h"
+
+#include <string.h>
 
 uint8_t lwmqtt_read_bits(uint8_t byte, int pos, int num) { return (byte & (uint8_t)((~(0xFF << num)) << pos)) >> pos; }
 
