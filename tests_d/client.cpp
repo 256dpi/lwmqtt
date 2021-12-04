@@ -5,6 +5,13 @@ extern "C" {
 #include <lwmqtt/unix.h>
 }
 
+
+#include <openssl/conf.h>
+#include <openssl/x509v3.h>
+#include <openssl/ssl.h>
+
+volatile bool test=false;
+
 #define COMMAND_TIMEOUT 5000
 
 #define PAYLOAD_LEN 256
@@ -90,6 +97,15 @@ TEST(Client, PublishSubscribeQOS0) {
     if (available > 0) {
       err = lwmqtt_yield(&client, available, COMMAND_TIMEOUT);
       ASSERT_EQ(err, LWMQTT_SUCCESS);
+    }
+    if(test)
+    {
+      SSL *ssl = nullptr;
+      void *mosq;
+
+      mosq = SSL_get_ex_data(ssl, 1);
+      if(mosq)
+        mosq = 0;
     }
   }
 
@@ -388,6 +404,65 @@ TEST(Client, MultipleSubscriptions) {
   }
 
   err = lwmqtt_unsubscribe(&client, 2, topic_filters, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  lwmqtt_unix_network_disconnect(&network);
+}
+
+TEST(ClientMosq, PublishSubscribeQOS0) {
+  lwmqtt_unix_network_t network;
+  lwmqtt_unix_timer_t timer1, timer2;
+
+  lwmqtt_client_t client;
+
+  lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
+
+  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
+
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"test.mosquitto.org", 1884);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  lwmqtt_options_t data = lwmqtt_default_options;
+  data.client_id = lwmqtt_string("lwmqtt");
+  data.username = lwmqtt_string("rw");
+  data.password = lwmqtt_string("readwrite");
+
+  lwmqtt_return_code_t return_code;
+  err = lwmqtt_connect(&client, data, nullptr, &return_code, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  counter = 0;
+
+  for (int i = 0; i < 5; i++) {
+    lwmqtt_message_t msg = lwmqtt_default_message;
+    msg.qos = LWMQTT_QOS0;
+    msg.payload = payload;
+    msg.payload_len = PAYLOAD_LEN;
+
+    err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
+    ASSERT_EQ(err, LWMQTT_SUCCESS);
+  }
+
+  while (counter < 5) {
+    size_t available = 0;
+    err = lwmqtt_unix_network_peek(&network, &available);
+    ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+    if (available > 0) {
+      err = lwmqtt_yield(&client, available, COMMAND_TIMEOUT);
+      ASSERT_EQ(err, LWMQTT_SUCCESS);
+    }
+  }
+
+  err = lwmqtt_unsubscribe_one(&client, lwmqtt_string("lwmqtt"), COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);

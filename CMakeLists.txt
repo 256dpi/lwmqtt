@@ -46,4 +46,4 @@ set(TEST_FILES
 
 add_executable(tests ${TEST_FILES})
 
-target_link_libraries(tests lwmqtt gtest gtest_main)
+target_link_libraries(tests lwmqtt gtest gtest_main ssl crypto)
