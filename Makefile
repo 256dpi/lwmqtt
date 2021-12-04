@@ -405,140 +405,140 @@ src/string.c.s:
 	$(MAKE) -f CMakeFiles/lwmqtt.dir/build.make CMakeFiles/lwmqtt.dir/src/string.c.s
 .PHONY : src/string.c.s
 
-tests1/client.o: tests1/client.cpp.o
+tests_d/client.o: tests_d/client.cpp.o
 
-.PHONY : tests1/client.o
-
-# target to build an object file
-tests1/client.cpp.o:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/client.cpp.o
-.PHONY : tests1/client.cpp.o
-
-tests1/client.i: tests1/client.cpp.i
-
-.PHONY : tests1/client.i
-
-# target to preprocess a source file
-tests1/client.cpp.i:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/client.cpp.i
-.PHONY : tests1/client.cpp.i
-
-tests1/client.s: tests1/client.cpp.s
-
-.PHONY : tests1/client.s
-
-# target to generate assembly for a file
-tests1/client.cpp.s:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/client.cpp.s
-.PHONY : tests1/client.cpp.s
-
-tests1/helpers.o: tests1/helpers.cpp.o
-
-.PHONY : tests1/helpers.o
+.PHONY : tests_d/client.o
 
 # target to build an object file
-tests1/helpers.cpp.o:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/helpers.cpp.o
-.PHONY : tests1/helpers.cpp.o
+tests_d/client.cpp.o:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/client.cpp.o
+.PHONY : tests_d/client.cpp.o
 
-tests1/helpers.i: tests1/helpers.cpp.i
+tests_d/client.i: tests_d/client.cpp.i
 
-.PHONY : tests1/helpers.i
+.PHONY : tests_d/client.i
 
 # target to preprocess a source file
-tests1/helpers.cpp.i:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/helpers.cpp.i
-.PHONY : tests1/helpers.cpp.i
+tests_d/client.cpp.i:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/client.cpp.i
+.PHONY : tests_d/client.cpp.i
 
-tests1/helpers.s: tests1/helpers.cpp.s
+tests_d/client.s: tests_d/client.cpp.s
 
-.PHONY : tests1/helpers.s
+.PHONY : tests_d/client.s
 
 # target to generate assembly for a file
-tests1/helpers.cpp.s:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/helpers.cpp.s
-.PHONY : tests1/helpers.cpp.s
+tests_d/client.cpp.s:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/client.cpp.s
+.PHONY : tests_d/client.cpp.s
 
-tests1/packet.o: tests1/packet.cpp.o
+tests_d/helpers.o: tests_d/helpers.cpp.o
 
-.PHONY : tests1/packet.o
+.PHONY : tests_d/helpers.o
 
 # target to build an object file
-tests1/packet.cpp.o:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/packet.cpp.o
-.PHONY : tests1/packet.cpp.o
+tests_d/helpers.cpp.o:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/helpers.cpp.o
+.PHONY : tests_d/helpers.cpp.o
 
-tests1/packet.i: tests1/packet.cpp.i
+tests_d/helpers.i: tests_d/helpers.cpp.i
 
-.PHONY : tests1/packet.i
+.PHONY : tests_d/helpers.i
 
 # target to preprocess a source file
-tests1/packet.cpp.i:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/packet.cpp.i
-.PHONY : tests1/packet.cpp.i
+tests_d/helpers.cpp.i:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/helpers.cpp.i
+.PHONY : tests_d/helpers.cpp.i
 
-tests1/packet.s: tests1/packet.cpp.s
+tests_d/helpers.s: tests_d/helpers.cpp.s
 
-.PHONY : tests1/packet.s
+.PHONY : tests_d/helpers.s
 
 # target to generate assembly for a file
-tests1/packet.cpp.s:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/packet.cpp.s
-.PHONY : tests1/packet.cpp.s
+tests_d/helpers.cpp.s:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/helpers.cpp.s
+.PHONY : tests_d/helpers.cpp.s
 
-tests1/string.o: tests1/string.cpp.o
+tests_d/packet.o: tests_d/packet.cpp.o
 
-.PHONY : tests1/string.o
+.PHONY : tests_d/packet.o
 
 # target to build an object file
-tests1/string.cpp.o:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/string.cpp.o
-.PHONY : tests1/string.cpp.o
+tests_d/packet.cpp.o:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/packet.cpp.o
+.PHONY : tests_d/packet.cpp.o
 
-tests1/string.i: tests1/string.cpp.i
+tests_d/packet.i: tests_d/packet.cpp.i
 
-.PHONY : tests1/string.i
+.PHONY : tests_d/packet.i
 
 # target to preprocess a source file
-tests1/string.cpp.i:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/string.cpp.i
-.PHONY : tests1/string.cpp.i
+tests_d/packet.cpp.i:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/packet.cpp.i
+.PHONY : tests_d/packet.cpp.i
 
-tests1/string.s: tests1/string.cpp.s
+tests_d/packet.s: tests_d/packet.cpp.s
 
-.PHONY : tests1/string.s
+.PHONY : tests_d/packet.s
 
 # target to generate assembly for a file
-tests1/string.cpp.s:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/string.cpp.s
-.PHONY : tests1/string.cpp.s
+tests_d/packet.cpp.s:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/packet.cpp.s
+.PHONY : tests_d/packet.cpp.s
 
-tests1/tests.o: tests1/tests.cpp.o
+tests_d/string.o: tests_d/string.cpp.o
 
-.PHONY : tests1/tests.o
+.PHONY : tests_d/string.o
 
 # target to build an object file
-tests1/tests.cpp.o:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/tests.cpp.o
-.PHONY : tests1/tests.cpp.o
+tests_d/string.cpp.o:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/string.cpp.o
+.PHONY : tests_d/string.cpp.o
 
-tests1/tests.i: tests1/tests.cpp.i
+tests_d/string.i: tests_d/string.cpp.i
 
-.PHONY : tests1/tests.i
+.PHONY : tests_d/string.i
 
 # target to preprocess a source file
-tests1/tests.cpp.i:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/tests.cpp.i
-.PHONY : tests1/tests.cpp.i
+tests_d/string.cpp.i:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/string.cpp.i
+.PHONY : tests_d/string.cpp.i
 
-tests1/tests.s: tests1/tests.cpp.s
+tests_d/string.s: tests_d/string.cpp.s
 
-.PHONY : tests1/tests.s
+.PHONY : tests_d/string.s
 
 # target to generate assembly for a file
-tests1/tests.cpp.s:
-	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests1/tests.cpp.s
-.PHONY : tests1/tests.cpp.s
+tests_d/string.cpp.s:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/string.cpp.s
+.PHONY : tests_d/string.cpp.s
+
+tests_d/tests.o: tests_d/tests.cpp.o
+
+.PHONY : tests_d/tests.o
+
+# target to build an object file
+tests_d/tests.cpp.o:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/tests.cpp.o
+.PHONY : tests_d/tests.cpp.o
+
+tests_d/tests.i: tests_d/tests.cpp.i
+
+.PHONY : tests_d/tests.i
+
+# target to preprocess a source file
+tests_d/tests.cpp.i:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/tests.cpp.i
+.PHONY : tests_d/tests.cpp.i
+
+tests_d/tests.s: tests_d/tests.cpp.s
+
+.PHONY : tests_d/tests.s
+
+# target to generate assembly for a file
+tests_d/tests.cpp.s:
+	$(MAKE) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests_d/tests.cpp.s
+.PHONY : tests_d/tests.cpp.s
 
 # Help Target
 help:
@@ -576,21 +576,21 @@ help:
 	@echo "... src/string.o"
 	@echo "... src/string.i"
 	@echo "... src/string.s"
-	@echo "... tests1/client.o"
-	@echo "... tests1/client.i"
-	@echo "... tests1/client.s"
-	@echo "... tests1/helpers.o"
-	@echo "... tests1/helpers.i"
-	@echo "... tests1/helpers.s"
-	@echo "... tests1/packet.o"
-	@echo "... tests1/packet.i"
-	@echo "... tests1/packet.s"
-	@echo "... tests1/string.o"
-	@echo "... tests1/string.i"
-	@echo "... tests1/string.s"
-	@echo "... tests1/tests.o"
-	@echo "... tests1/tests.i"
-	@echo "... tests1/tests.s"
+	@echo "... tests_d/client.o"
+	@echo "... tests_d/client.i"
+	@echo "... tests_d/client.s"
+	@echo "... tests_d/helpers.o"
+	@echo "... tests_d/helpers.i"
+	@echo "... tests_d/helpers.s"
+	@echo "... tests_d/packet.o"
+	@echo "... tests_d/packet.i"
+	@echo "... tests_d/packet.s"
+	@echo "... tests_d/string.o"
+	@echo "... tests_d/string.i"
+	@echo "... tests_d/string.s"
+	@echo "... tests_d/tests.o"
+	@echo "... tests_d/tests.i"
+	@echo "... tests_d/tests.s"
 .PHONY : help
 
 

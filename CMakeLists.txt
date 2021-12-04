@@ -38,11 +38,11 @@ add_executable(example-async examples/async.c)
 target_link_libraries(example-async lwmqtt pthread)
 
 set(TEST_FILES
-        tests1/client.cpp
-        tests1/helpers.cpp
-        tests1/packet.cpp
-        tests1/string.cpp
-        tests1/tests.cpp)
+        tests_d/client.cpp
+        tests_d/helpers.cpp
+        tests_d/packet.cpp
+        tests_d/string.cpp
+        tests_d/tests.cpp)
 
 add_executable(tests ${TEST_FILES})
 
