@@ -8,7 +8,7 @@ char *host[] = {
 
 enum hostNameIndex 
 {
-  host_mosquito = 0,
+  host_mosquitto = 0,
   host_localhost = 1,
   host_null
 };
@@ -20,7 +20,7 @@ extern "C" {
 #include <lwmqtt/unix.h>
 }
 
-#define COMMAND_TIMEOUT 5000
+#define COMMAND_TIMEOUT 20000
 
 #define PAYLOAD_LEN 256
 uint8_t payload[PAYLOAD_LEN + 1];
@@ -78,6 +78,7 @@ TEST(Client, PublishSubscribeQOS0) {
 
   lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)host[currentHost], 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
+  printf("PublishSubscribeQOS0 host = %s\n", host[currentHost]);
 
   lwmqtt_options_t data = lwmqtt_default_options;
   data.client_id = lwmqtt_string("lwmqtt");
@@ -429,7 +430,7 @@ TEST(ClientMosq, PublishSubscribeQOS0) {
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)host[host_mosquito], 1884);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)host[host_mosquitto], 1884);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t data = lwmqtt_default_options;

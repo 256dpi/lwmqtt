@@ -17,7 +17,7 @@ char *host[] = {
 
 enum hostNameIndex 
 {
-  host_mosquito = 0,
+  host_mosquitto = 0,
   host_localhost = 1,
   host_null
 };
