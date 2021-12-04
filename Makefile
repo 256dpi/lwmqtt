@@ -111,6 +111,32 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named tests_app
+
+# Build rule for target.
+tests_app: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 tests_app
+.PHONY : tests_app
+
+# fast build rule for target.
+tests_app/fast:
+	$(MAKE) -f CMakeFiles/tests_app.dir/build.make CMakeFiles/tests_app.dir/build
+.PHONY : tests_app/fast
+
+#=============================================================================
+# Target rules for targets named ben
+
+# Build rule for target.
+ben: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 ben
+.PHONY : ben
+
+# fast build rule for target.
+ben/fast:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/build
+.PHONY : ben/fast
+
+#=============================================================================
 # Target rules for targets named tests
 
 # Build rule for target.
@@ -200,6 +226,33 @@ gtest: cmake_check_build_system
 gtest/fast:
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/build
 .PHONY : gtest/fast
+
+ben_d/sync.o: ben_d/sync.cpp.o
+
+.PHONY : ben_d/sync.o
+
+# target to build an object file
+ben_d/sync.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/sync.cpp.o
+.PHONY : ben_d/sync.cpp.o
+
+ben_d/sync.i: ben_d/sync.cpp.i
+
+.PHONY : ben_d/sync.i
+
+# target to preprocess a source file
+ben_d/sync.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/sync.cpp.i
+.PHONY : ben_d/sync.cpp.i
+
+ben_d/sync.s: ben_d/sync.cpp.s
+
+.PHONY : ben_d/sync.s
+
+# target to generate assembly for a file
+ben_d/sync.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/sync.cpp.s
+.PHONY : ben_d/sync.cpp.s
 
 examples/async.o: examples/async.c.o
 
@@ -405,6 +458,60 @@ src/string.c.s:
 	$(MAKE) -f CMakeFiles/lwmqtt.dir/build.make CMakeFiles/lwmqtt.dir/src/string.c.s
 .PHONY : src/string.c.s
 
+tests_ben/client.o: tests_ben/client.cpp.o
+
+.PHONY : tests_ben/client.o
+
+# target to build an object file
+tests_ben/client.cpp.o:
+	$(MAKE) -f CMakeFiles/tests_app.dir/build.make CMakeFiles/tests_app.dir/tests_ben/client.cpp.o
+.PHONY : tests_ben/client.cpp.o
+
+tests_ben/client.i: tests_ben/client.cpp.i
+
+.PHONY : tests_ben/client.i
+
+# target to preprocess a source file
+tests_ben/client.cpp.i:
+	$(MAKE) -f CMakeFiles/tests_app.dir/build.make CMakeFiles/tests_app.dir/tests_ben/client.cpp.i
+.PHONY : tests_ben/client.cpp.i
+
+tests_ben/client.s: tests_ben/client.cpp.s
+
+.PHONY : tests_ben/client.s
+
+# target to generate assembly for a file
+tests_ben/client.cpp.s:
+	$(MAKE) -f CMakeFiles/tests_app.dir/build.make CMakeFiles/tests_app.dir/tests_ben/client.cpp.s
+.PHONY : tests_ben/client.cpp.s
+
+tests_ben/tests.o: tests_ben/tests.cpp.o
+
+.PHONY : tests_ben/tests.o
+
+# target to build an object file
+tests_ben/tests.cpp.o:
+	$(MAKE) -f CMakeFiles/tests_app.dir/build.make CMakeFiles/tests_app.dir/tests_ben/tests.cpp.o
+.PHONY : tests_ben/tests.cpp.o
+
+tests_ben/tests.i: tests_ben/tests.cpp.i
+
+.PHONY : tests_ben/tests.i
+
+# target to preprocess a source file
+tests_ben/tests.cpp.i:
+	$(MAKE) -f CMakeFiles/tests_app.dir/build.make CMakeFiles/tests_app.dir/tests_ben/tests.cpp.i
+.PHONY : tests_ben/tests.cpp.i
+
+tests_ben/tests.s: tests_ben/tests.cpp.s
+
+.PHONY : tests_ben/tests.s
+
+# target to generate assembly for a file
+tests_ben/tests.cpp.s:
+	$(MAKE) -f CMakeFiles/tests_app.dir/build.make CMakeFiles/tests_app.dir/tests_ben/tests.cpp.s
+.PHONY : tests_ben/tests.cpp.s
+
 tests_d/client.o: tests_d/client.cpp.o
 
 .PHONY : tests_d/client.o
@@ -548,6 +655,8 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... tests_app"
+	@echo "... ben"
 	@echo "... tests"
 	@echo "... example-async"
 	@echo "... example-sync"
@@ -555,6 +664,9 @@ help:
 	@echo "... lwmqtt"
 	@echo "... gtest_main"
 	@echo "... gtest"
+	@echo "... ben_d/sync.o"
+	@echo "... ben_d/sync.i"
+	@echo "... ben_d/sync.s"
 	@echo "... examples/async.o"
 	@echo "... examples/async.i"
 	@echo "... examples/async.s"
@@ -576,6 +688,12 @@ help:
 	@echo "... src/string.o"
 	@echo "... src/string.i"
 	@echo "... src/string.s"
+	@echo "... tests_ben/client.o"
+	@echo "... tests_ben/client.i"
+	@echo "... tests_ben/client.s"
+	@echo "... tests_ben/tests.o"
+	@echo "... tests_ben/tests.i"
+	@echo "... tests_ben/tests.s"
 	@echo "... tests_d/client.o"
 	@echo "... tests_d/client.i"
 	@echo "... tests_d/client.s"

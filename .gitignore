@@ -3,4 +3,14 @@ gtest/
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
+# Benoit
 .vscode
+example-async
+example-sync
+tests
+tests_app
+toto.txt
+
+liblwmqtt_d.so
+liblwmqtt.a
+ben

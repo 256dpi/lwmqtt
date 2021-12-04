@@ -8,7 +8,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter -std=gnu++2a -std=c++2a")
 
 include_directories(include)
 
@@ -47,3 +47,15 @@ set(TEST_FILES
 add_executable(tests ${TEST_FILES})
 
 target_link_libraries(tests lwmqtt gtest gtest_main ssl crypto)
+
+set(TEST_FILES
+        tests_ben/client.cpp
+        tests_ben/tests.cpp)
+
+add_executable(tests_app ${TEST_FILES})
+
+target_link_libraries(tests_app lwmqtt gtest gtest_main)
+
+add_executable(ben ben_d/sync.cpp)
+
+target_link_libraries(ben lwmqtt)
