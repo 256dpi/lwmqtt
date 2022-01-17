@@ -56,6 +56,52 @@ CMAKE_BINARY_DIR = /data/simul/lwmqtt/256dpi/lwmqtt
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target install/strip
+install/strip: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip
+
+# Special rule for the target install/strip
+install/strip/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing the project stripped..."
+	/usr/bin/cmake -DCMAKE_INSTALL_DO_STRIP=1 -P cmake_install.cmake
+.PHONY : install/strip/fast
+
+# Special rule for the target install/local
+install/local: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local
+
+# Special rule for the target install/local
+install/local/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Installing only the local directory..."
+	/usr/bin/cmake -DCMAKE_INSTALL_LOCAL_ONLY=1 -P cmake_install.cmake
+.PHONY : install/local/fast
+
+# Special rule for the target install
+install: preinstall
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install
+
+# Special rule for the target install
+install/fast: preinstall/fast
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Install the project..."
+	/usr/bin/cmake -P cmake_install.cmake
+.PHONY : install/fast
+
+# Special rule for the target list_install_components
+list_install_components:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Available install components are: \"Unspecified\""
+.PHONY : list_install_components
+
+# Special rule for the target list_install_components
+list_install_components/fast: list_install_components
+
+.PHONY : list_install_components/fast
+
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
@@ -226,6 +272,220 @@ gtest: cmake_check_build_system
 gtest/fast:
 	$(MAKE) -f gtest/googletest/CMakeFiles/gtest.dir/build.make gtest/googletest/CMakeFiles/gtest.dir/build
 .PHONY : gtest/fast
+
+#=============================================================================
+# Target rules for targets named zlib
+
+# Build rule for target.
+zlib: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 zlib
+.PHONY : zlib
+
+# fast build rule for target.
+zlib/fast:
+	$(MAKE) -f _deps/zlib-build/CMakeFiles/zlib.dir/build.make _deps/zlib-build/CMakeFiles/zlib.dir/build
+.PHONY : zlib/fast
+
+#=============================================================================
+# Target rules for targets named uninstall
+
+# Build rule for target.
+uninstall: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 uninstall
+.PHONY : uninstall
+
+# fast build rule for target.
+uninstall/fast:
+	$(MAKE) -f _deps/curl-build/CMakeFiles/uninstall.dir/build.make _deps/curl-build/CMakeFiles/uninstall.dir/build
+.PHONY : uninstall/fast
+
+#=============================================================================
+# Target rules for targets named libcurl
+
+# Build rule for target.
+libcurl: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 libcurl
+.PHONY : libcurl
+
+# fast build rule for target.
+libcurl/fast:
+	$(MAKE) -f _deps/curl-build/lib/CMakeFiles/libcurl.dir/build.make _deps/curl-build/lib/CMakeFiles/libcurl.dir/build
+.PHONY : libcurl/fast
+
+#=============================================================================
+# Target rules for targets named cpr
+
+# Build rule for target.
+cpr: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 cpr
+.PHONY : cpr
+
+# fast build rule for target.
+cpr/fast:
+	$(MAKE) -f _deps/cpr-build/cpr/CMakeFiles/cpr.dir/build.make _deps/cpr-build/cpr/CMakeFiles/cpr.dir/build
+.PHONY : cpr/fast
+
+ben_d/SSLConnection.o: ben_d/SSLConnection.cpp.o
+
+.PHONY : ben_d/SSLConnection.o
+
+# target to build an object file
+ben_d/SSLConnection.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/SSLConnection.cpp.o
+.PHONY : ben_d/SSLConnection.cpp.o
+
+ben_d/SSLConnection.i: ben_d/SSLConnection.cpp.i
+
+.PHONY : ben_d/SSLConnection.i
+
+# target to preprocess a source file
+ben_d/SSLConnection.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/SSLConnection.cpp.i
+.PHONY : ben_d/SSLConnection.cpp.i
+
+ben_d/SSLConnection.s: ben_d/SSLConnection.cpp.s
+
+.PHONY : ben_d/SSLConnection.s
+
+# target to generate assembly for a file
+ben_d/SSLConnection.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/SSLConnection.cpp.s
+.PHONY : ben_d/SSLConnection.cpp.s
+
+ben_d/Socket.o: ben_d/Socket.cpp.o
+
+.PHONY : ben_d/Socket.o
+
+# target to build an object file
+ben_d/Socket.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/Socket.cpp.o
+.PHONY : ben_d/Socket.cpp.o
+
+ben_d/Socket.i: ben_d/Socket.cpp.i
+
+.PHONY : ben_d/Socket.i
+
+# target to preprocess a source file
+ben_d/Socket.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/Socket.cpp.i
+.PHONY : ben_d/Socket.cpp.i
+
+ben_d/Socket.s: ben_d/Socket.cpp.s
+
+.PHONY : ben_d/Socket.s
+
+# target to generate assembly for a file
+ben_d/Socket.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/Socket.cpp.s
+.PHONY : ben_d/Socket.cpp.s
+
+ben_d/benMQTTClient.o: ben_d/benMQTTClient.cpp.o
+
+.PHONY : ben_d/benMQTTClient.o
+
+# target to build an object file
+ben_d/benMQTTClient.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/benMQTTClient.cpp.o
+.PHONY : ben_d/benMQTTClient.cpp.o
+
+ben_d/benMQTTClient.i: ben_d/benMQTTClient.cpp.i
+
+.PHONY : ben_d/benMQTTClient.i
+
+# target to preprocess a source file
+ben_d/benMQTTClient.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/benMQTTClient.cpp.i
+.PHONY : ben_d/benMQTTClient.cpp.i
+
+ben_d/benMQTTClient.s: ben_d/benMQTTClient.cpp.s
+
+.PHONY : ben_d/benMQTTClient.s
+
+# target to generate assembly for a file
+ben_d/benMQTTClient.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/benMQTTClient.cpp.s
+.PHONY : ben_d/benMQTTClient.cpp.s
+
+ben_d/ssl_init.o: ben_d/ssl_init.c.o
+
+.PHONY : ben_d/ssl_init.o
+
+# target to build an object file
+ben_d/ssl_init.c.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_init.c.o
+.PHONY : ben_d/ssl_init.c.o
+
+ben_d/ssl_init.i: ben_d/ssl_init.c.i
+
+.PHONY : ben_d/ssl_init.i
+
+# target to preprocess a source file
+ben_d/ssl_init.c.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_init.c.i
+.PHONY : ben_d/ssl_init.c.i
+
+ben_d/ssl_init.s: ben_d/ssl_init.c.s
+
+.PHONY : ben_d/ssl_init.s
+
+# target to generate assembly for a file
+ben_d/ssl_init.c.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_init.c.s
+.PHONY : ben_d/ssl_init.c.s
+
+ben_d/ssl_network.o: ben_d/ssl_network.c.o
+
+.PHONY : ben_d/ssl_network.o
+
+# target to build an object file
+ben_d/ssl_network.c.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_network.c.o
+.PHONY : ben_d/ssl_network.c.o
+
+ben_d/ssl_network.i: ben_d/ssl_network.c.i
+
+.PHONY : ben_d/ssl_network.i
+
+# target to preprocess a source file
+ben_d/ssl_network.c.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_network.c.i
+.PHONY : ben_d/ssl_network.c.i
+
+ben_d/ssl_network.s: ben_d/ssl_network.c.s
+
+.PHONY : ben_d/ssl_network.s
+
+# target to generate assembly for a file
+ben_d/ssl_network.c.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_network.c.s
+.PHONY : ben_d/ssl_network.c.s
+
+ben_d/ssl_tls.o: ben_d/ssl_tls.c.o
+
+.PHONY : ben_d/ssl_tls.o
+
+# target to build an object file
+ben_d/ssl_tls.c.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_tls.c.o
+.PHONY : ben_d/ssl_tls.c.o
+
+ben_d/ssl_tls.i: ben_d/ssl_tls.c.i
+
+.PHONY : ben_d/ssl_tls.i
+
+# target to preprocess a source file
+ben_d/ssl_tls.c.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_tls.c.i
+.PHONY : ben_d/ssl_tls.c.i
+
+ben_d/ssl_tls.s: ben_d/ssl_tls.c.s
+
+.PHONY : ben_d/ssl_tls.s
+
+# target to generate assembly for a file
+ben_d/ssl_tls.c.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_tls.c.s
+.PHONY : ben_d/ssl_tls.c.s
 
 ben_d/sync.o: ben_d/sync.cpp.o
 
@@ -653,6 +913,10 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
+	@echo "... install/strip"
+	@echo "... install/local"
+	@echo "... install"
+	@echo "... list_install_components"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... tests_app"
@@ -664,6 +928,28 @@ help:
 	@echo "... lwmqtt"
 	@echo "... gtest_main"
 	@echo "... gtest"
+	@echo "... zlib"
+	@echo "... uninstall"
+	@echo "... libcurl"
+	@echo "... cpr"
+	@echo "... ben_d/SSLConnection.o"
+	@echo "... ben_d/SSLConnection.i"
+	@echo "... ben_d/SSLConnection.s"
+	@echo "... ben_d/Socket.o"
+	@echo "... ben_d/Socket.i"
+	@echo "... ben_d/Socket.s"
+	@echo "... ben_d/benMQTTClient.o"
+	@echo "... ben_d/benMQTTClient.i"
+	@echo "... ben_d/benMQTTClient.s"
+	@echo "... ben_d/ssl_init.o"
+	@echo "... ben_d/ssl_init.i"
+	@echo "... ben_d/ssl_init.s"
+	@echo "... ben_d/ssl_network.o"
+	@echo "... ben_d/ssl_network.i"
+	@echo "... ben_d/ssl_network.s"
+	@echo "... ben_d/ssl_tls.o"
+	@echo "... ben_d/ssl_tls.i"
+	@echo "... ben_d/ssl_tls.s"
 	@echo "... ben_d/sync.o"
 	@echo "... ben_d/sync.i"
 	@echo "... ben_d/sync.s"

@@ -27,6 +27,7 @@ typedef enum {
   LWMQTT_FAILED_SUBSCRIPTION = -11,
   LWMQTT_SUBACK_ARRAY_OVERFLOW = -12,
   LWMQTT_PONG_TIMEOUT = -13,
+  LWMQTT_INTERNAL_ERROR = -14,  // Benoit
 } lwmqtt_err_t;
 
 /**

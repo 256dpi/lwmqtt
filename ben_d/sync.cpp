@@ -1,3 +1,4 @@
+#include <iostream>
 extern "C" {
 #include <lwmqtt.h>
 #include <lwmqtt/unix.h>
@@ -10,12 +11,12 @@ extern "C" {
 #define MESSAGE_TIMEOUT 1000
 
 char *host[] = {
-  (char *)"test.mosquitto.org",
-  (char *)"localhost",
-  0
+    (char *)"test.mosquitto.org",
+    (char *)"localhost",
+    0
 };
 
-enum hostNameIndex 
+enum hostNameIndex
 {
   host_mosquitto = 0,
   host_localhost = 1,
@@ -36,7 +37,95 @@ static void message_arrived(lwmqtt_client_t *client, void *ref, lwmqtt_string_t 
          (int)msg.payload_len);
 }
 
-int main() {
+#include <cpr/cpr.h>
+
+void main1() {
+    cpr::Response r = cpr::Get(cpr::Url{"http://192.168.2.34:8000/login.html"});
+    //r.status_code;                  // 200
+    //r.header["content-type"];       // application/json; charset=utf-8
+    //r.text;                         // JSON text string
+    std::cout << "Benoit cpr: " << r.status_code << ", " << r.text << std::endl;
+}
+
+#if 0
+#include <curl/curl.h>
+
+size_t writeFunction(void *ptr, size_t size, size_t nmemb, std::string* data) {
+    data->append((char*) ptr, size * nmemb);
+    return size * nmemb;
+}
+void main2()
+{
+    auto curl = curl_easy_init();
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, "https://api.github.com/repos/libcpr/cpr/contributors?anon=true&key=value");
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+        curl_easy_setopt(curl, CURLOPT_USERPWD, "user:pass");
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "curl/7.42.0");
+        curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
+        curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
+
+        std::string response_string;
+        std::string header_string;
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
+        curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
+
+        char* url;
+        long response_code;
+        double elapsed;
+
+        curl_easy_perform(curl);
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+        curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &elapsed);
+        curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
+        curl_easy_cleanup(curl);
+        curl = NULL;
+        printf("Curl: %s, %s, code %ld \n", response_string.c_str(), header_string.c_str(), response_code);
+        printf("Curl: %s, elapsed %f \n", url, elapsed);
+    }
+}
+
+void main3() {
+    std::cout << "Allo\n";
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    auto curl = curl_easy_init();
+    if (curl) {
+    std::cout << "Allo\n";
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.example.com");
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
+        curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 50L);
+        curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
+
+        std::string response_string;
+        std::string header_string;
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response_string);
+        curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_string);
+
+        curl_easy_perform(curl);
+        std::cout << "allo response" << response_string << std::endl;
+        char* url;
+        long response_code;
+        double elapsed;
+
+        curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &response_code);
+        curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &elapsed);
+        curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &url);
+        std::cout << "allo response" << response_code << std::endl;
+        curl_easy_cleanup(curl);
+        curl_global_cleanup();
+        curl = NULL;
+    }
+    else
+    {
+      std::cout << "curl_esay_init() ne marche pas!\n";
+    }
+}
+#endif // #if 0
+
+int mainSync() {
+  //main1();
   // initialize client
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
@@ -125,4 +214,111 @@ int main() {
     // sleep for 100ms
     usleep(100 * 1000);
   }
+}
+
+#include "benMQTTClient.h"
+
+int mainAruba(const int argc, char *argv[], char *env[])
+{
+    ev::default_loop loop;
+
+    MQTTClient monMqtt(
+      "iot.isb.arubanetworks.com",
+      443,
+      false,
+      "./cert.pem", //"/aruba/fs/smb_ap/onboarding/cert.pem",
+      "./key.pem", // /aruba/fs/smb_ap/onboarding/key.pem",
+      "./AmazonRootCA.pem", //"/aruba/conf/AmazonRootCA.pem",
+      "./smb_ca_certificate.pem" //"/aruba/conf/smb_ca_certificate.pem"
+    );
+
+
+    // Start the main loop.
+    try {
+        loop.run();
+    }
+    catch (const std::exception& e) {
+        printf("Unhandled exception: %s.", e.what());
+        return EXIT_FAILURE;
+    }
+    catch (...) {
+        printf("Unhandled exception, terminating.");
+        return EXIT_FAILURE;
+    }
+    return 0;
+}
+
+int mainMosquitto(const int argc, char *argv[], char *env[])
+{
+   ev::default_loop loop;
+
+   MQTTClient monMqtt(
+    "test.mosquitto.org",
+    8884,
+    false,
+    "./ca/client.crt.txt", //"/aruba/fs/smb_ap/onboarding/cert.pem",
+    "./ca/client.key", // /aruba/fs/smb_ap/onboarding/key.pem",
+    "./ca/mosquitto.org.crt", //"/aruba/conf/AmazonRootCA.pem",
+    "./ca/smb_ca_certificate.pem" //"/aruba/conf/smb_ca_certificate.pem"
+    );
+
+
+    // Start the main loop.
+    try {
+        loop.run();
+    }
+    catch (const std::exception& e) {
+        printf("Unhandled exception: %s.", e.what());
+        return EXIT_FAILURE;
+    }
+    catch (...) {
+        printf("Unhandled exception, terminating.");
+        return EXIT_FAILURE;
+    }
+    return 0;
+}
+#include "Socket.h"
+#include "SSLConnection.h"
+
+void InitTlsData(TlsData_S &data, const char * host, int port, int socket)
+{
+
+    data.host = host;
+    data.port = port;
+    data.socket = socket;
+    data.tls_cafile = (char *)"./ca/client.crt.txt";
+    data.tls_capath = (char *)"";
+    data.tls_certfile = (char *)"./ca/mosquitto.org.crt";
+    data.tls_keyfile = (char *)"./ca/client.key";
+    data.tls_version = nullptr;
+    data.tls_ciphers = nullptr;
+    data.tls_alpn = (char *)"x-amzn-mqtt-ca";
+    data.tls_cert_reqs = SSL_VERIFY_PEER;
+    data.tls_insecure = false;
+    data.ssl_ctx_defaults = true;
+    data.tls_ocsp_required = false;
+    data.tls_use_os_certs = false;
+}
+
+void TestSocketClass()
+{
+    string host = "test.mosquitto.org";
+    int port = 8884;
+    int delay = 50;
+    Socket monSocket = Socket(host.c_str(), port, delay);
+    monSocket.Print();
+    monSocket.Connect();
+    TlsData_S data;
+    InitTlsData(data, host.c_str(), port, monSocket.GetSocket());
+    TLS monTls = TLS(data);
+    monTls.Init();
+    monSocket.Print();
+    monSocket.Close();
+
+}
+
+int main(const int argc, char *argv[], char *env[])
+{
+  TestSocketClass();
+  //mainMosquitto(argc, argv, env);
 }

@@ -4,6 +4,10 @@ project(lwmqtt)
 add_subdirectory(gtest/googletest)
 include_directories(gtest/googletest/include)
 
+include(FetchContent)
+FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git GIT_TAG 67e12da316754ff3c6c91b50aafb2658438f3c1e) # the commit hash for 1.7.0
+FetchContent_MakeAvailable(cpr)
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -56,6 +60,17 @@ add_executable(tests_app ${TEST_FILES})
 
 target_link_libraries(tests_app lwmqtt gtest gtest_main)
 
-add_executable(ben ben_d/sync.cpp)
+set(TEST_FILES
+        include/lwmqtt/unix.h
+        ben_d/sync.cpp
+        ben_d/ssl_network.c
+        ben_d/ssl_tls.c
+        ben_d/benMQTTClient.cpp
+        ben_d/ssl_init.c
+        ben_d/Socket.cpp
+        ben_d/SSLConnection.cpp
+        )
 
-target_link_libraries(ben lwmqtt)
+add_executable(ben ${TEST_FILES})
+
+target_link_libraries(ben lwmqtt cpr::cpr ssl crypto ev)
