@@ -11,6 +11,8 @@
 using std::string;
 using std::vector;
 
+#include "Socket.h"
+
 typedef uint8_t byte;
 
 #include "mosq.h"
@@ -19,15 +21,16 @@ extern "C" {
 #include <lwmqtt/unix.h>
 }
 
+#include "SSLConnection.h"
 #include <ev++.h>
 
 typedef std::function<void(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg)> lwmqttMessageCallbackFunc;
 
-typedef struct mbedtls_net_context
+typedef struct
 {
-    int fd;             /**< The underlying file descriptor                 */
-}
-mbedtls_net_context;
+    int version;
+} tls_custom_t;
+
 /**
  * The mbed TLS network object.
  */
@@ -46,22 +49,14 @@ typedef struct {
     // Endpoint information
     uint16_t endpoint_port;                        ///< Endpoint port
     char endpoint[256];                            ///< Endpoint for this connection
-/*
-    // mbed TLS
-    mbedtls_entropy_context entropy;
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_ssl_context ssl;
-    mbedtls_ssl_config conf;
-    mbedtls_x509_crt cacert;
-    mbedtls_x509_crt clicert;
-    mbedtls_pk_context pkey;
-*/
-    mbedtls_net_context server_fd;
+    int server_fd;
 
     // States.
     bool is_connected;                             ///< Boolean indicating connection status
     bool requires_free;
-} lwmqtt_mbedtls_network_t;
+    tls_custom_t *tls_custom;
+
+} lwmqtt_tls_network_t;
 
 template<typename T>
 class IterativeMean {
@@ -88,8 +83,6 @@ class IterativeMean {
         unsigned int mCount;
         double mAverage;
 };
-
-
 
 struct MQTTConnectionInfo
 {
@@ -156,6 +149,11 @@ struct MQTTConnectionInfo
 class MQTTClient {
     public:
 
+        enum Option {
+            MQTT_Mosquitto =0,
+            MQTT_Ion,
+            MQTT_Default = MQTT_Mosquitto 
+            };
         typedef std::function<void()> OnConnectCallbackPtr;
         typedef std::function<void()> OnDisconnectCallbackPtr;
         typedef std::function<void(const string& topicName, const vector<byte>&)> OnMessageCallbackPtr;
@@ -197,6 +195,8 @@ class MQTTClient {
          */
         ~MQTTClient();
 
+        void Init(lwmqtt_tls_network_t *network);
+
         void PrintParameters();
 
         /** @brief Start the MQTT client, i.e. start the connection. */
@@ -205,6 +205,9 @@ class MQTTClient {
         /** @brief Stop the MQTT client, i.e. drop the connection. */
         void Stop();
 
+        lwmqtt_err_t OpenSocket();
+        void CloseSocket();
+        
         /**
          * @brief Check if the MQTT client is started.
          *
@@ -261,7 +264,6 @@ class MQTTClient {
 
     protected:
 
-    private:
         /** @brief Indicate if we are started or not. */
         bool mStarted;
 
@@ -273,6 +275,9 @@ class MQTTClient {
 
         /** @brief DRT device information. */
         std::string mDrtVersion;
+
+        Socket mSock;
+        TLS mTls;
 
 #ifdef GSM_CHANNEL_MESH_UPLINK_SUPPORTED
         gsm_section_mesh_uplink_state_struct_t mMeshUplinkState;
@@ -327,7 +332,7 @@ class MQTTClient {
         lwmqtt_client_t mMqttClient;
 
         /** @brief MQTT client object. */
-        lwmqtt_mbedtls_network_t mMqttNetworkConnection;
+        lwmqtt_tls_network_t mMqttNetworkConnection;
 
         /** @brief Timer used to determine if it's time to send the MQTT keepalive. */
         lwmqtt_unix_timer_t mMqttKeepAliveTimer;

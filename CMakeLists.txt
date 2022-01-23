@@ -62,13 +62,13 @@ target_link_libraries(tests_app lwmqtt gtest gtest_main)
 
 set(TEST_FILES
         include/lwmqtt/unix.h
-        ben_d/sync.cpp
-        ben_d/ssl_network.c
-        ben_d/ssl_tls.c
-        ben_d/benMQTTClient.cpp
-        ben_d/ssl_init.c
+        ben_d/TestDevMain.cpp
+        ben_d/MQTTClient.cpp
+        ben_d/CloudConnect.cpp
         ben_d/Socket.cpp
         ben_d/SSLConnection.cpp
+        ben_d/main.cpp
+        ben_d/mainAruba.cpp
         )
 
 add_executable(ben ${TEST_FILES})

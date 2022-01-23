@@ -13,6 +13,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+const int Socket::KeepAliveDefaultValue = 60;
+
 Socket::Socket()
 {
     Init();
@@ -24,13 +26,15 @@ Socket::Socket(const char *host, int port, int keepalive) {
         
 void Socket::Init(const char *host, int port, int keepalive, bool blocking, int sock)
 {
-    BLog("Socket::Init");
     mState = Unconnected;
-    mHost = host;
+    if (host != nullptr)
+        mHost = host;
+    else
+        mHost = "";
     mPort = port;
     mKeepAlive = keepalive;
-    mBlocking = blocking;
     mSock = sock;
+    mBlocking = blocking;
 }
 
 void Socket::Print()
@@ -97,6 +101,18 @@ int Socket::Connect()
                 BLog("Connection failed INVALID_SOCKET");
                 continue;
             }
+            if(curainfo->ai_family == AF_INET){
+                ((struct sockaddr_in *)curainfo->ai_addr)->sin_port = htons(mPort);
+                BLog("AF_INET");
+            }else if(curainfo->ai_family == AF_INET6){
+                ((struct sockaddr_in6 *)curainfo->ai_addr)->sin6_port = htons(mPort);
+                BLog("AF_INET6");
+            }else{
+                BLog("else COMPAT_CLOSE");
+                close(mSock);
+                mSock = INVALID_SOCKET;
+                continue;
+            }
 
             if (!mBlocking){
                 if( !ForceNonBlocking(mSock) ) {
@@ -110,7 +126,7 @@ int Socket::Connect()
                     if(retVal < 0 && (errno == EINPROGRESS || errno == EWOULDBLOCK)){
                         retVal = 2;  //TODO: Benoit  Changer les messages d'erreurs
                     }
-
+                    //  TODO:Benoit Que faire ici, on dirait qu'il devrait y avoir un else ou autre chose. retVal == 2 on fait quoi, si ForceNonBlocking ne fonctionne pas ???
                     if(mBlocking){
                         /* Set non-blocking */
                         if( ForceNonBlocking(mSock) ) {
@@ -120,7 +136,6 @@ int Socket::Connect()
                     else {
                         break;
                     }
-
                 }
             }
             mSock = INVALID_SOCKET;

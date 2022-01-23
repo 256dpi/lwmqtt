@@ -28,6 +28,8 @@
 #include <sys/ipc.h>
 #include <sys/syscall.h> 
 
+#include "Socket.h"
+#include "config.h"
 extern "C" {
 #include <lwmqtt.h>
 #include <lwmqtt/unix.h>
@@ -58,14 +60,7 @@ getSysUptime(void)
 }
 
 
-#include "benMQTTClient.h"
-
-lwmqtt_err_t lwmqtt_mbedtls_network_connect(lwmqtt_mbedtls_network_t *network, char *host, int port) {return LWMQTT_SUCCESS;}
-void lwmqtt_mbedtls_network_disconnect(lwmqtt_mbedtls_network_t *network) {return;}
-lwmqtt_err_t lwmqtt_mbedtls_network_peek(lwmqtt_mbedtls_network_t *network, size_t *available) {return LWMQTT_SUCCESS;}
-
-lwmqtt_err_t lwmqtt_mbedtls_network_read(void *ref, uint8_t *buffer, size_t len, size_t *read, uint32_t timeout) { return LWMQTT_SUCCESS;}
-lwmqtt_err_t lwmqtt_mbedtls_network_write(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout) { return LWMQTT_SUCCESS;}
+#include "MQTTClient.h"
 
 
 /**
@@ -163,6 +158,7 @@ void MQTTClient::PrintParameters()
 
 }
 
+
 MQTTClient::MQTTClient(string mqttHost,
                        int mqttHostPort,
                        bool validateMqttHostCert,
@@ -172,7 +168,7 @@ MQTTClient::MQTTClient(string mqttHost,
                        string onboardingCaCertPath,
                        OnConnectCallbackPtr onConnectCallback,
                        OnDisconnectCallbackPtr onDisconnectCallback,
-                       OnMessageCallbackPtr onMessageCallback)
+                       OnMessageCallbackPtr onMessageCallback) : mTls("", 0, INVALID_SOCKET)
 {
     mStarted = false;
     mCloudSessionSequence = 0;
@@ -188,7 +184,7 @@ MQTTClient::MQTTClient(string mqttHost,
     mDeviceID = "20:4c:03:90:e0:56";  // Mon AP11D
     mPublishTopicBase = "DevStackSSO/";
     mPublishTopicBase += "pm/" + mDeviceID + "/v2/";
-    
+
     // IMPORTANT: Benoit Donnees prises dans le AP11D
 
     std::string mqtt_topic_prefix = "DevStackSSO/"; // mqtt_topic_prefix_buf;
@@ -202,15 +198,8 @@ MQTTClient::MQTTClient(string mqttHost,
     // Set the topic for the HELLO message.
     mHelloTopic = mPublishTopicBase + "hello";
 
-    // Set the topic to which we subscribe.
-    mSubscribeTopicBase = "device/" + mDeviceID;
-    mSubscribeTopic = mSubscribeTopicBase + "/#";
-
-    // Set the topic to which we publish devconf messages.
-    mDevconfTopic = mPublishTopicBase + "devconf";
-
     // Initialize the MQTT network connection info.
-    lwmqtt_mbedtls_network_t *network = &mMqttNetworkConnection;
+    lwmqtt_tls_network_t *network = &mMqttNetworkConnection;
     memset(network, 0, sizeof(*network));
     network->endpoint_port = mqttHostPort;
     strncpy(network->endpoint, mqttHost.c_str(), sizeof(network->endpoint));
@@ -240,10 +229,10 @@ MQTTClient::MQTTClient(string mqttHost,
                                            std::placeholders::_4);
 
     // Configure the MQTT client.
-    lwmqtt_set_network(&mMqttClient, network, lwmqtt_mbedtls_network_read, lwmqtt_mbedtls_network_write);
+    lwmqtt_set_network(&mMqttClient, &(mTls.m_ssl), lwmqtt_mbedtls_network_read, lwmqtt_mbedtls_network_write);
     lwmqtt_set_timers(&mMqttClient, &mMqttKeepAliveTimer, &mMqttCommandTimer, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
     lwmqtt_set_callback(&mMqttClient, &mLwmqttMessageCallbackFunc, lwmqtt_message_callback_c_wrapper);
-
+    BLog("mTls.m_ssl = %p, &mTls.m_ssl = %p, &(mTls.m_ssl) = %p", (void*)mTls.m_ssl, (void*)&mTls.m_ssl, (void*)&(mTls.m_ssl));
     // Setup the MQTT connection state machine timer.
     mConnectionSMTimer.set<MQTTClient, &MQTTClient::ConnectionSMTimerCallback>(this);
 
@@ -255,9 +244,70 @@ MQTTClient::MQTTClient(string mqttHost,
     Start();
 }
 
+
+void MQTTClient::Init(lwmqtt_tls_network_t *network)
+{
+
+
+}
+
 MQTTClient::~MQTTClient()
 {
     Stop();
+}
+
+void InitTlsData(TlsData_S &data, const char * host, int port, int socket)
+{
+
+    data.host = host;
+    data.port = port;
+    data.socket = socket;
+    data.tls_cafile = (char *)"/data/simul/mosquitto/mosquitto/CA/mosquitto.org.crt";
+    data.tls_capath = (char *)"/data/simul/mosquitto/mosquitto/CA";
+    data.tls_certfile = (char *)"/data/simul/mosquitto/mosquitto/CA/client.crt.txt";
+    data.tls_keyfile = (char *)"/data/simul/mosquitto/mosquitto/CA/client.key";
+    data.tls_version = (char*)"tlsv1.2";
+    data.tls_ciphers = nullptr;
+    data.tls_alpn = (char *)"x-amzn-mqtt-ca";
+    data.tls_cert_reqs = SSL_VERIFY_PEER;
+    data.tls_insecure = false;
+    data.ssl_ctx_defaults = true;
+    data.tls_ocsp_required = false;
+    data.tls_use_os_certs = false;
+}
+
+
+lwmqtt_err_t MQTTClient::OpenSocket()
+{
+    lwmqtt_err_t retVal;
+    int retConnect;
+    /* Avec mbedtls
+    lwmqtt_mbedtls_network_connect(&mMqttNetworkConnection, mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port);
+    */
+    mSock.Init(mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port);
+    retConnect = mSock.Connect();
+    if (retConnect == 0)
+    {
+        BLog("Socket connected");
+    }
+
+    if (mSock.IsConnected())
+    {
+        retVal = LWMQTT_SUCCESS;
+        mMqttNetworkConnection.server_fd = mSock.GetSocket();
+    }
+    else
+    {
+        retVal = LWMQTT_NETWORK_FAILED_CONNECT;
+        mMqttNetworkConnection.server_fd = INVALID_SOCKET;
+    }
+
+    TlsData_S data;
+    InitTlsData(data, mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port, mMqttNetworkConnection.server_fd);
+    TLS monTls = TLS(data);
+    monTls.Init();
+
+    return retVal;
 }
 
 void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
@@ -378,17 +428,18 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
 
         lwmqtt_err_t rc;
 
-        rc = lwmqtt_mbedtls_network_connect(&mMqttNetworkConnection, mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port);
+        rc = OpenSocket();
         if (rc == LWMQTT_SUCCESS) {
             printf("Connection to broker succeeded.\n");
             UpdateConnectionState(MQTTConnectionInfo::State::CONNECTING_TO_MQTT);
-            UpdateBrokerIpAddr(mMqttNetworkConnection.server_fd.fd);
+            UpdateBrokerIpAddr(mMqttNetworkConnection.server_fd);
         }
         else {
             printf("Connection to broker failed: %s.\n", lwmqtt_strerr(rc));
             //UpdateConnectionState(mConnectionInfo.mState.mState, &rc);
             TriggerDisconnect(rc);
         }
+        
     }
 
     /*
@@ -495,12 +546,6 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
     }
 }
 
-
-
-
-
-
-
 void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
 {
     lwmqtt_err_t rc;
@@ -536,14 +581,25 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
     }
 }
 
+void MQTTClient::CloseSocket()
+{
+    //lwmqtt_mbedtls_network_disconnect(&mMqttNetworkConnection);
+
+    mSock.Close();
+    mTls.Close();
+}
+
+
 void MQTTClient::TriggerDisconnect(lwmqtt_err_t rc)
 {
+    BTraceIn
     bool wasConnected = (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::CONNECTED);
+    
+    printf("Triggering MQTT disconnect (%s), was %s.", lwmqtt_strerr(rc), wasConnected ? "conneceted" : "unconnected");
 
-    printf("Triggering MQTT disconnect (%s).", lwmqtt_strerr(rc));
-
-    lwmqtt_mbedtls_network_disconnect(&mMqttNetworkConnection);
-
+    
+    CloseSocket();
+    
     mNetworkTimer.stop();
 
     UpdateConnectionState(MQTTConnectionInfo::State::DISCONNECTED, rc);

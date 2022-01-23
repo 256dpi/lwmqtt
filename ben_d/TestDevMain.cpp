@@ -7,6 +7,8 @@ extern "C" {
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "config.h"
+
 #define COMMAND_TIMEOUT 5000
 #define MESSAGE_TIMEOUT 1000
 
@@ -23,7 +25,7 @@ enum hostNameIndex
   host_null
 };
 
-int currentHost = host_localhost;
+int currentHost = host_mosquitto;
 
 
 lwmqtt_unix_network_t network = {0};
@@ -47,7 +49,7 @@ void main1() {
     std::cout << "Benoit cpr: " << r.status_code << ", " << r.text << std::endl;
 }
 
-#if 0
+
 #include <curl/curl.h>
 
 size_t writeFunction(void *ptr, size_t size, size_t nmemb, std::string* data) {
@@ -122,7 +124,6 @@ void main3() {
       std::cout << "curl_esay_init() ne marche pas!\n";
     }
 }
-#endif // #if 0
 
 int mainSync() {
   //main1();
@@ -216,9 +217,9 @@ int mainSync() {
   }
 }
 
-#include "benMQTTClient.h"
+#include "MQTTClient.h"
 
-int mainAruba(const int argc, char *argv[], char *env[])
+static int mainAruba(const int argc, char *argv[], char *env[])
 {
     ev::default_loop loop;
 
@@ -277,20 +278,21 @@ int mainMosquitto(const int argc, char *argv[], char *env[])
     }
     return 0;
 }
+
 #include "Socket.h"
 #include "SSLConnection.h"
 
-void InitTlsData(TlsData_S &data, const char * host, int port, int socket)
+static void InitTlsData(TlsData_S &data, const char * host, int port, int socket)
 {
 
     data.host = host;
     data.port = port;
     data.socket = socket;
-    data.tls_cafile = (char *)"./ca/client.crt.txt";
-    data.tls_capath = (char *)"";
-    data.tls_certfile = (char *)"./ca/mosquitto.org.crt";
-    data.tls_keyfile = (char *)"./ca/client.key";
-    data.tls_version = nullptr;
+    data.tls_cafile = (char *)"/data/simul/mosquitto/mosquitto/CA/mosquitto.org.crt";
+    data.tls_capath = (char *)"/data/simul/mosquitto/mosquitto/CA";
+    data.tls_certfile = (char *)"/data/simul/mosquitto/mosquitto/CA/client.crt.txt";
+    data.tls_keyfile = (char *)"/data/simul/mosquitto/mosquitto/CA/client.key";
+    data.tls_version = (char*)"tlsv1.2";
     data.tls_ciphers = nullptr;
     data.tls_alpn = (char *)"x-amzn-mqtt-ca";
     data.tls_cert_reqs = SSL_VERIFY_PEER;
@@ -311,14 +313,28 @@ void TestSocketClass()
     TlsData_S data;
     InitTlsData(data, host.c_str(), port, monSocket.GetSocket());
     TLS monTls = TLS(data);
+    sleep(3);
+    BLog("--------------------------------------------------------------------");
     monTls.Init();
+    sleep(3);
+    BLog("--------------------------------------------------------------------");
     monSocket.Print();
+    sleep(3);
+    BLog("--------------------------------------------------------------------");
     monSocket.Close();
+    sleep(3);
+    BLog("--------------------------------------------------------------------");
 
 }
 
-int main(const int argc, char *argv[], char *env[])
+
+
+int TestDevMain(const int argc, char *argv[], char *env[])
 {
-  TestSocketClass();
   //mainMosquitto(argc, argv, env);
+  mainAruba(argc, argv, env);
+  //mainSync();
+  //TestSocketClass();
+  //mainMosquitto(argc, argv, env);
+  return 0;
 }

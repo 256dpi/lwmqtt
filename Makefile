@@ -325,6 +325,60 @@ cpr/fast:
 	$(MAKE) -f _deps/cpr-build/cpr/CMakeFiles/cpr.dir/build.make _deps/cpr-build/cpr/CMakeFiles/cpr.dir/build
 .PHONY : cpr/fast
 
+ben_d/CloudConnect.o: ben_d/CloudConnect.cpp.o
+
+.PHONY : ben_d/CloudConnect.o
+
+# target to build an object file
+ben_d/CloudConnect.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/CloudConnect.cpp.o
+.PHONY : ben_d/CloudConnect.cpp.o
+
+ben_d/CloudConnect.i: ben_d/CloudConnect.cpp.i
+
+.PHONY : ben_d/CloudConnect.i
+
+# target to preprocess a source file
+ben_d/CloudConnect.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/CloudConnect.cpp.i
+.PHONY : ben_d/CloudConnect.cpp.i
+
+ben_d/CloudConnect.s: ben_d/CloudConnect.cpp.s
+
+.PHONY : ben_d/CloudConnect.s
+
+# target to generate assembly for a file
+ben_d/CloudConnect.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/CloudConnect.cpp.s
+.PHONY : ben_d/CloudConnect.cpp.s
+
+ben_d/MQTTClient.o: ben_d/MQTTClient.cpp.o
+
+.PHONY : ben_d/MQTTClient.o
+
+# target to build an object file
+ben_d/MQTTClient.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClient.cpp.o
+.PHONY : ben_d/MQTTClient.cpp.o
+
+ben_d/MQTTClient.i: ben_d/MQTTClient.cpp.i
+
+.PHONY : ben_d/MQTTClient.i
+
+# target to preprocess a source file
+ben_d/MQTTClient.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClient.cpp.i
+.PHONY : ben_d/MQTTClient.cpp.i
+
+ben_d/MQTTClient.s: ben_d/MQTTClient.cpp.s
+
+.PHONY : ben_d/MQTTClient.s
+
+# target to generate assembly for a file
+ben_d/MQTTClient.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClient.cpp.s
+.PHONY : ben_d/MQTTClient.cpp.s
+
 ben_d/SSLConnection.o: ben_d/SSLConnection.cpp.o
 
 .PHONY : ben_d/SSLConnection.o
@@ -379,140 +433,86 @@ ben_d/Socket.cpp.s:
 	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/Socket.cpp.s
 .PHONY : ben_d/Socket.cpp.s
 
-ben_d/benMQTTClient.o: ben_d/benMQTTClient.cpp.o
+ben_d/TestDevMain.o: ben_d/TestDevMain.cpp.o
 
-.PHONY : ben_d/benMQTTClient.o
-
-# target to build an object file
-ben_d/benMQTTClient.cpp.o:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/benMQTTClient.cpp.o
-.PHONY : ben_d/benMQTTClient.cpp.o
-
-ben_d/benMQTTClient.i: ben_d/benMQTTClient.cpp.i
-
-.PHONY : ben_d/benMQTTClient.i
-
-# target to preprocess a source file
-ben_d/benMQTTClient.cpp.i:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/benMQTTClient.cpp.i
-.PHONY : ben_d/benMQTTClient.cpp.i
-
-ben_d/benMQTTClient.s: ben_d/benMQTTClient.cpp.s
-
-.PHONY : ben_d/benMQTTClient.s
-
-# target to generate assembly for a file
-ben_d/benMQTTClient.cpp.s:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/benMQTTClient.cpp.s
-.PHONY : ben_d/benMQTTClient.cpp.s
-
-ben_d/ssl_init.o: ben_d/ssl_init.c.o
-
-.PHONY : ben_d/ssl_init.o
+.PHONY : ben_d/TestDevMain.o
 
 # target to build an object file
-ben_d/ssl_init.c.o:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_init.c.o
-.PHONY : ben_d/ssl_init.c.o
+ben_d/TestDevMain.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/TestDevMain.cpp.o
+.PHONY : ben_d/TestDevMain.cpp.o
 
-ben_d/ssl_init.i: ben_d/ssl_init.c.i
+ben_d/TestDevMain.i: ben_d/TestDevMain.cpp.i
 
-.PHONY : ben_d/ssl_init.i
+.PHONY : ben_d/TestDevMain.i
 
 # target to preprocess a source file
-ben_d/ssl_init.c.i:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_init.c.i
-.PHONY : ben_d/ssl_init.c.i
+ben_d/TestDevMain.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/TestDevMain.cpp.i
+.PHONY : ben_d/TestDevMain.cpp.i
 
-ben_d/ssl_init.s: ben_d/ssl_init.c.s
+ben_d/TestDevMain.s: ben_d/TestDevMain.cpp.s
 
-.PHONY : ben_d/ssl_init.s
+.PHONY : ben_d/TestDevMain.s
 
 # target to generate assembly for a file
-ben_d/ssl_init.c.s:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_init.c.s
-.PHONY : ben_d/ssl_init.c.s
+ben_d/TestDevMain.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/TestDevMain.cpp.s
+.PHONY : ben_d/TestDevMain.cpp.s
 
-ben_d/ssl_network.o: ben_d/ssl_network.c.o
+ben_d/main.o: ben_d/main.cpp.o
 
-.PHONY : ben_d/ssl_network.o
+.PHONY : ben_d/main.o
 
 # target to build an object file
-ben_d/ssl_network.c.o:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_network.c.o
-.PHONY : ben_d/ssl_network.c.o
+ben_d/main.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/main.cpp.o
+.PHONY : ben_d/main.cpp.o
 
-ben_d/ssl_network.i: ben_d/ssl_network.c.i
+ben_d/main.i: ben_d/main.cpp.i
 
-.PHONY : ben_d/ssl_network.i
+.PHONY : ben_d/main.i
 
 # target to preprocess a source file
-ben_d/ssl_network.c.i:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_network.c.i
-.PHONY : ben_d/ssl_network.c.i
+ben_d/main.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/main.cpp.i
+.PHONY : ben_d/main.cpp.i
 
-ben_d/ssl_network.s: ben_d/ssl_network.c.s
+ben_d/main.s: ben_d/main.cpp.s
 
-.PHONY : ben_d/ssl_network.s
+.PHONY : ben_d/main.s
 
 # target to generate assembly for a file
-ben_d/ssl_network.c.s:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_network.c.s
-.PHONY : ben_d/ssl_network.c.s
+ben_d/main.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/main.cpp.s
+.PHONY : ben_d/main.cpp.s
 
-ben_d/ssl_tls.o: ben_d/ssl_tls.c.o
+ben_d/mainAruba.o: ben_d/mainAruba.cpp.o
 
-.PHONY : ben_d/ssl_tls.o
+.PHONY : ben_d/mainAruba.o
 
 # target to build an object file
-ben_d/ssl_tls.c.o:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_tls.c.o
-.PHONY : ben_d/ssl_tls.c.o
+ben_d/mainAruba.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/mainAruba.cpp.o
+.PHONY : ben_d/mainAruba.cpp.o
 
-ben_d/ssl_tls.i: ben_d/ssl_tls.c.i
+ben_d/mainAruba.i: ben_d/mainAruba.cpp.i
 
-.PHONY : ben_d/ssl_tls.i
-
-# target to preprocess a source file
-ben_d/ssl_tls.c.i:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_tls.c.i
-.PHONY : ben_d/ssl_tls.c.i
-
-ben_d/ssl_tls.s: ben_d/ssl_tls.c.s
-
-.PHONY : ben_d/ssl_tls.s
-
-# target to generate assembly for a file
-ben_d/ssl_tls.c.s:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/ssl_tls.c.s
-.PHONY : ben_d/ssl_tls.c.s
-
-ben_d/sync.o: ben_d/sync.cpp.o
-
-.PHONY : ben_d/sync.o
-
-# target to build an object file
-ben_d/sync.cpp.o:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/sync.cpp.o
-.PHONY : ben_d/sync.cpp.o
-
-ben_d/sync.i: ben_d/sync.cpp.i
-
-.PHONY : ben_d/sync.i
+.PHONY : ben_d/mainAruba.i
 
 # target to preprocess a source file
-ben_d/sync.cpp.i:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/sync.cpp.i
-.PHONY : ben_d/sync.cpp.i
+ben_d/mainAruba.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/mainAruba.cpp.i
+.PHONY : ben_d/mainAruba.cpp.i
 
-ben_d/sync.s: ben_d/sync.cpp.s
+ben_d/mainAruba.s: ben_d/mainAruba.cpp.s
 
-.PHONY : ben_d/sync.s
+.PHONY : ben_d/mainAruba.s
 
 # target to generate assembly for a file
-ben_d/sync.cpp.s:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/sync.cpp.s
-.PHONY : ben_d/sync.cpp.s
+ben_d/mainAruba.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/mainAruba.cpp.s
+.PHONY : ben_d/mainAruba.cpp.s
 
 examples/async.o: examples/async.c.o
 
@@ -932,27 +932,27 @@ help:
 	@echo "... uninstall"
 	@echo "... libcurl"
 	@echo "... cpr"
+	@echo "... ben_d/CloudConnect.o"
+	@echo "... ben_d/CloudConnect.i"
+	@echo "... ben_d/CloudConnect.s"
+	@echo "... ben_d/MQTTClient.o"
+	@echo "... ben_d/MQTTClient.i"
+	@echo "... ben_d/MQTTClient.s"
 	@echo "... ben_d/SSLConnection.o"
 	@echo "... ben_d/SSLConnection.i"
 	@echo "... ben_d/SSLConnection.s"
 	@echo "... ben_d/Socket.o"
 	@echo "... ben_d/Socket.i"
 	@echo "... ben_d/Socket.s"
-	@echo "... ben_d/benMQTTClient.o"
-	@echo "... ben_d/benMQTTClient.i"
-	@echo "... ben_d/benMQTTClient.s"
-	@echo "... ben_d/ssl_init.o"
-	@echo "... ben_d/ssl_init.i"
-	@echo "... ben_d/ssl_init.s"
-	@echo "... ben_d/ssl_network.o"
-	@echo "... ben_d/ssl_network.i"
-	@echo "... ben_d/ssl_network.s"
-	@echo "... ben_d/ssl_tls.o"
-	@echo "... ben_d/ssl_tls.i"
-	@echo "... ben_d/ssl_tls.s"
-	@echo "... ben_d/sync.o"
-	@echo "... ben_d/sync.i"
-	@echo "... ben_d/sync.s"
+	@echo "... ben_d/TestDevMain.o"
+	@echo "... ben_d/TestDevMain.i"
+	@echo "... ben_d/TestDevMain.s"
+	@echo "... ben_d/main.o"
+	@echo "... ben_d/main.i"
+	@echo "... ben_d/main.s"
+	@echo "... ben_d/mainAruba.o"
+	@echo "... ben_d/mainAruba.i"
+	@echo "... ben_d/mainAruba.s"
 	@echo "... examples/async.o"
 	@echo "... examples/async.i"
 	@echo "... examples/async.s"

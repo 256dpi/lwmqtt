@@ -17,15 +17,18 @@
 class Socket 
 {
     public:
+        static const int KeepAliveDefaultValue;
+
         enum State {
             Unconnected,
             Connected
         };
         Socket();
-        Socket(const char *host, int port, int keepalive);
-        void Init(const char *host = nullptr, int port = 0, int keepalive = 0, bool blocking = false, int sock = INVALID_SOCKET);
+        Socket(const char *host, int port, int keepalive = KeepAliveDefaultValue);
+        void Init(const char *host = nullptr, int port = 0, int keepalive = KeepAliveDefaultValue, bool blocking = true, int sock = INVALID_SOCKET);
         State GetState();
         void SetState(State state) { mState = state;}
+        bool IsConnected() {return (mState == Connected) ? true : false;}
         int Connect();
         void Close();
         void Print();

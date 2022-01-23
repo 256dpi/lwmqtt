@@ -94,8 +94,8 @@ enum mosq_err_t {
 #include <openssl/ssl.h>
 #include <openssl/engine.h>
 
-int mosquitto__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx);
-int mosquitto__verify_certificate_hostname(X509 *cert, const char *hostname);
+//int mosquitto__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx);
+//int mosquitto__verify_certificate_hostname(X509 *cert, const char *hostname);
 // Benoit ces lignes viennent de tls_mosh.h <<<<
 
 #endif // #ifndef __mosq_h__

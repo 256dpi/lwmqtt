@@ -16,16 +16,134 @@
 #include <openssl/ui.h>
 #include <openssl/x509v3.h>
 
+#include <unistd.h>
+
+
+
+
+extern "C"
+{
+
+SSL *g_ssl = nullptr;
+
+static void net__print_ssl_error()
+{
+	char ebuf[256];
+	unsigned long e;
+	int num = 0;
+
+	e = ERR_get_error();
+	while(e){
+		DBLog(DBLogLevel_INFO, "OpenSSL Error[%d]: %s", num, ERR_error_string(e, ebuf));
+		e = ERR_get_error();
+		num++;
+	}
+}
+
+void lwmqtt_mbedtls_network_disconnect(void *network) {BTraceIn return;}
+
+static int net__handle_ssl(SSL* ssl, int ret)
+{
+	int err;
+	BTraceIn
+	err = SSL_get_error(ssl, ret);
+	if (err == SSL_ERROR_WANT_READ) {
+		DBLog(DBLogLevel_SSL_RW, "READ");
+		ret = -1;
+		errno = EAGAIN;
+	}
+	else if (err == SSL_ERROR_WANT_WRITE) {
+		DBLog(DBLogLevel_SSL_RW, "WRITE");
+		ret = -1;
+		errno = EAGAIN;
+	}
+	else {
+		DBLog(DBLogLevel_SSL_RW, "ELSE");
+		net__print_ssl_error();
+		errno = EPROTO;
+	}
+	ERR_clear_error();
+
+	return ret;
+}
+
+lwmqtt_err_t lwmqtt_mbedtls_network_peek(void *ref, size_t *available) {
+    BTraceIn
+    lwmqtt_err_t err = LWMQTT_SUCCESS;
+    ssize_t ret;
+    SSL *ssl = *(SSL**)ref;
+    ssl = g_ssl;
+    if(ssl)
+    {
+        ret = SSL_peek(ssl, NULL, 0);
+        if(ret <= 0){
+            err = LWMQTT_INTERNAL_ERROR;
+            *available = 0;
+            net__handle_ssl(ssl, ret);
+        }
+        else {
+            *available = (size_t)ret;
+        }
+    }
+    return err;
+}
+
+lwmqtt_err_t lwmqtt_mbedtls_network_read(void *ref, uint8_t *buffer, size_t len, size_t *read, uint32_t timeout) {
+    BTraceIn
+    lwmqtt_err_t err = LWMQTT_SUCCESS;
+    ssize_t ret;
+    SSL *ssl = *(SSL**)ref;
+    ssl = g_ssl;
+    if(ssl)
+    {
+        ret = SSL_read(ssl, buffer, len);
+        if(ret <= 0){
+            err = LWMQTT_INTERNAL_ERROR;
+            *read = 0;
+            net__handle_ssl(ssl, ret);
+        }
+        else {
+            *read = (size_t)ret;
+        }
+    }
+    return err;
+}
+
+lwmqtt_err_t lwmqtt_mbedtls_network_write(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout) {
+    BTraceIn
+    lwmqtt_err_t err = LWMQTT_SUCCESS;
+    ssize_t ret;
+    SSL *ssl = *(SSL**)ref;
+    ssl = g_ssl;
+    if(ssl)
+    {
+        ret = SSL_write(ssl, buffer, len);
+        if(ret <= 0){
+            err = LWMQTT_INTERNAL_ERROR;
+            *sent = 0;
+            net__handle_ssl(ssl, ret);
+        }
+        else {
+            *sent = (size_t)ret;
+        }
+    }
+    return err;
+}
+
+}
+
 extern "C"
 {
 
     int g_tls_ex_index_mosq = -1;
     void SetGlobalOpensslExIndex(int index)
     {
+        BLog("___ %d", index);
         g_tls_ex_index_mosq = index;
     }
     int GetGlobalOpensslExIndex(void)
     {
+        BLog("___  %d", g_tls_ex_index_mosq );
         return g_tls_ex_index_mosq;
     }
 
@@ -34,6 +152,7 @@ extern "C"
         size_t i;
         size_t len;
 
+        BLog("____");
         if (!certname || !hostname)
         {
             return 1;
@@ -79,7 +198,7 @@ extern "C"
         unsigned char ipv4_addr[4];
         int ipv6_ok;
         int ipv4_ok;
-
+        BTraceIn
         ipv6_ok = inet_pton(AF_INET6, hostname, &ipv6_addr);
         ipv4_ok = inet_pton(AF_INET, hostname, &ipv4_addr);
 
@@ -146,8 +265,9 @@ extern "C"
         return 0;
     }
 
-    int mosquitto__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx)
+    int opensll__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx)
     {
+        BTraceIn
         /* Preverify should have already checked expiry, revocation.
          * We need to verify the hostname. */
         SSL *ssl;
@@ -159,18 +279,23 @@ extern "C"
             return 0;
 
         ssl = (SSL *)X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
-        tls_data = (TlsData_S *)SSL_get_ex_data(ssl, g_tls_ex_index_mosq);
-        if (!tls_data)
+        tls_data = (TlsData_S *)SSL_get_ex_data(ssl, GetGlobalOpensslExIndex());
+        BLog("mTls.m_ssl ici ssl = %p", (void*)ssl);
+    	BLog("tls_ex_index_mosq = %d", GetGlobalOpensslExIndex());
+        if (!tls_data){
+            BLog("Error tls_data");
             return 0;
+        }
 
         if (tls_data->tls_insecure == false
-#ifndef WITH_BROKER
             && tls_data->port != 0 /* no hostname checking for unix sockets */
-#endif
         )
         {
+            BLog("X509_STORE_CTX_get_error_depth");
+
             if (X509_STORE_CTX_get_error_depth(ctx) == 0)
             {
+                BLog("X509_STORE_CTX_get_error_depth phase 2");
                 /* FIXME - use X509_check_host() etc. for sufficiently new openssl (>=1.1.x) */
                 cert = X509_STORE_CTX_get_current_cert(ctx);
                 /* This is the peer certificate, all others are upwards in the chain. */
@@ -198,21 +323,25 @@ extern "C"
     /* Functions taken from OpenSSL s_server/s_client */
     static int ui_open(UI *ui)
     {
+        BLog("___");
         return UI_method_get_opener(UI_OpenSSL())(ui);
     }
 
     static int ui_read(UI *ui, UI_STRING *uis)
     {
+        BLog("___");
         return UI_method_get_reader(UI_OpenSSL())(ui, uis);
     }
 
     static int ui_write(UI *ui, UI_STRING *uis)
     {
+        BLog("___");
         return UI_method_get_writer(UI_OpenSSL())(ui, uis);
     }
 
     static int ui_close(UI *ui)
     {
+        BLog("___");
         return UI_method_get_closer(UI_OpenSSL())(ui);
     }
 
@@ -220,9 +349,7 @@ extern "C"
 
 TLS::TLS(const char *host, uint16_t port, int socket)
 {
-    m_initialized = false;
-    m_openssl_ex_index = -1;
-    m_ssl_ctx = nullptr;
+    __Init();
     m_tls_data.host = host; // std::string(host).c_str();
     m_tls_data.port = port;
     m_tls_data.socket = socket;
@@ -230,10 +357,26 @@ TLS::TLS(const char *host, uint16_t port, int socket)
 
 TLS::TLS(TlsData_S &data)
 {
+    __Init();
+    m_tls_data = data;
+}
+
+void TLS::__Init()
+{
     m_initialized = false;
     m_openssl_ex_index = -1;
     m_ssl_ctx = nullptr;
-    m_tls_data = data;
+    m_ssl = nullptr;
+
+}
+
+void TLS::Close()
+{
+    SslClose();
+	if(m_ssl_ctx){
+		SSL_CTX_free(m_ssl_ctx);
+	}
+    m_ssl_ctx = nullptr;
 }
 
 void TLS::SetupUiMethod(void)
@@ -274,7 +417,6 @@ void TLS::InitTlsCrypto(void)
     InitTlsCryptoVersion();
     SetupUiMethod();
     SetOpensslExIndex();
-
     SetInitialized();
     BTraceOut
 }
@@ -342,7 +484,7 @@ int TLS::Certificats()
         }
         else
         {
-            SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_PEER, mosquitto__server_certificate_verify);
+            SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_PEER, opensll__server_certificate_verify);
         }
         if (m_tls_data.tls_certfile)
         {
@@ -394,7 +536,6 @@ void TLS::DHECiphers()
 {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     /* Allow use of DHE ciphers */
-    DHECiphers();
     SSL_CTX_set_dh_auto(m_ssl_ctx, 1);
 #endif
 }
@@ -455,6 +596,7 @@ int TLS::InitSslCtx()
             // pour le moment par défaut on prend "tlsv1.2"
             if (!strcmp(m_tls_data.tls_version, "tlsv1.2"))
             {
+                BLog("all0");
                 SSL_CTX_set_options(m_ssl_ctx, SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
             }
             else
@@ -487,7 +629,7 @@ void TLS::SslClose()
             SSL_shutdown(m_ssl);
         }
         SSL_free(m_ssl);
-        m_ssl = NULL;
+        m_ssl = nullptr;
     }
 }
 
@@ -545,6 +687,8 @@ int TLS::Init()
             SSL_free(m_ssl);
         }
         m_ssl = SSL_new(m_ssl_ctx);
+        BLog("m_ssl = %p, &m_ssl = %p, &(m_ssl) = %p", (void*)m_ssl, (void*)&m_ssl, (void*)&(m_ssl));
+        g_ssl = m_ssl;
         if (!m_ssl)
         {
             return Msg_Err_Tls;
@@ -570,84 +714,131 @@ int TLS::Init()
             BLog("Msg_Err_Tls");
             return Msg_Err_Tls;
         }
-
-        if (SslConnect())
-        {
-            SslClose();
-            BLog("Msg_Err_Tls");
-            return Msg_Err_Tls;
-        }
+        do {
+            if (SslConnect())
+            {
+                SslClose();
+                BLog("Msg_Err_Tls");
+                return Msg_Err_Tls;
+            }
+            sleep(1);
+        } while (m_want_connect);
+        
     }
     BTraceOut;
     return Msg_Success;
 }
 
-
-#if 0
-/* Create a socket and connect it to 'ip' on port 'port'.  */
-int net__socket_connect(struct mosquitto *mosq, const char *host, uint16_t port, const char *bind_address, bool blocking)
-{
-    int rc, rc2;
-BTraceIn
-    if(!mosq || !host) return MOSQ_ERR_INVAL;
-    BLog(" host %s", host);
-
-    rc = net__try_connect(host, port, &m_sock, bind_address, blocking);
-    if(rc > 0) return rc;
-
-    BLog("net__socket_connect %d", m_tcp_nodelay);
-    if(m_tcp_nodelay){
-        BLog("PAS ICI: m_tcp_nodelay %s\n", host);
-        int flag = 1;
-        if(setsockopt(m_sock, IPPROTO_TCP, TCP_NODELAY, (const void*)&flag, sizeof(int)) != 0){
-            log__printf(mosq, MOSQ_LOG_WARNING, "Warning: Unable to set TCP_NODELAY.");
-        }
-    }
-
-#if defined(WITH_SOCKS) && !defined(WITH_BROKER)
-    if(!m_socks5_host)
-#endif
-    {
-        BLog("ICI: vers net__socket_connect_step3 %s\n", host);
-        rc2 = net__socket_connect_step3(mosq, host);
-        if(rc2) return rc2;
-    }
-BTraceOut
-    return rc;
-}
-#endif
-
 #ifdef WITH_TLS
-static int net__handle_ssl(struct mosquitto *mosq, int ret)
+static int net__handle_ssl(struct mosquitto* mosq, int ret)
 {
-    int err;
+	int err;
+	BTraceIn
+	err = SSL_get_error(mosq->ssl, ret);
+	if (err == SSL_ERROR_WANT_READ) {
+		BLog("READ");
+		ret = -1;
+		errno = EAGAIN;
+	}
+	else if (err == SSL_ERROR_WANT_WRITE) {
+		BLog("WRITE");
+		ret = -1;
+		mosq->want_write = true;
+		errno = EAGAIN;
+	}
+	else {
+		BLog("ELSE");
+		net__print_ssl_error(mosq);
+		errno = EPROTO;
+	}
+	ERR_clear_error();
 
-    err = SSL_get_error(m_ssl, ret);
-    if (err == SSL_ERROR_WANT_READ)
-    {
-        ret = -1;
-        errno = EAGAIN;
-    }
-    else if (err == SSL_ERROR_WANT_WRITE)
-    {
-        ret = -1;
-#ifdef WITH_BROKER
-        mux__add_out(mosq);
-#else
-        m_want_write = true;
-#endif
-        errno = EAGAIN;
-    }
-    else
-    {
-        PrintTlsError();
-        errno = EPROTO;
-    }
-    ERR_clear_error();
-#ifdef WIN32
-    WSASetLastError(errno);
-#endif
-
-    return ret;
+	return ret;
 }
-#endif
+
+ssize_t net__read(struct mosquitto *mosq, void *buf, size_t count)
+{
+	BTraceIn
+	int ret;
+	assert(mosq);
+	errno = 0;
+	if(mosq->ssl){
+		ret = SSL_read(mosq->ssl, buf, (int)count);
+		if(ret <= 0){
+			ret = net__handle_ssl(mosq, ret);
+		}
+		return (ssize_t )ret;
+	}else{
+		/* Call normal read/recv */
+		return read(mosq->sock, buf, count);
+	}
+}
+
+ssize_t net__write(struct mosquitto *mosq, const void *buf, size_t count)
+{
+	int ret;
+	assert(mosq);
+	BTraceIn
+	errno = 0;
+	if(mosq->ssl){
+
+		mosq->want_write = false;
+		ret = SSL_write(mosq->ssl, buf, (int)count);
+		if(ret < 0){
+
+			ret = net__handle_ssl(mosq, ret);
+		}
+		return (ssize_t )ret;
+	}else{
+		/* Call normal write/send */
+		return write(mosq->sock, buf, count);
+	}
+}
+
+
+int net__socket_nonblock(mosq_sock_t *sock)
+{
+	int opt;
+	/* Set non-blocking */
+	BTraceIn
+	opt = fcntl(*sock, F_GETFL, 0);
+	if(opt == -1){
+		COMPAT_CLOSE(*sock);
+		*sock = INVALID_SOCKET;
+		return MOSQ_ERR_ERRNO;
+	}
+	if(fcntl(*sock, F_SETFL, opt | O_NONBLOCK) == -1){
+		/* If either fcntl fails, don't want to allow this client to connect. */
+		COMPAT_CLOSE(*sock);
+		*sock = INVALID_SOCKET;
+		return MOSQ_ERR_ERRNO;
+	}
+	return MOSQ_ERR_SUCCESS;
+}
+
+
+int net__socketpair(mosq_sock_t *pairR, mosq_sock_t *pairW)
+{
+	BTraceIn
+	int sv[2];
+
+	*pairR = INVALID_SOCKET;
+	*pairW = INVALID_SOCKET;
+
+	if(socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1){
+		return MOSQ_ERR_ERRNO;
+	}
+	if(net__socket_nonblock(&sv[0])){
+		COMPAT_CLOSE(sv[1]);
+		return MOSQ_ERR_ERRNO;
+	}
+	if(net__socket_nonblock(&sv[1])){
+		COMPAT_CLOSE(sv[0]);
+		return MOSQ_ERR_ERRNO;
+	}
+	*pairR = sv[0];
+	*pairW = sv[1];
+	return MOSQ_ERR_SUCCESS;
+}
+
+#endif // #ifdef WITH_TLS

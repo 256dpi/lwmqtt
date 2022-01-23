@@ -1,6 +1,8 @@
 #ifndef __SSLConnection_h__
 #define __SSLConnection_h__
 
+#include <functional>
+
 /***
  * Grosse note: On a la version # define OPENSSL_VERSION_NUMBER  0x1000213fL sur les APs
  * 
@@ -10,6 +12,12 @@
 #include <stdint.h>
 
 #include <openssl/ossl_typ.h>
+#include <openssl/ssl.h>
+#include <openssl/conf.h>
+#include <openssl/engine.h>
+#include <openssl/err.h>
+#include <openssl/ui.h>
+#include <openssl/x509v3.h>
 
 extern "C" {
 
@@ -30,13 +38,14 @@ typedef struct TlsData_s {
     //char *m_tls_engine;
     //char *m_tls_engine_kpass_sha1;
     char *tls_alpn;
-    int tls_cert_reqs;
+    int  tls_cert_reqs;
     bool tls_insecure;
     bool ssl_ctx_defaults;
     bool tls_ocsp_required;
     bool tls_use_os_certs;
 
 } TlsData_S;
+
 
 } // extern "C" {
 
@@ -51,12 +60,16 @@ class TLS
         };
         TLS(const char *host, uint16_t port, int socket );
         TLS(TlsData_S &data);
+        void __Init();
         int Init(); //int net__socket_connect_step3(struct mosquitto *mosq, const char *host)
         int InitSslCtx(); // net__init_ssl_ctx()
 
         bool IsInitialized() { return m_initialized;}
         void SetInitialized() { m_initialized = true;}
         void ResetInitialized() { m_initialized = false;}
+        SSL *GetSsl() {return m_ssl;}
+        SSL *m_ssl;
+        void Close();
 
     private:
         void SetupUiMethod();
@@ -71,11 +84,9 @@ class TLS
         void SetOpensslExIndex();
         void SslClose();
         int SslConnect(); // net__socket_connect_tls(mosq))
-
         int sock;
         TlsData_S m_tls_data;
     
-        SSL *m_ssl;
         SSL_CTX *m_ssl_ctx;
         SSL_CTX *m_user_ssl_ctx;
         // OpenSSL user interface method
@@ -92,5 +103,20 @@ class TLS
 
 };
 
+
+
+extern "C" {
+
+#include "lwmqtt.h"
+
+
+void lwmqtt_mbedtls_network_disconnect(void *network);
+
+lwmqtt_err_t lwmqtt_mbedtls_network_peek(void *network, size_t *available);
+
+lwmqtt_err_t lwmqtt_mbedtls_network_read(void *ref, uint8_t *buffer, size_t len, size_t *read, uint32_t timeout);
+lwmqtt_err_t lwmqtt_mbedtls_network_write(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout);
+
+} // extern "C"
 
 #endif // #ifndef __SSLConnection_h__
