@@ -13,14 +13,14 @@ enum DBLogLevel {
     DBLogLevel_INFO = true,
     DBLogLevel_SSL_CTX = false,
     DBLogLevel_SSL_CERT = false,
-    DBLogLevel_SSL_READ = false,
-    DBLogLevel_SSL_WRITE = false,
-    DBLogLevel_SSL_RW = false,
+    DBLogLevel_SSL_READ = true,
+    DBLogLevel_SSL_WRITE = true,
+    DBLogLevel_SSL_RW = true,
 
 };
 #define DBLog(Log, format, ...) do {if(Log) {printf("Benoit:%s:%s(%d): " format "\n", __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__);}} while(0)
-#define DBTraceIn  DBLog(DBLogLevel_INFO) 
-#define DBTraceOut DBLog(DBLogLevel_INFO)
+#define DBTraceIn  DBLog(DBLogLevel_INFO, "") 
+#define DBTraceOut DBLog(DBLogLevel_INFO, "")
 
 
 #define GLDEBUG_DEFAULT BLog
