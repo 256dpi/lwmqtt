@@ -50,6 +50,77 @@ static void big_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t
   counter++;
 }
 
+TEST(Client, PublishSubscribeQOR0) {
+  lwmqtt_unix_network_t network;
+  lwmqtt_unix_timer_t timer1, timer2;
+
+  lwmqtt_client_t client;
+
+  lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
+
+  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
+
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"test.mosquitto.org", 1883);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  lwmqtt_options_t data = lwmqtt_default_options;
+  data.client_id = lwmqtt_string("lwmqtt");
+  data.username = lwmqtt_string("public");
+  data.password = lwmqtt_string("public");
+
+  lwmqtt_return_code_t return_code;
+  err = lwmqtt_connect(&client, data, nullptr, &return_code, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  counter = 0;
+
+  for (int i = 0; i < 5; i++) {
+    lwmqtt_message_t msg = lwmqtt_default_message;
+    msg.qos = LWMQTT_QOS0;
+    msg.payload = payload;
+    msg.payload_len = PAYLOAD_LEN;
+    memset(msg.payload, '*', msg.payload_len);
+    err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
+    ASSERT_EQ(err, LWMQTT_SUCCESS);
+  }
+
+  while (counter < 5) {
+    size_t available = 0;
+    err = lwmqtt_unix_network_peek(&network, &available);
+    ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+    if (available > 0) {
+      err = lwmqtt_yield(&client, available, COMMAND_TIMEOUT);
+      ASSERT_EQ(err, LWMQTT_SUCCESS);
+    }
+    if(test)
+    {
+      SSL *ssl = nullptr;
+      void *mosq;
+
+      mosq = SSL_get_ex_data(ssl, 1);
+      if(mosq)
+        mosq = 0;
+    }
+  }
+  printf("On ferme boutique \n");
+  sleep(3);
+  exit(-1);
+
+  err = lwmqtt_unsubscribe_one(&client, lwmqtt_string("lwmqtt"), COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  lwmqtt_unix_network_disconnect(&network);
+}
+
 TEST(Client, PublishSubscribeQOS0) {
   lwmqtt_unix_network_t network;
   lwmqtt_unix_timer_t timer1, timer2;
@@ -107,6 +178,8 @@ TEST(Client, PublishSubscribeQOS0) {
       if(mosq)
         mosq = 0;
     }
+    sleep(3);
+    exit(-1);
   }
 
   err = lwmqtt_unsubscribe_one(&client, lwmqtt_string("lwmqtt"), COMMAND_TIMEOUT);
