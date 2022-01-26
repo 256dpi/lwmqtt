@@ -25,12 +25,17 @@ extern "C"
 {
 
 SSL *g_ssl = nullptr;
+SSL_CTX  *g_ssl_ctx = nullptr;
 
-static void net__print_ssl_error()
+static void net__print_ssl_error(int e1)
 {
+    DBTraceIn;
 	char ebuf[256];
 	unsigned long e;
 	int num = 0;
+    if(e1 != 0)
+		DBLog(DBLogLevel_INFO, "OpenSSL (e1) Error[%d]: %s", num, ERR_error_string(e1, ebuf));
+
 
 	e = ERR_get_error();
 	while(e){
@@ -45,22 +50,48 @@ void lwmqtt_mbedtls_network_disconnect(void *network) {BTraceIn return;}
 static int net__handle_ssl(SSL* ssl, int ret)
 {
 	int err;
-	BTraceIn
+//	BTraceIn
 	err = SSL_get_error(ssl, ret);
-	if (err == SSL_ERROR_WANT_READ) {
-		DBLog(DBLogLevel_SSL_RW, "READ");
-		ret = -1;
-		errno = EAGAIN;
-	}
-	else if (err == SSL_ERROR_WANT_WRITE) {
-		DBLog(DBLogLevel_SSL_RW, "WRITE");
-		ret = -1;
-		errno = EAGAIN;
-	}
-	else {
-		DBLog(DBLogLevel_SSL_RW, "ELSE");
-		net__print_ssl_error();
-		errno = EPROTO;
+    switch(err)
+    {
+        case SSL_ERROR_WANT_READ:
+            {
+//                DBLog(DBLogLevel_SSL_RW, "READ");
+                ret = -1;   
+                errno = EAGAIN;
+            }
+            break;
+
+        case SSL_ERROR_WANT_WRITE:
+            {
+                DBLog(DBLogLevel_SSL_RW, "WRITE");
+                ret = -1;
+                errno = EAGAIN;
+            }
+            break;
+        case SSL_ERROR_ZERO_RETURN:
+            {
+        		DBLog(DBLogLevel_SSL_RW, "SSL_ERROR_ZERO_RETURN");
+		        net__print_ssl_error(err);
+		        errno = EPROTO;
+            }
+            break;
+        case SSL_CTRL_SESS_CACHE_FULL:
+            {
+                long val;
+                val = SSL_CTX_sess_get_cache_size(g_ssl_ctx);
+        		DBLog(DBLogLevel_SSL_RW, "CACHE SIZE = %ld", val);
+		        net__print_ssl_error(err);
+		        errno = EPROTO;
+            }
+            break;
+    	default:
+            {
+        		DBLog(DBLogLevel_SSL_RW, "ELSE. err = %d", err);
+		        net__print_ssl_error(err);
+		        errno = EPROTO;
+            }
+            break;
 	}
 	ERR_clear_error();
 
@@ -73,10 +104,12 @@ lwmqtt_err_t lwmqtt_mbedtls_network_peek(void *ref, size_t *available) {
     ssize_t ret;
     SSL *ssl = *(SSL**)ref;
     ssl = g_ssl;
+	ERR_clear_error();
     if(ssl)
     {
         ret = SSL_peek(ssl, NULL, 0);
-        if(ret <= 0){
+        //BLog("SSL_peek() = %ld", ret);
+        if(ret < 0){
             err = LWMQTT_INTERNAL_ERROR;
             *available = 0;
             net__handle_ssl(ssl, ret);
@@ -89,16 +122,19 @@ lwmqtt_err_t lwmqtt_mbedtls_network_peek(void *ref, size_t *available) {
 }
 
 lwmqtt_err_t lwmqtt_mbedtls_network_read(void *ref, uint8_t *buffer, size_t len, size_t *read, uint32_t timeout) {
-    BTraceIn
+//    BTraceIn
     lwmqtt_err_t err = LWMQTT_SUCCESS;
     ssize_t ret;
     SSL *ssl = *(SSL**)ref;
     ssl = g_ssl;
+    //BLog(" %ld, %s", len, buffer);
+    //long retMode = SSL_get_mode(ssl);
+    //BLog("current mode is %08lX", retMode);
+	ERR_clear_error();
     if(ssl)
     {
         ret = SSL_read(ssl, buffer, len);
         if(ret <= 0){
-            err = LWMQTT_INTERNAL_ERROR;
             *read = 0;
             net__handle_ssl(ssl, ret);
         }
@@ -115,6 +151,8 @@ lwmqtt_err_t lwmqtt_mbedtls_network_write(void *ref, uint8_t *buffer, size_t len
     ssize_t ret;
     SSL *ssl = *(SSL**)ref;
     ssl = g_ssl;
+    //BLog("%ld, %s", len, buffer);
+	ERR_clear_error();
     if(ssl)
     {
         ret = SSL_write(ssl, buffer, len);
@@ -689,6 +727,7 @@ int TLS::Init()
         m_ssl = SSL_new(m_ssl_ctx);
         BLog("m_ssl = %p, &m_ssl = %p, &(m_ssl) = %p", (void*)m_ssl, (void*)&m_ssl, (void*)&(m_ssl));
         g_ssl = m_ssl;
+        g_ssl_ctx = m_ssl_ctx;
         if (!m_ssl)
         {
             return Msg_Err_Tls;

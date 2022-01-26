@@ -30,13 +30,8 @@ typedef struct TlsData_s {
     char *tls_capath;
     char *tls_certfile;
     char *tls_keyfile;
-    int (*tls_pw_callback)(char *buf, int size, int rwflag, void *userdata);
     char *tls_version;
     char *tls_ciphers;
-    char *tls_psk;  // TODO: n'est pas utilisé je crois
-    char *tls_psk_identity;  // TODO: n'est pas utilisé je crois
-    //char *m_tls_engine;
-    //char *m_tls_engine_kpass_sha1;
     char *tls_alpn;
     int  tls_cert_reqs;
     bool tls_insecure;

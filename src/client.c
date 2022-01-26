@@ -1,4 +1,9 @@
 #include "packet.h"
+#include "stdio.h"
+#include <unistd.h>
+#define BLog(format, ...) do {printf("Benoit:%s:%s(%d): " format "\n", __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__);} while(0)
+#define BTraceIn do {printf("Benoit:%s:%s(%d):In \n", __FILE__, __func__, __LINE__);} while(0);
+#define BTraceOut do {printf("Benoit:%s:%s(%d):Out \n", __FILE__, __func__, __LINE__);} while(0);
 
 void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_size, uint8_t *read_buf,
                  size_t read_buf_size) {
@@ -73,8 +78,10 @@ static lwmqtt_err_t lwmqtt_read_from_network(lwmqtt_client_t *client, size_t off
     // check remaining time
     int32_t remaining_time = client->timer_get(client->command_timer);
     if (remaining_time <= 0) {
+      BLog("Timeout expired bypass it");
       return LWMQTT_NETWORK_TIMEOUT;
     }
+      //sleep(1);
 
     // read
     size_t partial_read = 0;
@@ -154,6 +161,7 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *client, size_t
 
     // attempt to detect remaining length
     err = lwmqtt_detect_remaining_length(client->read_buf + 1, len, &rem_len);
+    
   } while (err == LWMQTT_BUFFER_TOO_SHORT);
 
   // check final error
@@ -358,33 +366,37 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
                             lwmqtt_return_code_t *return_code, uint32_t timeout) {
   // set command timer
   client->timer_set(client->command_timer, timeout);
-
+  BLog("1");
   // save keep alive interval (take 75% to be a little earlier than actually needed)
   client->keep_alive_interval = (uint32_t)(options.keep_alive) * 750;
-
+  BLog("2");
   // set keep alive timer
   client->timer_set(client->keep_alive_timer, client->keep_alive_interval);
-
+  BLog("3");
   // reset pong pending flag
   client->pong_pending = false;
-
+  BLog("4");
   // initialize return code
   *return_code = LWMQTT_UNKNOWN_RETURN_CODE;
-
+  BLog("5");
   // encode connect packet
   size_t len;
   lwmqtt_err_t err = lwmqtt_encode_connect(client->write_buf, client->write_buf_size, &len, options, will);
+  printf("options: %d, %s, %s, %s, %d\n", options.clean_session, options.client_id.data, options.password.data, options.username.data, options.keep_alive);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
+  BLog("7");
   // send packet
+
   err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
   // wait for connack packet
+  BLog("8");
   lwmqtt_packet_type_t packet_type = LWMQTT_NO_PACKET;
   err = lwmqtt_cycle_until(client, &packet_type, 0, LWMQTT_CONNACK_PACKET);
   if (err != LWMQTT_SUCCESS) {
@@ -393,12 +405,14 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
     return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
+  BLog("9");
   // decode connack packet
   bool session_present;
   err = lwmqtt_decode_connack(client->read_buf, client->read_buf_size, &session_present, return_code);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
+  BLog("10");
 
   // return error if connection was not accepted
   if (*return_code != LWMQTT_CONNECTION_ACCEPTED) {

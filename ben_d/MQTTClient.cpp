@@ -453,7 +453,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         lwmqtt_options_t options = lwmqtt_default_options;
 
         options.client_id = lwmqtt_string(mDeviceID.c_str());
-        options.keep_alive = MQTT_WIRED_DEVICE_KEEPALIVE_INTERVAL_SECS;
+        options.keep_alive = MQTT_WIRED_DEVICE_KEEPALIVE_INTERVAL_SECS*6;
 
 #ifdef GSM_CHANNEL_MESH_UPLINK_SUPPORTED
         gsm_channel_mesh_uplink_key_t key;
@@ -473,6 +473,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             printf("Mesh Point: increasing MQTT Timeout to %u", MQTT_WIRELESS_DEVICE_KEEPALIVE_INTERVAL_SECS);
         }
 #endif
+    sleep(2);
 
         rc = lwmqtt_connect(&mMqttClient, options, NULL, &return_code, MQTT_COMMAND_TIMEOUT_MSEC);
         if (rc == LWMQTT_SUCCESS) {
@@ -485,7 +486,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             TriggerDisconnect(rc);
         }
     }
-
+    sleep(2);
     /*
      * SUBSCRIBING
      */
@@ -689,8 +690,10 @@ void MQTTClient::SubscribeCallback(lwmqtt_client_t *client, void *ref, lwmqtt_st
 lwmqtt_err_t MQTTClient::Subscribe()
 {
     lwmqtt_err_t rc;
+    BLog("MQTT topic %s", mSubscribeTopic.c_str());
     rc = lwmqtt_subscribe_one(&mMqttClient,
-                              lwmqtt_string(mSubscribeTopic.c_str()),
+                              //lwmqtt_string(mSubscribeTopic.c_str()),
+                              lwmqtt_string(("DevStackSSO")),
                               LWMQTT_QOS1,
                               MQTT_COMMAND_TIMEOUT_MSEC);
     return rc;
