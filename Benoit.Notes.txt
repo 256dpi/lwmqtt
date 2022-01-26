@@ -1,0 +1,40 @@
+1.1 Fonctionne MQTT sends hello successfully.
+1.2 Fonctionne encore, avant des changement pour le APs
+
+2.1 Commits
+
+/******************************************************************************
+    1.1 Fonctionne MQTT sends hello successfully.
+ ******************************************************************************/
+Fonctionne bien jusqu'à
+
+Subscribed to topic '' successfully.
+Publishing HELLO message on topic 'DevStackSSO/pm/DevStackSSO//v2/hello'...
+Published HELLO message on topic 'DevStackSSO/pm/DevStackSSO//v2/hello' successfully.
+
+
+
+/******************************************************************************
+    1.2 Fonctionne encore, avant des changement pour le APs
+ ******************************************************************************/
+
+ Il reste beaucoup de débogue, des délais, ... à faire un peu de ménage quand meme.
+
+/******************************************************************************
+    2.1 Commits
+ ******************************************************************************/
+
+Ref 1.1
+commit cacbd85337c571e30cca069cb8edfb7dcf8190cf (HEAD -> b/base_benoit_test_v0.6.4)
+Author: Benoit Massé <ben.masse@abcdn.qc.ca>
+Date:   Tue Jan 25 10:08:29 2022 -0500
+
+    Correction de DBTraceXX
+
+Ref 1.2
+commit e240ba5889cdc9447e403e65a25b5509d755c4c4 (HEAD -> b/base_benoit_test_v0.6.4, origin/b/base_benoit_test_v0.6.4)
+Author: Benoit Massé <ben.masse@abcdn.qc.ca>
+Date:   Wed Jan 26 17:02:00 2022 -0500
+
+    Fonctionne mais il reste beaucoup de code de débogue
+
