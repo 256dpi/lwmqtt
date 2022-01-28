@@ -65,7 +65,6 @@ class TLS
         void Close();
 
     private:
-        void SetupUiMethod();
         void InitTlsCrypto(); //net__init_tls();
         void InitTlsCryptoVersion(); // Init SSL lib and crypto based on the openssl version.
         int LoadCA(); //static int net__tls_load_ca(struct mosquitto *mosq)
@@ -82,8 +81,6 @@ class TLS
     
         SSL_CTX *m_ssl_ctx;
         SSL_CTX *m_user_ssl_ctx;
-        // OpenSSL user interface method
-        UI_METHOD *m_ui_method = nullptr;
 
         // OpenSSL index 
         int m_openssl_ex_index;
