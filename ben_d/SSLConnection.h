@@ -20,7 +20,6 @@
 #include <openssl/x509v3.h>
 
 extern "C" {
-
 typedef struct TlsData_s {
 	const char *host;
 	uint16_t port;
@@ -41,7 +40,6 @@ typedef struct TlsData_s {
 
 } TlsData_S;
 
-
 } // extern "C" {
 
 
@@ -53,8 +51,8 @@ class TLS
             Msg_Error   = -1,
             Msg_Success = 0
         };
-        TLS(const char *host, uint16_t port, int socket );
-        TLS(TlsData_S &data);
+        TLS(TlsData_S *data);
+        ~TLS() {Close();};
         void __Init();
         int Init(); //int net__socket_connect_step3(struct mosquitto *mosq, const char *host)
         int InitSslCtx(); // net__init_ssl_ctx()
@@ -80,7 +78,7 @@ class TLS
         void SslClose();
         int SslConnect(); // net__socket_connect_tls(mosq))
         int sock;
-        TlsData_S m_tls_data;
+        TlsData_S *m_tls_data;
     
         SSL_CTX *m_ssl_ctx;
         SSL_CTX *m_user_ssl_ctx;
@@ -98,19 +96,10 @@ class TLS
 
 };
 
-
-
 extern "C" {
 
 #include "lwmqtt.h"
 
-
-void lwmqtt_mbedtls_network_disconnect(void *network);
-
-lwmqtt_err_t lwmqtt_mbedtls_network_peek(void *network, size_t *available);
-
-lwmqtt_err_t lwmqtt_mbedtls_network_read(void *ref, uint8_t *buffer, size_t len, size_t *read, uint32_t timeout);
-lwmqtt_err_t lwmqtt_mbedtls_network_write(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout);
 
 } // extern "C"
 

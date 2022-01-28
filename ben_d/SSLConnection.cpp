@@ -1,4 +1,5 @@
 #include "config.h"
+#include "Socket.h"
 #include "SSLConnection.h"
 
 #include <iostream>
@@ -17,8 +18,6 @@
 #include <openssl/x509v3.h>
 
 #include <unistd.h>
-
-
 
 
 extern "C"
@@ -385,15 +384,7 @@ extern "C"
 
 } // extern "C" {
 
-TLS::TLS(const char *host, uint16_t port, int socket)
-{
-    __Init();
-    m_tls_data.host = host; // std::string(host).c_str();
-    m_tls_data.port = port;
-    m_tls_data.socket = socket;
-}
-
-TLS::TLS(TlsData_S &data)
+TLS::TLS(TlsData_S *data)
 {
     __Init();
     m_tls_data = data;
@@ -405,7 +396,6 @@ void TLS::__Init()
     m_openssl_ex_index = -1;
     m_ssl_ctx = nullptr;
     m_ssl = nullptr;
-
 }
 
 void TLS::Close()
@@ -477,26 +467,26 @@ void TLS::PrintTlsError(void)
 int TLS::LoadCA()
 {
     int ret;
-    if (m_tls_data.tls_use_os_certs)
+    if (m_tls_data->tls_use_os_certs)
     {
         SSL_CTX_set_default_verify_paths(m_ssl_ctx);
     }
-    if (m_tls_data.tls_cafile || m_tls_data.tls_capath)
+    if (m_tls_data->tls_cafile || m_tls_data->tls_capath)
     {
-        ret = SSL_CTX_load_verify_locations(m_ssl_ctx, m_tls_data.tls_cafile, m_tls_data.tls_capath);
+        ret = SSL_CTX_load_verify_locations(m_ssl_ctx, m_tls_data->tls_cafile, m_tls_data->tls_capath);
         if (ret == 0)
         {
-            if (m_tls_data.tls_cafile && m_tls_data.tls_capath)
+            if (m_tls_data->tls_cafile && m_tls_data->tls_capath)
             {
-                BLog("Error: Unable to load CA certificates, check cafile \"%s\" and capath \"%s\".", m_tls_data.tls_cafile, m_tls_data.tls_capath);
+                BLog("Error: Unable to load CA certificates, check cafile \"%s\" and capath \"%s\".", m_tls_data->tls_cafile, m_tls_data->tls_capath);
             }
-            else if (m_tls_data.tls_cafile)
+            else if (m_tls_data->tls_cafile)
             {
-                BLog("Error: Unable to load CA certificates, check cafile \"%s\".", m_tls_data.tls_cafile);
+                BLog("Error: Unable to load CA certificates, check cafile \"%s\".", m_tls_data->tls_cafile);
             }
             else
             {
-                BLog("Error: Unable to load CA certificates, check capath \"%s\".", m_tls_data.tls_capath);
+                BLog("Error: Unable to load CA certificates, check capath \"%s\".", m_tls_data->tls_capath);
             }
             return Msg_Err_Tls;
         }
@@ -507,7 +497,7 @@ int TLS::LoadCA()
 int TLS::Certificats()
 {
     int ret;
-    if (m_tls_data.tls_cafile || m_tls_data.tls_capath || m_tls_data.tls_use_os_certs)
+    if (m_tls_data->tls_cafile || m_tls_data->tls_capath || m_tls_data->tls_use_os_certs)
     {
         BLog("if(m_tls_cafile || m_tls_capath || m_tls_use_os_certs)");
         ret = LoadCA();
@@ -516,7 +506,7 @@ int TLS::Certificats()
             PrintTlsError();
             return Msg_Err_Tls;
         }
-        if (m_tls_data.tls_cert_reqs == 0)
+        if (m_tls_data->tls_cert_reqs == 0)
         {
             SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_NONE, NULL);
         }
@@ -524,25 +514,25 @@ int TLS::Certificats()
         {
             SSL_CTX_set_verify(m_ssl_ctx, SSL_VERIFY_PEER, opensll__server_certificate_verify);
         }
-        if (m_tls_data.tls_certfile)
+        if (m_tls_data->tls_certfile)
         {
-            ret = SSL_CTX_use_certificate_chain_file(m_ssl_ctx, m_tls_data.tls_certfile);
+            ret = SSL_CTX_use_certificate_chain_file(m_ssl_ctx, m_tls_data->tls_certfile);
             if (ret != 1)
             {
-                BLog("Error: Unable to load client certificate \"%s\".", m_tls_data.tls_certfile);
+                BLog("Error: Unable to load client certificate \"%s\".", m_tls_data->tls_certfile);
                 PrintTlsError();
                 BLog("Msg_Err_Tls");
                 return Msg_Err_Tls;
             }
         }
-        if (m_tls_data.tls_keyfile)
+        if (m_tls_data->tls_keyfile)
         {
-            printf("Benoit: 1000: m_tls_data.tls_keyfile \n");
-            printf("Benoit: 1003: FAUX (m_tls_data.tls_keyform == mosq_k_engine) \n");
-            ret = SSL_CTX_use_PrivateKey_file(m_ssl_ctx, m_tls_data.tls_keyfile, SSL_FILETYPE_PEM);
+            printf("Benoit: 1000: m_tls_data->tls_keyfile \n");
+            printf("Benoit: 1003: FAUX (m_tls_data->tls_keyform == mosq_k_engine) \n");
+            ret = SSL_CTX_use_PrivateKey_file(m_ssl_ctx, m_tls_data->tls_keyfile, SSL_FILETYPE_PEM);
             if (ret != 1)
             {
-                BLog("Error: Unable to load client key file \"%s\".", m_tls_data.tls_keyfile);
+                BLog("Error: Unable to load client key file \"%s\".", m_tls_data->tls_keyfile);
                 PrintTlsError();
                 BLog("Msg_Err_Tls");
                 return Msg_Err_Tls;
@@ -584,11 +574,11 @@ void TLS::SetALPN()
     uint8_t tls_alpn_len;
 
     /* Set ALPN */
-    if (m_tls_data.tls_alpn)
+    if (m_tls_data->tls_alpn)
     {
-        tls_alpn_len = (uint8_t)strnlen(m_tls_data.tls_alpn, 254);
+        tls_alpn_len = (uint8_t)strnlen(m_tls_data->tls_alpn, 254);
         tls_alpn_wire[0] = tls_alpn_len; /* first byte is length of string */
-        memcpy(tls_alpn_wire + 1, m_tls_data.tls_alpn, tls_alpn_len);
+        memcpy(tls_alpn_wire + 1, m_tls_data->tls_alpn, tls_alpn_len);
         SSL_CTX_set_alpn_protos(m_ssl_ctx, tls_alpn_wire, tls_alpn_len + 1U);
     }
 }
@@ -611,7 +601,7 @@ int TLS::InitSslCtx()
     /* Apply default SSL_CTX settings. This is only used if MOSQ_OPT_SSL_CTX
      * has not been set, or if both of MOSQ_OPT_SSL_CTX and
      * MOSQ_OPT_SSL_CTX_WITH_DEFAULTS are set. */
-    if (m_tls_data.tls_cafile || m_tls_data.tls_capath || m_tls_data.tls_use_os_certs)
+    if (m_tls_data->tls_cafile || m_tls_data->tls_capath || m_tls_data->tls_use_os_certs)
     {
         BLog("On est à la bonne place");
         if (!m_ssl_ctx)
@@ -632,14 +622,14 @@ int TLS::InitSslCtx()
         {
             // TODO: Benoit Il faut prendre le TLSv1.2 ou 1.3
             // pour le moment par défaut on prend "tlsv1.2"
-            if (!strcmp(m_tls_data.tls_version, "tlsv1.2"))
+            if (!strcmp(m_tls_data->tls_version, "tlsv1.2"))
             {
                 BLog("all0");
                 SSL_CTX_set_options(m_ssl_ctx, SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
             }
             else
             {
-                BLog("Erreur pour la version de tlsv1.2, %s", m_tls_data.tls_version);
+                BLog("Erreur pour la version de tlsv1.2, %s", m_tls_data->tls_version);
             }
 
             /* Disable compression */
@@ -734,7 +724,7 @@ int TLS::Init()
         }
 
         SSL_set_ex_data(m_ssl, m_openssl_ex_index, &m_tls_data);
-        bio = BIO_new_socket(m_tls_data.socket, BIO_NOCLOSE);
+        bio = BIO_new_socket(m_tls_data->socket, BIO_NOCLOSE);
         if (!bio)
         {
             SslClose();
@@ -747,7 +737,7 @@ int TLS::Init()
         /*
          * required for the SNI resolving
          */
-        if (SSL_set_tlsext_host_name(m_ssl, m_tls_data.host) != 1)
+        if (SSL_set_tlsext_host_name(m_ssl, m_tls_data->host) != 1)
         {
             SslClose();
             BLog("Msg_Err_Tls");
@@ -881,3 +871,4 @@ int net__socketpair(mosq_sock_t *pairR, mosq_sock_t *pairW)
 }
 
 #endif // #ifdef WITH_TLS
+

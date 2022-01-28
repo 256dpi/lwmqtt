@@ -52,59 +52,66 @@ void Socket::Close()
     if (mSock != INVALID_SOCKET) {
         close(mSock);
     }
+    mSock = INVALID_SOCKET;
     SetState(Unconnected);
 
 }
 
-bool Socket::ForceNonBlocking(int sock)
+bool Socket::SetSocketBlockingMode(int sock, BlockingMode_E mode )
 {
-    bool retVal = true;
     int opt;
     /* Set non-blocking */
     opt = fcntl(sock, F_GETFL, 0);
-    if(opt == -1){
-        BLog("Error: return -1");
-        retVal = false;
+    if(opt != -1){
+        if (mode == BlockingMode )
+            opt = fcntl(sock, F_SETFL, opt & ~O_NONBLOCK);
+        else
+            opt = fcntl(sock, F_SETFL, opt | O_NONBLOCK);
     }
-    if(fcntl(sock, F_SETFL, opt | O_NONBLOCK) == -1) {
-        BLog("Error: fcntl failed");
-        retVal = false;
-    }
-    return retVal;
+    return opt==-1 ? false : true;
+}
+/*
+bool Socket::ForceBlocking(int sock)
+{
+    return SetSocketBlockingMode(sock, BlockingMode_E::BlockingMode);
+}
+*/
+bool Socket::ForceNonBlocking(int sock)
+{
+    return SetSocketBlockingMode(sock, BlockingMode_E::NonBlockingMode);
 }
 
 int Socket::Connect()
 {
     struct addrinfo hints;
     struct addrinfo *ainfo, *curainfo;
-    int s;
-    int retVal = 0;
+    int s, retVal = 0;
 
-    BTraceIn
-    mSock = INVALID_SOCKET;
+
+    Close();
+    
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
+
     BLog("mHost: %s", mHost.c_str());
     s = getaddrinfo(mHost.c_str(), nullptr, &hints, &ainfo);
-    if (s) {
+    if (s != 0) {
         BLog("Erreur: getaddrinfo return ");
         errno = s;
         retVal = 1;  // TODO:Benoit  Changer les messages d'erreurs
     }
     else {
-        for( curainfo = ainfo; curainfo != nullptr; curainfo = curainfo->ai_next)
-        {
+        for( curainfo = ainfo; curainfo != nullptr; curainfo = curainfo->ai_next) {
             mSock = socket(curainfo->ai_family, curainfo->ai_socktype, curainfo->ai_protocol);
-            if(mSock == INVALID_SOCKET) 
-            {
+            if(mSock == INVALID_SOCKET) {
                 BLog("Connection failed INVALID_SOCKET");
                 continue;
             }
             if(curainfo->ai_family == AF_INET){
                 ((struct sockaddr_in *)curainfo->ai_addr)->sin_port = htons(mPort);
                 BLog("AF_INET");
-            }else if(curainfo->ai_family == AF_INET6){
+            } else if(curainfo->ai_family == AF_INET6){
                 ((struct sockaddr_in6 *)curainfo->ai_addr)->sin6_port = htons(mPort);
                 BLog("AF_INET6");
             }else{
@@ -138,12 +145,27 @@ int Socket::Connect()
                     }
                 }
             }
-            mSock = INVALID_SOCKET;
-            close(mSock);
+            Close();
         }
-        if( mSock != INVALID_SOCKET)
-            SetState(Connected);
     }
+    if( mSock != INVALID_SOCKET)
+        SetState(Connected);
     BTraceOut;
     return retVal;
 }
+
+#ifdef UTest
+int main(int argc, char* argv[])
+{
+    Socket mSock("iot.isb.arubanetworks.com", 443);
+    for (int i=0; i<1; i++){
+        std::cout << (mSock.GetState() == Socket::Connected ? "Socket connected" : "Socket non connected") << std::endl;
+        mSock.GetState() == Socket::Connected ? "Socket connected" : "Socket non connected";
+        mSock.Connect();
+        std::cout << (mSock.GetState() == Socket::Connected ? "Socket connected" : "Socket non connected") << std::endl;
+        std::cout << "Socket number is " << mSock.GetSocket() << std::endl;
+        mSock.Print();
+        mSock.Close();
+    }
+}
+#endif // #ifdef UTest

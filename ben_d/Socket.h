@@ -18,7 +18,6 @@ class Socket
 {
     public:
         static const int KeepAliveDefaultValue;
-
         enum State {
             Unconnected,
             Connected
@@ -26,13 +25,15 @@ class Socket
         Socket();
         Socket(const char *host, int port, int keepalive = KeepAliveDefaultValue);
         void Init(const char *host = nullptr, int port = 0, int keepalive = KeepAliveDefaultValue, bool blocking = true, int sock = INVALID_SOCKET);
-        State GetState();
+        State GetState() { return mState;};
         void SetState(State state) { mState = state;}
         bool IsConnected() {return (mState == Connected) ? true : false;}
         int Connect();
         void Close();
         void Print();
         int GetSocket() {return mSock;}
+        bool ForceBlocking(int sock);
+        bool ForceNonBlocking(int sock);
 
     private:
         std::string mHost;
@@ -42,8 +43,11 @@ class Socket
         bool mBlocking;
         int mSock;
         State mState;
-
-        bool ForceNonBlocking(int sock);
+        enum BlockingMode_E {
+            BlockingMode = 0,
+            NonBlockingMode
+        };
+        bool SetSocketBlockingMode(int sock, BlockingMode_E mode);
 
 };
 
