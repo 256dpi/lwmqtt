@@ -723,7 +723,7 @@ int TLS::Init()
             return Msg_Err_Tls;
         }
 
-        SSL_set_ex_data(m_ssl, m_openssl_ex_index, &m_tls_data);
+        SSL_set_ex_data(m_ssl, m_openssl_ex_index, m_tls_data);
         bio = BIO_new_socket(m_tls_data->socket, BIO_NOCLOSE);
         if (!bio)
         {
