@@ -222,7 +222,7 @@ int mainSync() {
 static int mainAruba(const int argc, char *argv[], char *env[])
 {
     ev::default_loop loop;
-
+#if 0 // Benoit a activer avec MQTTClientOpenSSL
     MQTTClient monMqtt(
       "iot.isb.arubanetworks.com",
       443,
@@ -232,7 +232,7 @@ static int mainAruba(const int argc, char *argv[], char *env[])
       "./AmazonRootCA.pem", //"/aruba/conf/AmazonRootCA.pem",
       "./smb_ca_certificate.pem" //"/aruba/conf/smb_ca_certificate.pem"
     );
-
+#endif 
 
     // Start the main loop.
     try {
@@ -253,6 +253,7 @@ int mainMosquitto(const int argc, char *argv[], char *env[])
 {
    ev::default_loop loop;
 
+#if 0 // Benoit a activer avec MQTTClientOpenSSL
    MQTTClient monMqtt(
     "test.mosquitto.org",
     8884,
@@ -262,7 +263,7 @@ int mainMosquitto(const int argc, char *argv[], char *env[])
     "./ca/mosquitto.org.crt", //"/aruba/conf/AmazonRootCA.pem",
     "./ca/smb_ca_certificate.pem" //"/aruba/conf/smb_ca_certificate.pem"
     );
-
+#endif
 
     // Start the main loop.
     try {

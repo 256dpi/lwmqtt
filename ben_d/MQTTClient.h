@@ -24,39 +24,29 @@ extern "C" {
 #include "SSLConnection.h"
 #include <ev++.h>
 
-typedef std::function<void(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg)> lwmqttMessageCallbackFunc;
-
-typedef struct
-{
-    int version;
-} tls_custom_t;
-
 /**
- * The mbed TLS network object.
+ * @brief Maximum number of times we try to get the cloud session sequence
+ *        before giving up.
  */
-typedef struct {
-    // Configuration.
-    char root_ca_location[256];                    ///< Pointer to string containing the filename (including path) of the root CA file.
-    char device_cert_location[256];                ///< Pointer to string containing the filename (including path) of the device certificate.
-    char device_private_key_location[256];         ///< Pointer to string containing the filename (including path) of the device private key file.
-    bool server_verification_flag;                 ///< Boolean.  True = perform server certificate hostname validation.  False = skip validation \b NOT recommended.
-    uint32_t tls_handshake_timeout;                ///< Timeout for TLS handshake command
-    uint32_t tls_read_timeout;                     ///< Timeout for the TLS Read command
-    uint32_t tls_write_timeout;                    ///< Timeout for the TLS Write command
+#define MAX_CLOUD_SESSION_SEQUENCE_FETCH_TRIES 3
 
-    const char *alpn_protocol_list[2];             ///< Application Layer Protocols
+/** @brief Delay (in seconds) between MQTT connection attempts. */
+#define MQTT_CONNECTION_SM_TIMER_PERIOD_SECS (15.0)
 
-    // Endpoint information
-    uint16_t endpoint_port;                        ///< Endpoint port
-    char endpoint[256];                            ///< Endpoint for this connection
-    int server_fd;
+/** @brief Timeout of handshake operation in milliseconds. */
+#define MQTT_NETWORK_CONNECTION_HANDSHAKE_TIMEOUT_MSECS 60000
 
-    // States.
-    bool is_connected;                             ///< Boolean indicating connection status
-    bool requires_free;
-    tls_custom_t *tls_custom;
+/** @brief Timeout of read operation in milliseconds. */
+#define MQTT_NETWORK_CONNECTION_READ_TIMEOUT_MSECS 2000
 
-} lwmqtt_tls_network_t;
+/** @brief Timeout of write operation in milliseconds. */
+#define MQTT_NETWORK_CONNECTION_WRITE_TIMEOUT_MSECS 2000
+
+#define MAX_BUFFER_SIZE (256 * 1024)
+
+#define MQTT_COMMAND_TIMEOUT_MSEC 10000
+
+typedef std::function<void(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg)> lwmqttMessageCallbackFunc;
 
 template<typename T>
 class IterativeMean {
@@ -142,18 +132,12 @@ struct MQTTConnectionInfo
     in_addr_t mBrokerIpAddr; /* IP address of the MQTT broker. */
 };
 
-
 /**
  * @brief Class implementing the MQTT client.
  */
 class MQTTClient {
     public:
 
-        enum Option {
-            MQTT_Mosquitto =0,
-            MQTT_Ion,
-            MQTT_Default = MQTT_Mosquitto 
-            };
         typedef std::function<void()> OnConnectCallbackPtr;
         typedef std::function<void()> OnDisconnectCallbackPtr;
         typedef std::function<void(const string& topicName, const vector<byte>&)> OnMessageCallbackPtr;
@@ -195,8 +179,6 @@ class MQTTClient {
          */
         ~MQTTClient();
 
-        void Init(lwmqtt_tls_network_t *network);
-
         void PrintParameters();
 
         /** @brief Start the MQTT client, i.e. start the connection. */
@@ -205,9 +187,6 @@ class MQTTClient {
         /** @brief Stop the MQTT client, i.e. drop the connection. */
         void Stop();
 
-        lwmqtt_err_t OpenSocket();
-        void CloseSocket();
-        
         /**
          * @brief Check if the MQTT client is started.
          *
@@ -264,6 +243,23 @@ class MQTTClient {
 
     protected:
 
+        /** @brief MQTT network connection object. */
+        lwmqtt_client_t mMqttClient;
+
+        /** @brief Timer used to determine if it's time to send the MQTT keepalive. */
+        lwmqtt_unix_timer_t mMqttKeepAliveTimer;
+
+        /** @brief Timer used to detect command timeout. */
+        lwmqtt_unix_timer_t mMqttCommandTimer;
+
+        /** @brief Function object used to invoke the LWMQTT callback. */
+        lwmqttMessageCallbackFunc mLwmqttMessageCallbackFunc;
+
+        void InitLWMQTTTClient();
+
+        void InitTimer();
+
+    private:
         /** @brief Indicate if we are started or not. */
         bool mStarted;
 
@@ -275,9 +271,6 @@ class MQTTClient {
 
         /** @brief DRT device information. */
         std::string mDrtVersion;
-
-        Socket mSock;
-        TLS mTls;
 
 #ifdef GSM_CHANNEL_MESH_UPLINK_SUPPORTED
         gsm_section_mesh_uplink_state_struct_t mMeshUplinkState;
@@ -327,21 +320,6 @@ class MQTTClient {
 
         /** @brief MQTT topic to which we publich devconf messages. */
         string mDevconfTopic;
-
-        /** @brief MQTT network connection object. */
-        lwmqtt_client_t mMqttClient;
-
-        /** @brief MQTT client object. */
-        lwmqtt_tls_network_t mMqttNetworkConnection;
-
-        /** @brief Timer used to determine if it's time to send the MQTT keepalive. */
-        lwmqtt_unix_timer_t mMqttKeepAliveTimer;
-
-        /** @brief Timer used to detect command timeout. */
-        lwmqtt_unix_timer_t mMqttCommandTimer;
-
-        /** @brief Function object used to invoke the LWMQTT callback. */
-        lwmqttMessageCallbackFunc mLwmqttMessageCallbackFunc;
 
         /** @brief Function to call when MQTT connection is established. */
         OnConnectCallbackPtr mOnConnectCallback;
@@ -426,6 +404,26 @@ class MQTTClient {
          * @param[in] duration Time to receive the MQTT ack.
          */
         void UpdateMqttAckTime(std::chrono::duration<double> duration);
+
+        /**
+         *  TODO:Benoit  Initiliaze MQTT Client parameters and Tls/Socket
+        */            
+
+        virtual lwmqtt_err_t ConnectingToBroker(int *fd) {return (lwmqtt_err_t)0;} //= 0;
+
+        virtual void NetworkInit(string mqttHost,
+                   int mqttHostPort,
+                   bool validateMqttHostCert,
+                   string deviceCertPath,
+                   string deviceKeyPath,
+                   string caCertPath) {}
+
+        virtual void NetworkDisconnect() {} // = 0;
+
+        virtual bool NetworkIsConnected() {return true;} // = 0;
+
+        virtual lwmqtt_err_t NetworkPeek(size_t*) {return (lwmqtt_err_t)0;} // = 0;
+        
 };
 
 #endif /* __MQTT_CLIENT_H__ */
