@@ -355,34 +355,6 @@ extern "C"
     }
 }
 
-extern "C"
-{
-    /* Functions taken from OpenSSL s_server/s_client */
-    static int ui_open(UI *ui)
-    {
-        BLog("___");
-        return UI_method_get_opener(UI_OpenSSL())(ui);
-    }
-
-    static int ui_read(UI *ui, UI_STRING *uis)
-    {
-        BLog("___");
-        return UI_method_get_reader(UI_OpenSSL())(ui, uis);
-    }
-
-    static int ui_write(UI *ui, UI_STRING *uis)
-    {
-        BLog("___");
-        return UI_method_get_writer(UI_OpenSSL())(ui, uis);
-    }
-
-    static int ui_close(UI *ui)
-    {
-        BLog("___");
-        return UI_method_get_closer(UI_OpenSSL())(ui);
-    }
-
-} // extern "C" {
 
 TLS::TLS(TlsData_S *data)
 {
@@ -405,15 +377,6 @@ void TLS::Close()
 		SSL_CTX_free(m_ssl_ctx);
 	}
     m_ssl_ctx = nullptr;
-}
-
-void TLS::SetupUiMethod(void)
-{
-    m_ui_method = UI_create_method("OpenSSL application user interface");
-    UI_method_set_opener(m_ui_method, ui_open);
-    UI_method_set_reader(m_ui_method, ui_read);
-    UI_method_set_writer(m_ui_method, ui_write);
-    UI_method_set_closer(m_ui_method, ui_close);
 }
 
 void TLS::InitTlsCryptoVersion(void)
@@ -443,7 +406,6 @@ void TLS::InitTlsCrypto(void)
     BTraceIn if (IsInitialized()) return;
 
     InitTlsCryptoVersion();
-    SetupUiMethod();
     SetOpensslExIndex();
     SetInitialized();
     BTraceOut
