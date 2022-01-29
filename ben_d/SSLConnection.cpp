@@ -328,7 +328,7 @@ extern "C"
             && tls_data->port != 0 /* no hostname checking for unix sockets */
         )
         {
-            BLog("X509_STORE_CTX_get_error_depth");
+            BLog("X509_STORE_CTX_ phase 1");
 
             if (X509_STORE_CTX_get_error_depth(ctx) == 0)
             {
@@ -357,16 +357,11 @@ extern "C"
 
 TLS::TLS(TlsData_S *data)
 {
-    __Init();
-    m_tls_data = data;
-}
-
-void TLS::__Init()
-{
     m_initialized = false;
     m_openssl_ex_index = -1;
     m_ssl_ctx = nullptr;
     m_ssl = nullptr;
+    m_tls_data = data;
 }
 
 void TLS::Close()

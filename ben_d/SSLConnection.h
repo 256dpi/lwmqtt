@@ -53,18 +53,18 @@ class TLS
         };
         TLS(TlsData_S *data);
         ~TLS() {Close();};
-        void __Init();
+
         int Init(); //int net__socket_connect_step3(struct mosquitto *mosq, const char *host)
-        int InitSslCtx(); // net__init_ssl_ctx()
 
         bool IsInitialized() { return m_initialized;}
-        void SetInitialized() { m_initialized = true;}
-        void ResetInitialized() { m_initialized = false;}
         SSL *GetSsl() {return m_ssl;}
         SSL *m_ssl;
         void Close();
 
     private:
+        int InitSslCtx(); // net__init_ssl_ctx()
+        void ResetInitialized() { m_initialized = false;}
+        void SetInitialized() { m_initialized = true;}
         void InitTlsCrypto(); //net__init_tls();
         void InitTlsCryptoVersion(); // Init SSL lib and crypto based on the openssl version.
         int LoadCA(); //static int net__tls_load_ca(struct mosquitto *mosq)
