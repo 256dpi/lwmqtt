@@ -39,6 +39,17 @@ Voir le commit plus bas pour changements.
 Fonctionne avec mainSSL
 Compile pour l'app "ben"
 
+
+/******************************************************************************
+    1.5 Fonctionne encore avec maisSSL et avec CloudConnect
+ ******************************************************************************/
+Fonctionne avec test.mosquitto.org
+
+Probleme avec le Fetching cloud session sequence... il prend du temps je
+ne sais pas pourquoi.
+
+mainSSL fonctionne encore.
+
 /******************************************************************************
     2.1 Commits
  ******************************************************************************/
@@ -70,3 +81,17 @@ Mettre l'appel a NetworkInit dans le class enfant de MQTTClient.
 Debogue et esthetique
 Changement dans mainSSL, permet de tester le changement de TlsData_S et la
 variable mTlsData.
+
+Ref 1.5 
+Author: Benoit Massé <ben.masse@abcdn.qc.ca>  2022-01-31 10:47:16
+Committer: Benoit Massé <ben.masse@abcdn.qc.ca>  2022-01-31 10:47:16
+Parent: 86fc75f72e892e73bd099d9b59836d97fc76b9a9 (Mise à jour de Benoit.Notes.txt)
+Child:  0000000000000000000000000000000000000000 (Local uncommitted changes, not checked in to index)
+Branch: b/cloudconnect_openssl_ap
+Follows: v0.6.4
+Precedes: 
+
+    Fonctionne avec test.mosquitto.org
+    
+    Probleme avec le Fetching cloud session sequence... il prend du temps je
+    ne sais pas pourquoi.
