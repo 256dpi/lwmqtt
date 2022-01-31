@@ -48,7 +48,10 @@ typedef struct TlsData_s {
 class TLS
 {
     public:
-        enum {
+        enum TlsMsg_E {
+            Msg_Err_Read = -5,
+            Msg_Err_Write = -4,
+            Msg_Err_Peek = -3,
             Msg_Err_Tls = -2,
             Msg_Error   = -1,
             Msg_Success = 0
@@ -56,12 +59,18 @@ class TLS
         TLS(TlsData_S *data);
         ~TLS() {Close();};
 
-        int Init(); //int net__socket_connect_step3(struct mosquitto *mosq, const char *host)
+        int Init();
 
         bool IsInitialized() { return m_initialized;}
         SSL *GetSsl() {return m_ssl;}
         SSL *m_ssl;
         void Close();
+        TlsMsg_E Read(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout);
+        TlsMsg_E Write(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout);
+        TlsMsg_E Peek(size_t *available);
+        int HandleSslError(int ret);
+        void PrintSslError(int err);
+
 
     private:
         int InitSslCtx(); // net__init_ssl_ctx()

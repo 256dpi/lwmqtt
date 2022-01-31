@@ -416,7 +416,7 @@ class MQTTClient {
                    bool validateMqttHostCert,
                    string deviceCertPath,
                    string deviceKeyPath,
-                   string caCertPath) {}
+                   string caCertPath)  = 0;
 
         virtual void NetworkDisconnect() {} // = 0;
 

@@ -64,28 +64,6 @@ getSysUptime(void)
 
 
 /**
- * @brief Maximum number of times we try to get the cloud session sequence
- *        before giving up.
- */
-#define MAX_CLOUD_SESSION_SEQUENCE_FETCH_TRIES 3
-
-/** @brief Delay (in seconds) between MQTT connection attempts. */
-#define MQTT_CONNECTION_SM_TIMER_PERIOD_SECS (15.0)
-
-/** @brief Timeout of handshake operation in milliseconds. */
-#define MQTT_NETWORK_CONNECTION_HANDSHAKE_TIMEOUT_MSECS 60000
-
-/** @brief Timeout of read operation in milliseconds. */
-#define MQTT_NETWORK_CONNECTION_READ_TIMEOUT_MSECS 2000
-
-/** @brief Timeout of write operation in milliseconds. */
-#define MQTT_NETWORK_CONNECTION_WRITE_TIMEOUT_MSECS 2000
-
-#define MAX_BUFFER_SIZE (256 * 1024)
-
-#define MQTT_COMMAND_TIMEOUT_MSEC 10000
-
-/**
  * @brief MQTT keepalive interval.
  *
  * Will send out a Ping request at the specified Keepalive interval and
@@ -353,6 +331,8 @@ MQTTClient::MQTTClient(string mqttHost,
 
 void MQTTClient::InitLWMQTTTClient()
 {
+    GLINFO_MQTTCLIENT("MQTTClient InitLWMQTTTClient +++-------------------------------");
+
     lwmqtt_set_timers(&mMqttClient, &mMqttKeepAliveTimer, &mMqttCommandTimer, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
     lwmqtt_set_callback(&mMqttClient, &mLwmqttMessageCallbackFunc, lwmqtt_message_callback_c_wrapper);
 }   
@@ -397,6 +377,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         GLDEBUG_MQTTCLIENT("Fetching cloud session sequence...");
         {
             cpr::SslOptions sslOpts = cpr::Ssl(cpr::ssl::CaInfo{mOnboardingCaCertPath.c_str()});
+            printf("iot.isb.arubanetworks.com -- %s\n", mOnboardingUrl.c_str());
             cpr::Response r = cpr::Get(cpr::Url{mOnboardingUrl},
                                        cpr::Timeout{5000},
                                        cpr::VerifySsl{true},
@@ -1224,6 +1205,7 @@ lwmqtt_err_t MQTTClient::Subscribe()
 
 void MQTTClient::Start()
 {
+    BLog("MQTT Start time mConnectionSMTimer");
     if (!mStarted) {
         mStarted = true;
         mConnectionSMTimer.start(0.0, MQTT_CONNECTION_SM_TIMER_PERIOD_SECS);
@@ -1401,6 +1383,7 @@ void MQTTClient::UpdateMqttAckTime(std::chrono::duration<double> duration)
 
 void MQTTClient::InitTimer()
 {
+    GLINFO_MQTTCLIENT("MQTTClient InitTimer +++-------------------------------");
     // Setup the MQTT connection state machine timer.
     mConnectionSMTimer.set<MQTTClient, &MQTTClient::ConnectionSMTimerCallback>(this);
 
@@ -1412,7 +1395,19 @@ void MQTTClient::InitTimer()
     mGSMTimer.start(0.0, 1.0);
 #endif // #if AP
 }
+
 #if 0
+
+void MQTTClient::NetworkInit(string mqttHost,
+            int mqttHostPort,
+            bool validateMqttHostCert,
+            string deviceCertPath,
+            string deviceKeyPath,
+            string caCertPath)
+{
+    GLINFO_MQTTCLIENT("MQTTClient Init Fct +++-------------------------------");
+}
+
 void MQTTClient::NetworkDisconnect()
 {
     #if AP

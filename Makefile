@@ -379,6 +379,33 @@ ben_d/MQTTClient.cpp.s:
 	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClient.cpp.s
 .PHONY : ben_d/MQTTClient.cpp.s
 
+ben_d/MQTTClientOpenSSL.o: ben_d/MQTTClientOpenSSL.cpp.o
+
+.PHONY : ben_d/MQTTClientOpenSSL.o
+
+# target to build an object file
+ben_d/MQTTClientOpenSSL.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClientOpenSSL.cpp.o
+.PHONY : ben_d/MQTTClientOpenSSL.cpp.o
+
+ben_d/MQTTClientOpenSSL.i: ben_d/MQTTClientOpenSSL.cpp.i
+
+.PHONY : ben_d/MQTTClientOpenSSL.i
+
+# target to preprocess a source file
+ben_d/MQTTClientOpenSSL.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClientOpenSSL.cpp.i
+.PHONY : ben_d/MQTTClientOpenSSL.cpp.i
+
+ben_d/MQTTClientOpenSSL.s: ben_d/MQTTClientOpenSSL.cpp.s
+
+.PHONY : ben_d/MQTTClientOpenSSL.s
+
+# target to generate assembly for a file
+ben_d/MQTTClientOpenSSL.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClientOpenSSL.cpp.s
+.PHONY : ben_d/MQTTClientOpenSSL.cpp.s
+
 ben_d/SSLConnection.o: ben_d/SSLConnection.cpp.o
 
 .PHONY : ben_d/SSLConnection.o
@@ -911,6 +938,9 @@ help:
 	@echo "... ben_d/MQTTClient.o"
 	@echo "... ben_d/MQTTClient.i"
 	@echo "... ben_d/MQTTClient.s"
+	@echo "... ben_d/MQTTClientOpenSSL.o"
+	@echo "... ben_d/MQTTClientOpenSSL.i"
+	@echo "... ben_d/MQTTClientOpenSSL.s"
 	@echo "... ben_d/SSLConnection.o"
 	@echo "... ben_d/SSLConnection.i"
 	@echo "... ben_d/SSLConnection.s"

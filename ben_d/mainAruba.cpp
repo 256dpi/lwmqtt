@@ -45,9 +45,9 @@ DaemonConfig daemonConf_Mosq = {
     /*mqttHostPort:*/ 8884,
     /*mqttHostCertValidation:*/ true,
     /*deviceCert:*/ "./ca/client.crt.txt",
-    /*deviceKey:*/ "./ca/mosquitto.org.crt",
+    /*deviceKey:*/ "./ca/client.key",
     /*caCert:*/  "./ca/mosquitto.org.crt",
-    /*onboardingCaCert:*/ "./ca/AmazonRootCA.pem",
+    /*onboardingCaCert:*/ "./ca/smb_ca_certificate.pem",
     /*debug:*/ false,
     /*toStdout:*/ false,
     /*forceMqttConnStart:*/ false

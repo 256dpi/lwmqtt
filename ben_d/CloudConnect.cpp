@@ -15,7 +15,7 @@ CloudConnect::CloudConnect(ev::loop_ref loop,
                            std::string deviceCertPath="/tmp/device.pem",
                            std::string deviceKeyPath="/tmp/device.key",
                            std::string caCert="/aruba/conf/AmazonRootCA.pem",
-                           std::string onboardingCACert="/aruba/conf/smb_ca_certificate.pem",
+                           std::string onboardingCACert="./ca/smb_ca_certificate.pem",
                            bool forceMqttConnStart=false)
     : mLoop(loop),
       mMQTTClient(mqttHost,
