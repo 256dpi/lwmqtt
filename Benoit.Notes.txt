@@ -1,5 +1,6 @@
-1.1 Fonctionne MQTT sends hello successfully.
+1.1 Fonctionne MQTT sends hello successfully
 1.2 Fonctionne encore, avant des changement pour le APs
+1.3 Fonctionne encore, avec mainSSL, mais pas avec la version AP
 
 2.1 Commits
 
@@ -19,6 +20,17 @@ Published HELLO message on topic 'DevStackSSO/pm/DevStackSSO//v2/hello' successf
  ******************************************************************************/
 
  Il reste beaucoup de débogue, des délais, ... à faire un peu de ménage quand meme.
+
+/******************************************************************************
+    1.3 Fonctionne encore, avec mainSSL, mais pas avec la version AP
+ ******************************************************************************/
+
+On compile dans le répertoire ben_d
+g++ SSLConnection.cpp  mainSSL.cpp Socket.cpp -I/data/simul/lwmqtt/256dpi/lwmqtt/include/ -lssl -lcrypto -o exec
+
+ping iot.isb.arubanetworks.com va donner une des adresses suivantes ou une autre...
+ip.addr == 3.0.0.0/8 || ip.addr == 54.0.0.0/8 || ip.addr == 52.0.0.0/8|| ip.addr == 34.0.0.0/8
+
 
 /******************************************************************************
     2.1 Commits
