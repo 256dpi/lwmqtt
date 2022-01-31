@@ -5,7 +5,13 @@
 
 #include <ev++.h>
 
+#define TEST_MBED
+#undef TEST_MBED
+#ifdef TEST_MBED
+#include "MQTTClientMbed.h"
+#else // #ifdef TEST_MBED
 #include "MQTTClientOpenSSL.h"
+#endif // #ifdef TEST_MBED
 #include "config.h"
 
 #define CLOUD_CONNECT_LOG_ID "CloudConnect"
@@ -56,7 +62,11 @@ class CloudConnect {
         ev::loop_ref mLoop;
 
         /** @brief MQTT client instance. */
+		#ifdef TEST_MBED
+        MQTTClientMbed mMQTTClient;
+		#else //#ifdef TEST_MBED
         MQTTClientOpenSSL mMQTTClient;
+		#endif //#ifdef TEST_MBED
 
         /**
           * @brief Indicate if the MQTT connection should be started
