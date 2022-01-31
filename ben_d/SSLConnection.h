@@ -39,6 +39,7 @@ typedef struct TlsData_s {
     bool ssl_ctx_defaults;
     bool tls_ocsp_required;
     bool tls_use_os_certs;
+    bool tls_connected;
 
 } TlsData_S;
 

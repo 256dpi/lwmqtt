@@ -347,6 +347,7 @@ TLS::TLS(TlsData_S *data)
 
 void TLS::Close()
 {
+    m_tls_data->tls_connected = false;
     SslClose();
 	if(m_ssl_ctx){
 		SSL_CTX_free(m_ssl_ctx);
@@ -638,10 +639,11 @@ int TLS::Init()
 {
     BIO *bio;
     BTraceIn;
+
     int rc = InitSslCtx();
     if (rc)
     {
-        SslClose();
+        Close();
         return rc;
     }
 
@@ -662,7 +664,7 @@ int TLS::Init()
         bio = BIO_new_socket(m_tls_data->socket, BIO_NOCLOSE);
         if (!bio)
         {
-            SslClose();
+            Close();
             PrintTlsError();
             BLog("Msg_Err_Tls");
             return Msg_Err_Tls;
@@ -674,22 +676,23 @@ int TLS::Init()
          */
         if (SSL_set_tlsext_host_name(m_ssl, m_tls_data->host) != 1)
         {
-            SslClose();
+            Close();
             BLog("Msg_Err_Tls");
             return Msg_Err_Tls;
         }
         do {
             if (SslConnect())
             {
-                SslClose();
+                Close();
                 BLog("Msg_Err_Tls");
                 return Msg_Err_Tls;
             }
-            sleep(1);
+            sleep(1);  // TODO: Benoit Check this sleep, is usefull or not ?
         } while (m_want_connect);
         
     }
     BTraceOut;
+    m_tls_data->tls_connected = true;
     return Msg_Success;
 }
 
