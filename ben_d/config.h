@@ -1,10 +1,11 @@
 #ifndef __config_h__
 #define __config_h__
 
+#if 1
 // Donne une erreur dans si on utilise la première ligne, la deuxième ligne donne un "Warning", la troisième semble parfaite
 //#define BLog(...) do {printf("Benoit:%s(%d): ", __FILE__, __LINE__);printf(" " ##__VA_ARGS__);printf("\n");} while(0)
 //#define BLog(...) do {printf("Benoit:%s(%d): ", __FILE__, __LINE__);printf(" " __VA_OPT__(,) __VA_ARGS__);printf("\n");} while(0)
-#define BLog(format, ...) do {printf("Benoit:%s:%s(%d): " format "\n", __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__);} while(0)
+#define BLog(format, ...) do {printf("Benoit:%s:%s(%d): " format "\n", __FILE__, __func__, __LINE__ , ##__VA_ARGS__);} while(0)
 #define BTraceIn do {printf("Benoit:%s:%s(%d):In \n", __FILE__, __func__, __LINE__);} while(0);
 #define BTraceOut do {printf("Benoit:%s:%s(%d):Out \n", __FILE__, __func__, __LINE__);} while(0);
 
@@ -18,7 +19,7 @@ enum DBLogLevel {
     DBLogLevel_SSL_RW = true,
 
 };
-#define DBLog(Log, format, ...) do {if(Log) {printf("Benoit:%s:%s(%d): " format "\n", __FILE__, __func__, __LINE__ __VA_OPT__(,) __VA_ARGS__);}} while(0)
+#define DBLog(Log, format, ...) do {if(Log) {printf("Benoit:%s:%s(%d): " format "\n", __FILE__, __func__, __LINE__ , ##__VA_ARGS__);}} while(0)
 #define DBTraceIn  DBLog(DBLogLevel_INFO, "") 
 #define DBTraceOut DBLog(DBLogLevel_INFO, "")
 
@@ -26,6 +27,22 @@ enum DBLogLevel {
 #define GLDEBUG_DEFAULT BLog
 #define GLINFO_DEFAULT BLog
 #define GLERROR_DEFAULT BLog
+
+#define GLERROR_MQTTCLIENT BLog
+#define GLDEBUG_MQTTCLIENT BLog
+#define GLINFO_MQTTCLIENT BLog
+
+#else // #if 0 
+#define BLog(format, ...) do {} while(0)
+#define BTraceIn do {} while(0);
+#define BTraceOut do {} while(0);
+
+
+#define DBLog(Log, format, ...) do {} while(0)
+#define DBTraceIn  do {} while(0);
+#define DBTraceOut do {} while(0);
+
+#endif // #if 0 
 
 #include <string>
 

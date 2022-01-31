@@ -167,27 +167,6 @@ static bool isCloudSessionSequenceValid(const std::string &cloudSessionSequence)
             [](unsigned char c) { return !std::isdigit(c); }) == cloudSessionSequence.end();
 }
 #endif // if NOUV
-void MQTTClient::PrintParameters()
-{
-    cout << "---    Parametres    ---" << endl;
-    cout << mStarted << endl;;
-    cout << mCloudSessionSequence << endl;
-    cout << mOnboardingCaCertPath << endl;
-
-    cout << mDeviceID << endl;
-    cout << mPublishTopicBase << endl;
-    
-    // IMPORTANT: Benoit Donnees prises dans le AP11D
-
-    // Set the device ID.
-    cout << mDeviceID << endl; 
-
-    // Set the base MQTT topic.
-    cout << mPublishTopicBase << endl;
-    cout << "---                  ---" << endl;
-
-}
-
 
 MQTTClient::MQTTClient(string mqttHost,
                        int mqttHostPort,
@@ -206,6 +185,9 @@ MQTTClient::MQTTClient(string mqttHost,
     mOnConnectCallback = onConnectCallback;
     mOnDisconnectCallback = onDisconnectCallback;
     mOnMessageCallback = onMessageCallback;
+
+    GLINFO_MQTTCLIENT("MQTTClient +++-------------------------------");
+    GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
 
     memset((char*)&mConnectionInfo, 0, sizeof(mConnectionInfo));  // Benoit j'avais commenté pourquoi ? A cause de l'erreur de pointeur
     mConnectionInfo.mState.mState = MQTTConnectionInfo::State::INACTIVE;
@@ -363,14 +345,17 @@ MQTTClient::MQTTClient(string mqttHost,
                                            std::placeholders::_3,
                                            std::placeholders::_4);
 
-   NetworkInit(mqttHost, mqttHostPort, validateMqttHostCert, deviceCertPath, deviceKeyPath, caCertPath);
 
-    InitTimer();
 
-    PrintParameters();
-    cout << "Start()" << endl;
-    Start();
+    GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
+
 }
+
+void MQTTClient::InitLWMQTTTClient()
+{
+    lwmqtt_set_timers(&mMqttClient, &mMqttKeepAliveTimer, &mMqttCommandTimer, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+    lwmqtt_set_callback(&mMqttClient, &mLwmqttMessageCallbackFunc, lwmqtt_message_callback_c_wrapper);
+}   
 
 MQTTClient::~MQTTClient()
 {
@@ -388,7 +373,6 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
     if (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::INACTIVE) {
         std::cout << "(mConnectionInfo.mState.mState == MQTTConnectionInfo::State::INACTIVE) \n"; 
         UpdateConnectionState(MQTTConnectionInfo::State::DISCONNECTED);
-
     }
 
     /*
@@ -410,10 +394,8 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
 
         lwmqtt_err_t rc = LWMQTT_INTERNAL_ERROR;
 
-        printf("Fetching cloud session sequence...\n");
+        GLDEBUG_MQTTCLIENT("Fetching cloud session sequence...");
         {
-            PrintParameters();
-            mOnboardingUrl =  "https://devstacksso-nb.isb.arubanetworks.com/onboard";
             cpr::SslOptions sslOpts = cpr::Ssl(cpr::ssl::CaInfo{mOnboardingCaCertPath.c_str()});
             cpr::Response r = cpr::Get(cpr::Url{mOnboardingUrl},
                                        cpr::Timeout{5000},
@@ -439,32 +421,32 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
                 }
                 
                 mCloudSessionSequenceError = "HTTP GET failure: " + r.error.message;
-                printf("Could not fetch cloud session sequence: %s\n",
+                GLERROR_MQTTCLIENT("Could not fetch cloud session sequence: %s",
                         r.error.message.c_str());
             }
             else if (r.status_code != 200) {
                 rc = LWMQTT_NETWORK_FAILED_CONNECT;
                 mCloudSessionSequenceError = "HTTP GET failure: HTTP code " + std::to_string(r.status_code);
-                printf("Could not fetch cloud session sequence: HTTP code %ld\n",
+                GLERROR_MQTTCLIENT("Could not fetch cloud session sequence: HTTP code %ld",
                         r.status_code);
             }
             else if (r.header.count("date") == 0) {
                 rc = LWMQTT_INTERNAL_ERROR;
                 mCloudSessionSequenceError = "HTTP date header missing";
-                printf("Could not fetch cloud session sequence: "
-                        "no HTTP 'date' header received.\n");
+                GLERROR_MQTTCLIENT("Could not fetch cloud session sequence: "
+                        "no HTTP 'date' header received.");
             }
             else {
                 // Convert to seconds since Epoch.
                 time_t timestamp = curl_getdate(r.header["date"].c_str(), NULL);
                 if (timestamp != -1) {
                     mCloudSessionSequence = timestamp;
-                    printf("Cloud session sequence fetched successfully: %lu\n", mCloudSessionSequence);
+                    GLDEBUG_MQTTCLIENT("Cloud session sequence fetched successfully: %lu", mCloudSessionSequence);
                 }
                 else {
                     rc = LWMQTT_INTERNAL_ERROR;
                     mCloudSessionSequenceError = "Invalid HTTP date: " + r.header.count("date");
-                    printf("Could not fetch cloud session sequence: "
+                    GLERROR_MQTTCLIENT("Could not fetch cloud session sequence: "
                             "error converting time '%s'.",
                             r.header["date"].c_str());
                 }

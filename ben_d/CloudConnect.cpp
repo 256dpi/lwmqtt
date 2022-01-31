@@ -28,6 +28,15 @@ CloudConnect::CloudConnect(ev::loop_ref loop,
       mForceMQTTConnStart(forceMqttConnStart),
       mConnectionsResetRequested(false)
 {
+    GLINFO_DEFAULT("CloudConnect +++-------------------------------");
+    GLINFO_DEFAULT("%s, %d, %d, %s, %s, %s", 
+        mqttHost.c_str(),
+        mqttHostPort,
+        validateMqttHostCert,
+        deviceCertPath.c_str(),
+        deviceKeyPath.c_str(),
+        caCert.c_str());
+    GLINFO_DEFAULT("CloudConnect +++-------------------------------");
 
     // Setup MQTT client callbacks.
     MQTTClient::OnConnectCallbackPtr mqttConnectCallback =

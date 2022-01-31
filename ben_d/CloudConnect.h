@@ -1,7 +1,3 @@
-#ifndef __CloudConnect_h__
-#define __CloudConnect_h__
-
-
 #ifndef __CLOUD_CONNECT_H__
 #define __CLOUD_CONNECT_H__
 
@@ -112,6 +108,3 @@ class CloudConnect {
 };
 
 #endif /* __CLOUD_CONNECT_H__ */
-
-
-#endif // #ifndef __CloudConnect_h__

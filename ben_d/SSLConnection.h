@@ -20,18 +20,20 @@
 #include <openssl/x509v3.h>
 
 extern "C" {
+
+const size_t TlsData_MaxTextLen = 256;
 typedef struct TlsData_s {
-	const char *host;
+	char host[TlsData_MaxTextLen];
 	uint16_t port;
     int socket;
 
-    char *tls_cafile;
-    char *tls_capath;
-    char *tls_certfile;
-    char *tls_keyfile;
-    char *tls_version;
-    char *tls_ciphers;
-    char *tls_alpn;
+    char tls_cafile[TlsData_MaxTextLen];
+    char tls_capath[TlsData_MaxTextLen];
+    char tls_certfile[TlsData_MaxTextLen];
+    char tls_keyfile[TlsData_MaxTextLen];
+    char tls_version[TlsData_MaxTextLen];
+    char tls_ciphers[TlsData_MaxTextLen];
+    char tls_alpn[TlsData_MaxTextLen];
     int  tls_cert_reqs;
     bool tls_insecure;
     bool ssl_ctx_defaults;
@@ -67,7 +69,7 @@ class TLS
         void SetInitialized() { m_initialized = true;}
         void InitTlsCrypto(); //net__init_tls();
         void InitTlsCryptoVersion(); // Init SSL lib and crypto based on the openssl version.
-        int LoadCA(); //static int net__tls_load_ca(struct mosquitto *mosq)
+        int  LoadCA(); //static int net__tls_load_ca(struct mosquitto *mosq)
         void SetSSLCtx(); 
         void DHECiphers();
         void SetALPN();
