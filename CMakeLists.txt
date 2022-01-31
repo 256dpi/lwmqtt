@@ -62,7 +62,6 @@ target_link_libraries(tests_app lwmqtt gtest gtest_main)
 
 set(TEST_FILES
         include/lwmqtt/unix.h
-        ben_d/TestDevMain.cpp
         ben_d/MQTTClient.cpp
         ben_d/CloudConnect.cpp
         ben_d/Socket.cpp

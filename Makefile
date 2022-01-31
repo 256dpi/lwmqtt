@@ -433,33 +433,6 @@ ben_d/Socket.cpp.s:
 	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/Socket.cpp.s
 .PHONY : ben_d/Socket.cpp.s
 
-ben_d/TestDevMain.o: ben_d/TestDevMain.cpp.o
-
-.PHONY : ben_d/TestDevMain.o
-
-# target to build an object file
-ben_d/TestDevMain.cpp.o:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/TestDevMain.cpp.o
-.PHONY : ben_d/TestDevMain.cpp.o
-
-ben_d/TestDevMain.i: ben_d/TestDevMain.cpp.i
-
-.PHONY : ben_d/TestDevMain.i
-
-# target to preprocess a source file
-ben_d/TestDevMain.cpp.i:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/TestDevMain.cpp.i
-.PHONY : ben_d/TestDevMain.cpp.i
-
-ben_d/TestDevMain.s: ben_d/TestDevMain.cpp.s
-
-.PHONY : ben_d/TestDevMain.s
-
-# target to generate assembly for a file
-ben_d/TestDevMain.cpp.s:
-	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/TestDevMain.cpp.s
-.PHONY : ben_d/TestDevMain.cpp.s
-
 ben_d/main.o: ben_d/main.cpp.o
 
 .PHONY : ben_d/main.o
@@ -944,9 +917,6 @@ help:
 	@echo "... ben_d/Socket.o"
 	@echo "... ben_d/Socket.i"
 	@echo "... ben_d/Socket.s"
-	@echo "... ben_d/TestDevMain.o"
-	@echo "... ben_d/TestDevMain.i"
-	@echo "... ben_d/TestDevMain.s"
 	@echo "... ben_d/main.o"
 	@echo "... ben_d/main.i"
 	@echo "... ben_d/main.s"
