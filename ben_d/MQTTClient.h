@@ -425,6 +425,7 @@ class MQTTClient {
 
         virtual lwmqtt_err_t NetworkPeek(size_t*) = 0;
 
+        void PrintDebugVariable();
         
 };
 

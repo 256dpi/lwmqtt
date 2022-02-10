@@ -69,7 +69,7 @@ getSysUptime(void)
  * Will send out a Ping request at the specified Keepalive interval and
  * expect a response to be received before that same period passes again.
  */
-#define MQTT_WIRED_DEVICE_KEEPALIVE_INTERVAL_SECS 30
+#define MQTT_WIRED_DEVICE_KEEPALIVE_INTERVAL_SECS 10
 
 /* Mesh devices need a little more grace. */
 #ifdef CONFIG_GLENLIVET
@@ -368,6 +368,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
      */
     if (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::GETTING_CLOUD_SESSION_SEQUENCE) {
         std::cout << "(mConnectionInfo.mState.mState == MQTTConnectionInfo::State::GETTING_CLOUD_SESSION_SEQUENCE)\n"; 
+        if (0) {
         static unsigned int numTries = 0;
         mCloudSessionSequence = 0;
         mCloudSessionSequenceError.clear();
@@ -380,7 +381,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             printf("iot.isb.arubanetworks.com -- %s\n", mOnboardingUrl.c_str());
             cpr::Response r = cpr::Get(cpr::Url{mOnboardingUrl},
                                        cpr::Timeout{5000},
-                                       cpr::VerifySsl{true},
+                                       cpr::VerifySsl{false},
                                        sslOpts);
             printf("iot.isb.arubanetworks.com -- %s\n", mOnboardingUrl.c_str());
             if (r.error) {
@@ -449,8 +450,15 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         else {
             TriggerDisconnect(rc);
         }
+        }
+        else
+        {
+            GLDEBUG_MQTTCLIENT("Benoit Court-circuité - Cloud session sequence fetched successfully: %lu", mCloudSessionSequence);
+            UpdateConnectionState(MQTTConnectionInfo::State::CONNECTING_TO_BROKER);
+        }
     }
 
+    PrintDebugVariable();
     /*
      * CONNECTING_TO_BROKER
      */
@@ -472,6 +480,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         }
         
     }
+    PrintDebugVariable();
 
     /*
      * CONNECTING_TO_MQTT
@@ -517,12 +526,15 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             TriggerDisconnect(rc);
         }
     }
+    PrintDebugVariable();
     /*
      * SUBSCRIBING
      */
     if (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::SUBSCRIBING) {
         GLINFO_MQTTCLIENT("Subscribing to topic '%s'...", mSubscribeTopic.c_str());
+            UpdateConnectionState(MQTTConnectionInfo::State::SENDING_HELLO);
 
+        if(0) {
         lwmqtt_err_t rc = Subscribe();
         if (rc == LWMQTT_SUCCESS) {
             GLINFO_MQTTCLIENT("Subscribed to topic '%s' successfully.",
@@ -534,7 +546,9 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             //UpdateConnectionState(mConnectionInfo.mState.mState, &rc);
             TriggerDisconnect(rc);
         }
+        }
     }
+    PrintDebugVariable();
 
     /*
      * SENDING_HELLO
@@ -557,6 +571,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         }
         }
     }
+    PrintDebugVariable();
 
     /*
      * CONNECTED
@@ -569,6 +584,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
 
         // Start the network timer.
         if (origState != MQTTConnectionInfo::State::CONNECTED) {
+            BLog("mNetworkTimer.start(0.25, 0.25);");
             mNetworkTimer.start(0.25, 0.25);
         }
 
@@ -577,12 +593,70 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             mOnConnectCallback();
         }
     }
+    PrintDebugVariable();
+}
+
+
+void MQTTClient::PrintDebugVariable()
+{
+    BLog("----------------------------------------------------------");
+
+    BLog("Boucle %lu, Sent %lu, Rec %lu, pong_pending is %s",
+        mMqttClient.keepaliveBoucle,
+        mMqttClient.keepaliveSent,
+        mMqttClient.keepaliveRec,
+        mMqttClient.pong_pending ? "true" : "false");
+
+    BLog("\r\nPublich Packet, Decoded: %lu, Count: %lu, ASent: %lu, AEncode %lu, DCB %lu, default: %lu,",
+        mMqttClient.bencount_publish_packet_decoded_count,
+        mMqttClient.bencount_publish_packet_count,
+        mMqttClient.bencount_publish_packet_ack_sent_count,
+        mMqttClient.bencount_publish_packet_ack_encode_count,
+        mMqttClient.bencount_publish_packet_decoded_cb_count,
+        mMqttClient.bencount_default_total_count);
+
+    BLog("LWMQTT_PUBREC_PACKET Decoded: %lu, encoded: %lu, send: %lu, total %lu,",
+        mMqttClient.bencount_LWMQTT_PUBREC_PACKET_decoded_count,
+        mMqttClient.bencount_LWMQTT_PUBREC_PACKET_encoded_count,
+        mMqttClient.bencount_LWMQTT_PUBREC_PACKET_sent_count,
+        mMqttClient.bencount_LWMQTT_PUBREC_PACKET_total_count);
+
+
+
+    BLog("LWMQTT_PUBREL_PACKET Decoded: %lu, encoded: %lu, send: %lu, total %lu,", 
+        mMqttClient.bencount_LWMQTT_PUBREL_PACKET_decoded_count,
+        mMqttClient.bencount_LWMQTT_PUBREL_PACKET_encoded_count,
+        mMqttClient.bencount_LWMQTT_PUBREL_PACKET_sent_count,
+        mMqttClient.bencount_LWMQTT_PUBREL_PACKET_total_count);
+
+
+    BLog("packet_type_err: %lu, READ_From_Net: count: %lu, to read: %lu, done err: %lu, done ok: %lu, real count: %lu, timeout: %lu",
+        mMqttClient.packet_type_err,
+        mMqttClient.bencount_read_from_network_count,
+        mMqttClient.bencount_read_from_network_to_read_count,
+        mMqttClient.bencount_read_from_network_done_err_count,
+        mMqttClient.bencount_read_from_network_done_ok_count,
+        mMqttClient.bencount_read_from_network_real_read_count,
+        mMqttClient.bencount_read_from_network_timeout_count
+        );
+
+    BLog("Write from network: count: %lu, timeout: %lu, done_err: %lu, done_ok: %lu, byte: %lu",
+        mMqttClient.bencount_write_from_network_count,
+        mMqttClient.bencount_write_from_network_timeout_count,
+        mMqttClient.bencount_write_from_network_done_err_count,
+        mMqttClient.bencount_write_from_network_done_ok_count,
+        mMqttClient.bencount_write_from_network_byte_count
+        );
+
+
+    mMqttClient.pong_pending = false;
 }
 
 void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
 {
     lwmqtt_err_t rc;
     size_t available = 0;
+    static size_t count = 0;
 
     if (mConnectionInfo.mState.mState != MQTTConnectionInfo::State::CONNECTED) {
         return;
@@ -609,9 +683,14 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
     rc = lwmqtt_keep_alive(&mMqttClient, MQTT_COMMAND_TIMEOUT_MSEC);
     if (rc != LWMQTT_SUCCESS) {
         GLERROR_MQTTCLIENT("Keepalive failed: %s.", lwmqtt_strerr(rc));
+        mMqttClient.pong_pending = false;
         TriggerDisconnect(rc);
         return;
     }
+    if (!(count++ % 40)) {
+        PrintDebugVariable();
+    }
+
 }
  #if AP
 void MQTTClient::GSMTimerCallback(ev::timer &watcher, int revents)
@@ -819,7 +898,7 @@ void MQTTClient::TriggerDisconnect(lwmqtt_err_t rc)
     NetworkDisconnect();
 
     mNetworkTimer.stop();
-
+    Reset_BenCounts(&mMqttClient);
     UpdateConnectionState(MQTTConnectionInfo::State::DISCONNECTED, rc);
     if (wasConnected) {
         uint32_t now = getSysUptime();
