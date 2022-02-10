@@ -164,7 +164,46 @@ struct lwmqtt_client_t {
   void *command_timer;
   lwmqtt_timer_set_t timer_set;
   lwmqtt_timer_get_t timer_get;
+  size_t keepaliveBoucle;
+  size_t keepaliveSent;
+  size_t keepaliveRec;
+
+  size_t bencount_publish_packet_decoded_count;
+  size_t bencount_publish_packet_count;
+
+  size_t bencount_publish_packet_ack_sent_count;
+  size_t bencount_publish_packet_ack_encode_count;
+
+  size_t bencount_publish_packet_decoded_cb_count;
+
+  size_t bencount_default_total_count;
+  size_t bencount_LWMQTT_PUBREC_PACKET_decoded_count;
+  size_t bencount_LWMQTT_PUBREC_PACKET_encoded_count;
+  size_t bencount_LWMQTT_PUBREC_PACKET_sent_count;
+  size_t bencount_LWMQTT_PUBREC_PACKET_total_count;
+  size_t bencount_LWMQTT_PUBREL_PACKET_decoded_count;
+  size_t bencount_LWMQTT_PUBREL_PACKET_encoded_count;
+  size_t bencount_LWMQTT_PUBREL_PACKET_sent_count;
+  size_t bencount_LWMQTT_PUBREL_PACKET_total_count;
+
+  size_t packet_type_err;
+  size_t bencount_read_from_network_count;
+  size_t bencount_read_from_network_to_read_count;
+  size_t bencount_read_from_network_done_err_count;
+  size_t bencount_read_from_network_done_ok_count;
+  size_t bencount_read_from_network_real_read_count;
+  size_t bencount_read_from_network_timeout_count;
+
+
+  size_t bencount_write_from_network_count;
+  size_t bencount_write_from_network_timeout_count;
+  size_t bencount_write_from_network_done_err_count;
+  size_t bencount_write_from_network_done_ok_count;
+  size_t bencount_write_from_network_byte_count;
+
 };
+
+void Reset_BenCounts(lwmqtt_client_t *client);
 
 /**
  * Will initialize the specified client object.
