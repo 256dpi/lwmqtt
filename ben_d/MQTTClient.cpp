@@ -541,6 +541,8 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
      */
     if (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::SENDING_HELLO) {
         GLINFO_MQTTCLIENT("Publishing HELLO message on topic '%s'...", mHelloTopic.c_str());
+            UpdateConnectionState(MQTTConnectionInfo::State::CONNECTED);
+        if(0) {
         lwmqtt_err_t rc = SendHelloMessage();
         if (rc == LWMQTT_SUCCESS) {
             GLINFO_MQTTCLIENT("Published HELLO message on topic '%s' successfully.",
@@ -552,6 +554,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             GLERROR_MQTTCLIENT("Failed to publish HELLO message on topic '%s': %s.", mSubscribeTopic.c_str(), lwmqtt_strerr(rc));
             //UpdateConnectionState(mConnectionInfo.mState.mState, &rc);
             TriggerDisconnect(rc);
+        }
         }
     }
 
@@ -580,7 +583,6 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
 {
     lwmqtt_err_t rc;
     size_t available = 0;
-    static size_t count = 0;
 
     if (mConnectionInfo.mState.mState != MQTTConnectionInfo::State::CONNECTED) {
         return;
