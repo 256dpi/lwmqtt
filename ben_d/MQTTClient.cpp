@@ -484,7 +484,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         lwmqtt_options_t options = lwmqtt_default_options;
 
         options.client_id = lwmqtt_string(mDeviceID.c_str());
-        options.keep_alive = MQTT_WIRED_DEVICE_KEEPALIVE_INTERVAL_SECS*6;
+        options.keep_alive = MQTT_WIRED_DEVICE_KEEPALIVE_INTERVAL_SECS;
 
 #ifdef GSM_CHANNEL_MESH_UPLINK_SUPPORTED
         gsm_channel_mesh_uplink_key_t key;
@@ -501,37 +501,36 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
                                 &mMeshUplinkState) == GSM_RESULT_SUCCESS) {
             // Mesh Point - increase the connection timeout
             options.keep_alive = MQTT_WIRELESS_DEVICE_KEEPALIVE_INTERVAL_SECS;
-            printf("Mesh Point: increasing MQTT Timeout to %u", MQTT_WIRELESS_DEVICE_KEEPALIVE_INTERVAL_SECS);
+            GLDEBUG_MQTTCLIENT("Mesh Point: increasing MQTT Timeout to %u", MQTT_WIRELESS_DEVICE_KEEPALIVE_INTERVAL_SECS);
         }
 #endif
     // sleep(2);  // Benoit ?
 
         rc = lwmqtt_connect(&mMqttClient, options, NULL, &return_code, MQTT_COMMAND_TIMEOUT_MSEC);
         if (rc == LWMQTT_SUCCESS) {
-            printf("MQTT connect succeeded.\n");
+            GLINFO_MQTTCLIENT("MQTT connect succeeded.");
             UpdateConnectionState(MQTTConnectionInfo::State::SUBSCRIBING);
         }
         else {
-            printf("MQTT connect failed: %s (%d).\n", lwmqtt_strerr(rc), return_code);
+            GLERROR_MQTTCLIENT("MQTT connect failed: %s (%d).", lwmqtt_strerr(rc), return_code);
             //UpdateConnectionState(mConnectionInfo.mState.mState, &rc);
             TriggerDisconnect(rc);
         }
     }
-    // sleep(2); // Benoit ?
     /*
      * SUBSCRIBING
      */
     if (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::SUBSCRIBING) {
-        printf("Subscribing to topic '%s'...\n", mSubscribeTopic.c_str());
+        GLINFO_MQTTCLIENT("Subscribing to topic '%s'...", mSubscribeTopic.c_str());
 
         lwmqtt_err_t rc = Subscribe();
         if (rc == LWMQTT_SUCCESS) {
-            printf("Subscribed to topic '%s' successfully.\n",
+            GLINFO_MQTTCLIENT("Subscribed to topic '%s' successfully.",
                               mSubscribeTopic.c_str());
             UpdateConnectionState(MQTTConnectionInfo::State::SENDING_HELLO);
         }
         else {
-            printf("Failed to subscribe to topic '%s'", lwmqtt_strerr(rc));
+            GLERROR_MQTTCLIENT("Failed to subscribe to topic '%s': %s.", mSubscribeTopic.c_str(), lwmqtt_strerr(rc));
             //UpdateConnectionState(mConnectionInfo.mState.mState, &rc);
             TriggerDisconnect(rc);
         }
@@ -541,17 +540,16 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
      * SENDING_HELLO
      */
     if (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::SENDING_HELLO) {
-        printf("Publishing HELLO message on topic '%s'...\n", mHelloTopic.c_str());
-
-        lwmqtt_err_t rc = LWMQTT_SUCCESS; //SendHelloMessage();
+        GLINFO_MQTTCLIENT("Publishing HELLO message on topic '%s'...", mHelloTopic.c_str());
+        lwmqtt_err_t rc = SendHelloMessage();
         if (rc == LWMQTT_SUCCESS) {
-            printf("Published HELLO message on topic '%s' successfully.\n",
+            GLINFO_MQTTCLIENT("Published HELLO message on topic '%s' successfully.",
                               mHelloTopic.c_str());
             mConnectionInfo.mState.mState = MQTTConnectionInfo::State::CONNECTED;
             UpdateConnectionState(MQTTConnectionInfo::State::CONNECTED);
         }
         else {
-            printf("Failed to publish HELLO message on topic '%s'\n", lwmqtt_strerr(rc));
+            GLERROR_MQTTCLIENT("Failed to publish HELLO message on topic '%s': %s.", mSubscribeTopic.c_str(), lwmqtt_strerr(rc));
             //UpdateConnectionState(mConnectionInfo.mState.mState, &rc);
             TriggerDisconnect(rc);
         }
@@ -582,6 +580,7 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
 {
     lwmqtt_err_t rc;
     size_t available = 0;
+    static size_t count = 0;
 
     if (mConnectionInfo.mState.mState != MQTTConnectionInfo::State::CONNECTED) {
         return;
@@ -590,7 +589,7 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
     // Check if data is available.
     rc = NetworkPeek(&available);
     if (rc != LWMQTT_SUCCESS) {
-        printf("Failed to check available data: %s.", lwmqtt_strerr(rc));
+        GLERROR_MQTTCLIENT("Failed to check available data: %s.", lwmqtt_strerr(rc));
         TriggerDisconnect(rc);
         return;
     }
@@ -598,7 +597,7 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
     else if (available > 0) {
         rc = lwmqtt_yield(&mMqttClient, available, MQTT_COMMAND_TIMEOUT_MSEC);
         if (rc != LWMQTT_SUCCESS) {
-            printf("Failed to process available data: %s.", lwmqtt_strerr(rc));
+            GLERROR_MQTTCLIENT("Failed to process available data: %s.", lwmqtt_strerr(rc));
             TriggerDisconnect(rc);
             return;
         }
@@ -607,7 +606,7 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
     // Keep connection alive.
     rc = lwmqtt_keep_alive(&mMqttClient, MQTT_COMMAND_TIMEOUT_MSEC);
     if (rc != LWMQTT_SUCCESS) {
-        printf("Keepalive failed: %s.", lwmqtt_strerr(rc));
+        GLERROR_MQTTCLIENT("Keepalive failed: %s.", lwmqtt_strerr(rc));
         TriggerDisconnect(rc);
         return;
     }
@@ -813,7 +812,7 @@ void MQTTClient::TriggerDisconnect(lwmqtt_err_t rc)
     BTraceIn
     bool wasConnected = (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::CONNECTED);
     
-    printf("Triggering MQTT disconnect (%s), was %s.", lwmqtt_strerr(rc), wasConnected ? "conneceted" : "unconnected");
+    GLINFO_MQTTCLIENT("Triggering MQTT disconnect (%s).", lwmqtt_strerr(rc));
 
     NetworkDisconnect();
 
@@ -1170,14 +1169,14 @@ void MQTTClient::SubscribeCallback(lwmqtt_client_t *client, void *ref, lwmqtt_st
     string topicName = string(topic.data, topic.len);
 
     if (mConnectionInfo.mState.mState != MQTTConnectionInfo::State::CONNECTED) {
-        printf("Ignoring received message of %ld bytes on topic '%s': "
+        GLDEBUG_MQTTCLIENT("Ignoring received message of %ld bytes on topic '%s': "
                            "connection process not terminated yet.",
                            msg.payload_len,
                            topicName.c_str());
         return;
     }
 
-    printf("Received a message of %ld bytes on topic '%s'.",
+    GLDEBUG_MQTTCLIENT("Received a message of %ld bytes on topic '%s'.",
                        msg.payload_len,
                        topicName.c_str());
 
@@ -1248,12 +1247,12 @@ void MQTTClient::SendMessage(const std::string& topic, const vector<byte>& messa
 
     // Encapsulate the original message.
     if (!EncapsulateMessage(message, messageTag, &payload)) {
-        printf("Failed to serialize cloud message.");
+        GLERROR_MQTTCLIENT("Failed to serialize cloud message.");
         return;
     }
 
     // Send the message.
-    printf("Publishing message from WebSocket on topic '%s'...",
+    GLINFO_MQTTCLIENT("Publishing message from WebSocket on topic '%s'...",
                       fullTopic.c_str());
 
     lwmqtt_message_t msg = {
@@ -1281,17 +1280,17 @@ void MQTTClient::SendMessage(const std::string& topic, const vector<byte>& messa
     }
 
     if (rc == LWMQTT_SUCCESS) {
-        printf("Published message from WebSocket on topic '%s' successfully.",
+        GLINFO_MQTTCLIENT("Published message from WebSocket on topic '%s' successfully.",
                           fullTopic.c_str());
     }
     else if (rc == LWMQTT_BUFFER_TOO_SHORT) {
-        printf("Failed to publish WebSocket message on topic '%s': %s.",
+        GLERROR_MQTTCLIENT("Failed to publish WebSocket message on topic '%s': %s.",
                            fullTopic.c_str(),
                            lwmqtt_strerr(rc));
         // Do not trigger a disconnect.
     }
     else {
-        printf("Failed to publish WebSocket message on topic '%s': %s.",
+        GLERROR_MQTTCLIENT("Failed to publish WebSocket message on topic '%s': %s.",
                            fullTopic.c_str(),
                            lwmqtt_strerr(rc));
         TriggerDisconnect(rc);
@@ -1396,150 +1395,3 @@ void MQTTClient::InitTimer()
 #endif // #if AP
 }
 
-#if 0
-
-void MQTTClient::NetworkInit(string mqttHost,
-            int mqttHostPort,
-            bool validateMqttHostCert,
-            string deviceCertPath,
-            string deviceKeyPath,
-            string caCertPath)
-{
-    GLINFO_MQTTCLIENT("MQTTClient Init Fct +++-------------------------------");
-}
-
-void MQTTClient::NetworkDisconnect()
-{
-    #if AP
-    lwmqtt_mbedtls_network_disconnect(&mMqttNetworkConnection);
-    #else
-//    mSock.Close();
-//    mTls.Close();
-    #endif 
-}
-
-
-bool MQTTClient::NetworkIsConnected()
-{
-    //return mMqttNetworkConnection.is_connected;
-    return true;
-}
-
-void MQTTClient::NetworkInit(string mqttHost,
-                   int mqttHostPort,
-                   bool validateMqttHostCert,
-                   string deviceCertPath,
-                   string deviceKeyPath,
-                   string caCertPath)
-{
-#if 0
-
-    // Initialize the MQTT network connection info.
-    lwmqtt_mbedtls_network_t *network = &mMqttNetworkConnection;
-    memset(network, 0, sizeof(*network));
-    network->endpoint_port = mqttHostPort;
-    strlcpy(network->endpoint, mqttHost.c_str(), sizeof(network->endpoint));
-    strlcpy(network->root_ca_location, caCertPath.c_str(), sizeof(network->root_ca_location));
-    strlcpy(network->device_cert_location, deviceCertPath.c_str(), sizeof(network->device_cert_location));
-    strlcpy(network->device_private_key_location, deviceKeyPath.c_str(), sizeof(network->device_private_key_location));
-    network->server_verification_flag = validateMqttHostCert;
-    network->tls_handshake_timeout = MQTT_NETWORK_CONNECTION_HANDSHAKE_TIMEOUT_MSECS;
-    network->tls_read_timeout = MQTT_NETWORK_CONNECTION_READ_TIMEOUT_MSECS;
-    network->tls_write_timeout = MQTT_NETWORK_CONNECTION_WRITE_TIMEOUT_MSECS;
-    network->alpn_protocol_list[0] = "x-amzn-mqtt-ca";
-#endif
-#if 0
-    // Configure the MQTT client.
-    //lwmqtt_set_network(&mMqttClient, &(mTls.m_ssl), lwmqtt_mbedtls_network_read, lwmqtt_mbedtls_network_write);
-    lwmqtt_set_timers(&mMqttClient, &mMqttKeepAliveTimer, &mMqttCommandTimer, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
-    lwmqtt_set_callback(&mMqttClient, &mLwmqttMessageCallbackFunc, lwmqtt_message_callback_c_wrapper);
-    BLog("mTls.m_ssl = %p, &mTls.m_ssl = %p, &(mTls.m_ssl) = %p", (void*)mTls.m_ssl, (void*)&mTls.m_ssl, (void*)&(mTls.m_ssl));
-    // Setup the MQTT connection state machine timer.
-    mConnectionSMTimer.set<MQTTClient, &MQTTClient::ConnectionSMTimerCallback>(this);
-    // Configure the MQTT client.
-    lwmqtt_set_network(&mMqttClient, network, lwmqtt_mbedtls_network_read, lwmqtt_mbedtls_network_write);
-    lwmqtt_set_timers(&mMqttClient, &mMqttKeepAliveTimer, &mMqttCommandTimer, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
-    lwmqtt_set_callback(&mMqttClient, &mLwmqttMessageCallbackFunc, lwmqtt_message_callback_c_wrapper);
-#endif
-}
-
-lwmqtt_err_t MQTTClient::ConnectingToBroker(int *fd)
-{
-    lwmqtt_err_t rc = lwmqtt_mbedtls_network_connect(&mMqttNetworkConnection, mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port);
-    *fd = mMqttNetworkConnection.server_fd.fd;
-    return rc;
-}
-
-
-lwmqtt_err_t MQTTClient::NetworkPeek(size_t *available)
-{
-    lwmqtt_err_t rc;
-
-    rc = lwmqtt_mbedtls_network_peek(&mMqttNetworkConnection, available);
-    return rc;
-}
-
-#if 0
-void InitTlsData(TlsData_S &data, const char * host, int port, int socket)
-{
-
-    data.host = host;
-    data.port = port;
-    data.socket = socket;
-    data.tls_cafile = (char *)"/data/simul/mosquitto/mosquitto/CA/mosquitto.org.crt";
-    data.tls_capath = (char *)"/data/simul/mosquitto/mosquitto/CA";
-    data.tls_certfile = (char *)"/data/simul/mosquitto/mosquitto/CA/client.crt.txt";
-    data.tls_keyfile = (char *)"/data/simul/mosquitto/mosquitto/CA/client.key";
-    data.tls_version = (char*)"tlsv1.2";
-    data.tls_ciphers = nullptr;
-    data.tls_alpn = (char *)"x-amzn-mqtt-ca";
-    data.tls_cert_reqs = SSL_VERIFY_PEER;
-    data.tls_insecure = false;
-    data.ssl_ctx_defaults = true;
-    data.tls_ocsp_required = false;
-    data.tls_use_os_certs = false;
-}
-
-lwmqtt_err_t MQTTClient::OpenSocket()
-{
-    lwmqtt_err_t retVal;
-    int retConnect;
-    /* Avec mbedtls
-    lwmqtt_mbedtls_network_connect(&mMqttNetworkConnection, mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port);
-    */
-    mSock.Init(mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port);
-    retConnect = mSock.Connect();
-    if (retConnect == 0)
-    {
-        BLog("Socket connected");
-    }
-
-    if (mSock.IsConnected())
-    {
-        retVal = LWMQTT_SUCCESS;
-        mMqttNetworkConnection.server_fd = mSock.GetSocket();
-    }
-    else
-    {
-        retVal = LWMQTT_NETWORK_FAILED_CONNECT;
-        mMqttNetworkConnection.server_fd = INVALID_SOCKET;
-    }
-
-    TlsData_S data;
-    InitTlsData(data, mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port, mMqttNetworkConnection.server_fd);
-    TLS monTls = TLS(data);
-    monTls.Init();
-
-    return retVal;
-}
-
-void MQTTClient::CloseSocket()
-{
-    //lwmqtt_mbedtls_network_disconnect(&mMqttNetworkConnection);
-
-    mSock.Close();
-    mTls.Close();
-}
-#endif 
-
-#endif // #if 0

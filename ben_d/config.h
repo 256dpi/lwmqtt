@@ -33,12 +33,14 @@ enum DBLogLevel {
 #define GLINFO_MQTTCLIENT BLog
 
 #else // #if 0 
-#define BLog(format, ...) do {} while(0)
+
+#include <aruba/util/grouplog_cloudconnect.h>
+#define BLog  GLINFO_MQTTCLIENT
 #define BTraceIn do {} while(0);
 #define BTraceOut do {} while(0);
 
 
-#define DBLog(Log, format, ...) do {} while(0)
+#define DBLog(Log, format, ...) GLINFO_MQTTCLIENT( format, ##__VA_ARGS__)
 #define DBTraceIn  do {} while(0);
 #define DBTraceOut do {} while(0);
 

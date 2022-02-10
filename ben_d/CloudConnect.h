@@ -4,15 +4,29 @@
 //#include <awsiotsdk/mqtt/Client.hpp>
 
 #include <ev++.h>
+#if AP
+#include <gsm_schema.h>
+#include <gsm_apps.h>
 
+#include <aruba/libwebsockethelper/WebSocketServer.h>
+#endif // #if AP
 #define TEST_MBED
+#define TEST_OPENSSL
 #undef TEST_MBED
-#ifdef TEST_MBED
+//#undef TEST_OPENSSL
+#if defined(TEST_MBED)
 #include "MQTTClientMbed.h"
-#else // #ifdef TEST_MBED
+#elif defined(TEST_OPENSSL)
 #include "MQTTClientOpenSSL.h"
+#else
+#include "MQTTClient1883.h"
 #endif // #ifdef TEST_MBED
+
+#if AP
+#include "SyslogServer.h"
+#else // #if AP
 #include "config.h"
+#endif // #if AP
 
 #define CLOUD_CONNECT_LOG_ID "CloudConnect"
 
@@ -48,6 +62,10 @@ class CloudConnect {
                      string deviceKeyPath,
                      string caCertPath,
                      string onboardingCACertPath,
+#if AP
+                     int websocketServerPort,
+                     int syslogServerPort,
+#endif // #if AP
                      bool forceMqttConnStart);
 
         /**
@@ -60,14 +78,25 @@ class CloudConnect {
     private:
         /** @brief Reference to the event loop. */
         ev::loop_ref mLoop;
+#if AP
+        /** @brief WebSocket server instance. */
+        WebSocketServer mWebSocketServer;
 
+        /** @brief Number of WebSocket clients per protocol. */
+        map<string, vector<int>> mWsClients;
+#endif // #if AP
         /** @brief MQTT client instance. */
-		#ifdef TEST_MBED
+        #ifdef TEST_MBED
         MQTTClientMbed mMQTTClient;
-		#else //#ifdef TEST_MBED
+        #elif defined(TEST_OPENSSL)
         MQTTClientOpenSSL mMQTTClient;
-		#endif //#ifdef TEST_MBED
+        #else // #ifdef TEST_OPEN
+        MQTTClient1883 mMQTTClient;
+        #endif //#ifdef TEST_MBED
 
+#if AP
+        SyslogServer mSyslogServer;
+#endif // #if AP
         /**
           * @brief Indicate if the MQTT connection should be started
           *        immediately, instead of waiting for WebSocket clients to
@@ -114,7 +143,34 @@ class CloudConnect {
          * @param[in] message Message received from the MQTT connection.
          */
         void HandleMQTTMessage(const string& topicName, const vector<byte>& message);
+#if AP
+        /**
+         * Handle syslog message.
+         *
+         * @param[in] application Application of the message.
+         * @param[in] facility Syslog facility of the message.
+         * @param[in] severity Syslog level of the message.
+         * @param[in] message Message.
+         */
+        void HandleSyslogMessage(const std::string& application, const std::string& facility, const std::string& severity, const std::string& message);
 
+        /**
+         * @brief Callback invoked when a new WebSocket client is connected.
+         */
+        void HandleWsClientConnect(int connectionID, const string& protocol);
+
+        /**
+         * @brief Callback invoked when a WebSocket client is disconnected.
+         */
+        void HandleWsClientDisconnect(int connectionID);
+
+        /**
+         * @brief Callback invoked when a message is received from a WebSocket
+         *        client.
+         *
+         * @param[in] message Message received from the WebSocket.
+         */
+        void HandleWsClientMessage(int connectionID, const string& protocol, const vector<byte>& message);
+#endif // #if AP
 };
-
 #endif /* __CLOUD_CONNECT_H__ */

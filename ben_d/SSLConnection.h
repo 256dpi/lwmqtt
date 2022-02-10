@@ -69,6 +69,7 @@ class TLS
         TlsMsg_E Read(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout);
         TlsMsg_E Write(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout);
         TlsMsg_E Peek(size_t *available);
+        int SSL_Pending();
         int HandleSslError(int ret);
         void PrintSslError(int err);
 
@@ -88,7 +89,7 @@ class TLS
         void SetOpensslExIndex();
         void SslClose();
         int SslConnect(); // net__socket_connect_tls(mosq))
-        int sock;
+        
         TlsData_S *m_tls_data;
     
         SSL_CTX *m_ssl_ctx;

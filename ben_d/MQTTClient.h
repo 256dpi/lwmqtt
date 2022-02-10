@@ -131,6 +131,7 @@ struct MQTTConnectionInfo
     string mLastDisconnectionErrorStr; /* Description of the error code associated to the last MQTT disconnection. */
     in_addr_t mBrokerIpAddr; /* IP address of the MQTT broker. */
 };
+extern void lwmqtt_message_callback_c_wrapper(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg);
 
 /**
  * @brief Class implementing the MQTT client.
@@ -409,20 +410,21 @@ class MQTTClient {
          *  TODO:Benoit  Initiliaze MQTT Client parameters and Tls/Socket
         */            
 
-        virtual lwmqtt_err_t ConnectingToBroker(int *fd) {return (lwmqtt_err_t)0;} //= 0;
+        virtual lwmqtt_err_t ConnectingToBroker(int *fd) = 0;
 
         virtual void NetworkInit(string mqttHost,
                    int mqttHostPort,
                    bool validateMqttHostCert,
                    string deviceCertPath,
                    string deviceKeyPath,
-                   string caCertPath)  = 0;
+                   string caCertPath)  {};
 
-        virtual void NetworkDisconnect() {} // = 0;
+        virtual void NetworkDisconnect() = 0;
 
-        virtual bool NetworkIsConnected() {return true;} // = 0;
+        virtual bool NetworkIsConnected() = 0;
 
-        virtual lwmqtt_err_t NetworkPeek(size_t*) {return (lwmqtt_err_t)0;} // = 0;
+        virtual lwmqtt_err_t NetworkPeek(size_t*) = 0;
+
         
 };
 

@@ -47,15 +47,15 @@ int TLS::HandleSslError(int ret)
         case SSL_ERROR_WANT_READ:
             {
                 //DBLog(DBLogLevel_SSL_RW, "READ"); // Too many print out
-                ret = -1;   
+                ret = 0;
                 errno = EAGAIN;
             }
             break;
 
         case SSL_ERROR_WANT_WRITE:
             {
-                DBLog(DBLogLevel_SSL_RW, "WRITE");
-                ret = -1;
+                //DBLog(DBLogLevel_SSL_RW, "WRITE");
+                ret = 0;
                 errno = EAGAIN;
             }
             break;
@@ -73,6 +73,16 @@ int TLS::HandleSslError(int ret)
         		DBLog(DBLogLevel_SSL_RW, "CACHE SIZE = %ld", val);
 		        PrintSslError(err);
 		        errno = EPROTO;
+            }
+            break;
+
+		//if (err == SSL_ERROR_SYSCALL) {
+        case SSL_ERROR_SYSCALL:
+            {
+                DBLog(DBLogLevel_SSL_RW, "SSL_ERROR_SYSCALL, set m_want_connect");
+		        PrintSslError(err);
+                m_want_connect = true;
+                ret = 0;
             }
             break;
     	default:
@@ -100,7 +110,8 @@ TLS::TlsMsg_E TLS::Peek(size_t *available) {
         if(ret < 0){
             err = Msg_Err_Peek;
             *available = 0;
-            HandleSslError(ret);
+            if (!HandleSslError(ret) )
+                err = Msg_Success;
         }
         else {
             *available = (size_t)ret;
@@ -108,6 +119,11 @@ TLS::TlsMsg_E TLS::Peek(size_t *available) {
     }
     return err;
 }
+
+int TLS::SSL_Pending() {
+    return SSL_pending(m_ssl);
+}
+
 
 TLS::TlsMsg_E TLS::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout)
 {
@@ -119,11 +135,14 @@ TLS::TlsMsg_E TLS::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t time
     {
         ret = SSL_read(m_ssl, buffer, len);
         if(ret <= 0){
+             ret = Msg_Err_Read;
             *read = 0;
-            HandleSslError(ret);
+            if (!HandleSslError(ret) )
+                err = Msg_Success;
         }
         else {
             *read = (size_t)ret;
+            BLog("SSL_read() len = %lu, read = %lu, timeout = %u", len, *read, timeout);
         }
     }
     return err;
@@ -145,6 +164,7 @@ TLS::TlsMsg_E TLS::Write(uint8_t *buffer, size_t len, size_t *sent, uint32_t tim
         }
         else {
             *sent = (size_t)ret;
+            BLog("SSL_write() len = %lu, sent = %lu, timeout = %u", len, *sent, timeout);
         }
     }
     return err;
@@ -689,7 +709,7 @@ int TLS::Init()
             }
             sleep(1);  // TODO: Benoit Check this sleep, is usefull or not ?
         } while (m_want_connect);
-        
+
     }
     BTraceOut;
     m_tls_data->tls_connected = true;
