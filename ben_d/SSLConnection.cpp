@@ -46,7 +46,10 @@ int TLS::HandleSslError(int ret)
     {
         case SSL_ERROR_WANT_READ:
             {
-                //DBLog(DBLogLevel_SSL_RW, "READ"); // Too many print out
+                static unsigned count = 0;
+                if(!(count%512))
+                    DBLog(DBLogLevel_SSL_RW, "READ"); // Too many print out
+                count++;
                 ret = 0;
                 errno = EAGAIN;
             }
@@ -61,8 +64,8 @@ int TLS::HandleSslError(int ret)
             break;
         case SSL_ERROR_ZERO_RETURN:
             {
-        		DBLog(DBLogLevel_SSL_RW, "SSL_ERROR_ZERO_RETURN");
-		        PrintSslError(err);
+        		//DBLog(DBLogLevel_SSL_RW, "SSL_ERROR_ZERO_RETURN");
+		        //PrintSslError(err);
 		        errno = EPROTO;
             }
             break;
@@ -617,17 +620,7 @@ int TLS::InitSslCtx()
         }
         if (ret == Msg_Success)
         {
-            // TODO: Benoit Il faut prendre le TLSv1.2 ou 1.3
-            // pour le moment par défaut on prend "tlsv1.2"
-            if (!strcmp(m_tls_data->tls_version, "tlsv1.2"))
-            {
-                BLog("all0");
-                SSL_CTX_set_options(m_ssl_ctx, SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
-            }
-            else
-            {
-                BLog("Erreur pour la version de tlsv1.2, %s", m_tls_data->tls_version);
-            }
+            SSL_CTX_set_options(m_ssl_ctx, SSL_OP_NO_SSLv3 | SSL_OP_NO_TLSv1 | SSL_OP_NO_TLSv1_1);
 
             /* Disable compression */
             SSL_CTX_set_options(m_ssl_ctx, SSL_OP_NO_COMPRESSION);
