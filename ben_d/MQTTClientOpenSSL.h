@@ -58,6 +58,7 @@ class MQTTClientOpenSSL : public MQTTClient
         bool NetworkIsConnected();
 
         lwmqtt_err_t NetworkPeek(size_t*);
+        void Select();
 
         lwmqttReadWriteCallbackFunc mLwmqttReadWriteCallbackFunc;
         lwmqtt_err_t ReadWrite(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout, bool rdwr);

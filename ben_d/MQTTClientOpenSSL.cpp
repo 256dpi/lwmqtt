@@ -10,6 +10,7 @@
 
 #include <cstring>
 #include "config.h"
+#include <unistd.h>
 
 
 static lwmqtt_err_t lwqtt_read_callback_c_wrapper(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout)
@@ -152,6 +153,74 @@ lwmqtt_err_t MQTTClientOpenSSL::ConnectingToBroker(int *fd)
 }
 
 #include <sys/ioctl.h>
+#include <sys/select.h>
+#include <time.h>
+
+void PrintHex(char *data, size_t len)
+{
+    char * ptr = data;
+    /*
+    for (;len>8;len-=8,ptr=ptr+8)
+    {
+        printf("%02X %02X %02X %02X %02X %02X %02X %02X  #n", *(ptr+0),*(ptr+1),*(ptr+2),*(ptr+3),*(ptr+4),*(ptr+5),*(ptr+6),*(ptr+7) );
+    }*/
+    for (;len>0;len--,ptr++)
+    {
+        printf("%02X ", *ptr);
+    }
+    printf("\n");
+}
+
+void MQTTClientOpenSSL::Select()
+{
+	struct timespec local_timeout;
+
+	fd_set readfds, writefds;
+	int fdcount;
+    int sock = mSock.GetSocket();
+
+	FD_ZERO(&readfds);
+	FD_ZERO(&writefds);
+	if(sock != INVALID_SOCKET){
+		FD_SET(sock, &readfds);
+    }
+    // 100 ms
+    local_timeout.tv_nsec = 100 * 1000000;
+    local_timeout.tv_sec  = 0;
+    fdcount = pselect(sock+1, &readfds, &writefds, NULL, &local_timeout, NULL);
+    if(fdcount)
+    {
+        if(FD_ISSET(sock, &readfds))
+        {
+            size_t len;
+            uint8_t buf[1];
+            BLog("On a une donnees =============================== ");
+            Write(buf, 0, &len, 10);
+        }
+    }
+    else
+    {
+        BLog("On a un timeout =============================== fdcount = %d", fdcount);
+    }
+
+    /*
+        int iocAvail;
+    int rc = ioctl(mSock.GetSocket(), FIONREAD, &iocAvail);
+    if (rc < 0) {
+        BLog("LWMQTT_NETWORK_FAILED_READ");
+        return LWMQTT_NETWORK_FAILED_READ;
+    }
+
+    if( iocAvail >  0) {
+        char buf[256];
+        if (iocAvail > 256)
+            iocAvail = 256;
+        read(mSock.GetSocket(), buf, iocAvail);
+        BLog("On a avaiable = %d", iocAvail);
+        PrintHex(buf, iocAvail);
+    }
+    */
+}
 
 lwmqtt_err_t MQTTClientOpenSSL::NetworkPeek(size_t *available)
 {
@@ -170,18 +239,7 @@ lwmqtt_err_t MQTTClientOpenSSL::NetworkPeek(size_t *available)
     return LWMQTT_NETWORK_FAILED_READ;
 #endif
 #undef USE_PENDING
-    int iocAvail;
-    static int iocAvailLast = -1;
-    int rc = ioctl(mSock.GetSocket(), FIONREAD, &iocAvail);
-    if (rc < 0) {
-        BLog("LWMQTT_NETWORK_FAILED_READ");
-        return LWMQTT_NETWORK_FAILED_READ;
-    }
-
-    if( iocAvail != iocAvailLast ) {
-        BLog("On a avaiable = %d", iocAvail);
-        iocAvailLast = iocAvail;
-    }
+    Select();
     return LWMQTT_SUCCESS;
 
 }
@@ -201,7 +259,7 @@ lwmqtt_err_t MQTTClientOpenSSL::Read(uint8_t *buffer, size_t len, size_t *read, 
     size_t available = mTls.SSL_Pending();
     if(available > 0)
         GLINFO_MQTTCLIENT("MQTTClientOpenSSL:: return *available %lu", available);
-    GLINFO_MQTTCLIENT("MQTTClientOpenSSL::Read len = %lu, read = %lu, timeout = %u", len, *read, timeout);
+//    GLINFO_MQTTCLIENT("MQTTClientOpenSSL::Read len = %lu, read = %lu, timeout = %u", len, *read, timeout);
     retVal = mTls.Read(buffer, len, read, timeout);
     if (retVal == TLS::Msg_Success)
         return LWMQTT_SUCCESS;
