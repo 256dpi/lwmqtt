@@ -20,14 +20,14 @@ using std::vector;
     );
 */
 
-DaemonConfig daemonConf_App = {
-    /*mqttHost:*/ "",
+DaemonConfig daemonConf_Ap = {
+    /*mqttHost:*/ "iot.isb.arubanetworks.com",
     /*mqttHostPort:*/ 443,
     /*mqttHostCertValidation:*/ true,
-    /*deviceCert:*/ "",
-    /*deviceKey:*/ "",
-    /*caCert:*/ DEFAULT_CA_CERT_PATH,
-    /*onboardingCaCert:*/ DEFAULT_ONBOARDING_CA_CERT_PATH,
+    /*deviceCert:*/ "/data/CA/cert.pem",
+    /*deviceKey:*/ "/data/CA/key.pem",
+    /*caCert:*/ "/data/CA/AmazonRootCA.pem",
+    /*onboardingCaCert:*/ "/data/CA/smb_ca_certificate.pem",
     /*debug:*/ false,
     /*toStdout:*/ false,
     /*forceMqttConnStart:*/ false
@@ -53,21 +53,37 @@ DaemonConfig daemonConf_Mosq = {
     /*forceMqttConnStart:*/ false
 };
 
+DaemonConfig daemonConf_Test001 = {
+    /*mqttHost:*/ "192.168.2.34",
+    /*mqttHostPort:*/ 8883,
+    /*mqttHostCertValidation:*/ false,
+    /*deviceCert:*/ "./ca/client.crt.txt",
+    /*deviceKey:*/ "./ca/client.key",
+    /*caCert:*/  "/data/ca.crt.192.168.2.34.mosquitto",
+    /*onboardingCaCert:*/ "./ca/smb_ca_certificate.pem",
+    /*debug:*/ false,
+    /*toStdout:*/ false,
+    /*forceMqttConnStart:*/ false
+};
+
+
+
 int mainAruba(const int argc, char *argv[], char *env[])
 {
    ev::default_loop loop;
+   DaemonConfig *dem = &daemonConf_Test001;
     // Create the cloud connect daemon.
     std::unique_ptr<CloudConnect> app;
     try {
         app.reset(new CloudConnect(loop,
-                         daemonConf_Mosq.mqttHost,
-                         daemonConf_Mosq.mqttHostPort,
-                         daemonConf_Mosq.mqttHostCertValidation,
-                         daemonConf_Mosq.deviceCert,
-                         daemonConf_Mosq.deviceKey,
-                         daemonConf_Mosq.caCert,
-                         daemonConf_Mosq.onboardingCaCert,
-                         daemonConf_Mosq.forceMqttConnStart));
+                         dem->mqttHost,
+                         dem->mqttHostPort,
+                         dem->mqttHostCertValidation,
+                         dem->deviceCert,
+                         dem->deviceKey,
+                         dem->caCert,
+                         dem->onboardingCaCert,
+                         dem->forceMqttConnStart));
     }
     catch (const std::runtime_error& e) {
         GLERROR_DEFAULT("Failed to initialize CloudConnect: %s.", e.what());
