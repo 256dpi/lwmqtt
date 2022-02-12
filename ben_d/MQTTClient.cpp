@@ -678,7 +678,7 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
             return;
         }
     }
-
+/*
     // Keep connection alive.
     rc = lwmqtt_keep_alive(&mMqttClient, MQTT_COMMAND_TIMEOUT_MSEC);
     if (rc != LWMQTT_SUCCESS) {
@@ -687,10 +687,38 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
         TriggerDisconnect(rc);
         return;
     }
+*/    
     if (!(count++ % 40)) {
         PrintDebugVariable();
     }
+    #define COMMAND_TIMEOUT 5000
+    #define MESSAGE_TIMEOUT 1000
 
+    static lwmqtt_unix_timer_t timer3;
+    static bool timer3Init = false;
+    if (!timer3Init)
+    {
+        timer3Init = true;
+        lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
+        lwmqtt_subscribe_one(&mMqttClient, lwmqtt_string("hello"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+
+    }
+
+    // check if message is due
+    if (lwmqtt_unix_timer_get(&timer3) <= 0) {
+      // prepare message
+      lwmqtt_message_t msg = {LWMQTT_QOS0, false, (uint8_t *)("world"), 5};
+
+      // publish message
+      rc = lwmqtt_publish(&mMqttClient, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
+      if (rc != LWMQTT_SUCCESS) {
+        printf("failed lwmqtt_keep_alive: %d\n", rc);
+        exit(1);
+      }
+
+      // reset timer
+      lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
+    }
 }
  #if AP
 void MQTTClient::GSMTimerCallback(ev::timer &watcher, int revents)
