@@ -30,7 +30,7 @@ int main() {
   lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
 
   // connect to broker
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "broker.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "test.mosquitto.org", 1883);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_unix_network_connect: %d\n", err);
     exit(1);
