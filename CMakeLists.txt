@@ -69,6 +69,9 @@ set(TEST_FILES
         ben_d/main.cpp
         ben_d/mainAruba.cpp
         ben_d/MQTTClientOpenSSL.cpp
+        ben_d/net_mosq.c
+        ben_d/tls_mosq.c
+        ben_d/MQTTClientTLS.cpp
         )
 
 add_executable(ben ${TEST_FILES})

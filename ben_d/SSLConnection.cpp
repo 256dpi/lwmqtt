@@ -226,7 +226,7 @@ extern "C"
     /* This code is based heavily on the example provided in "Secure Programming
      * Cookbook for C and C++".
      */
-    int mosquitto__verify_certificate_hostname(X509 *cert, const char *hostname)
+    static int mosquitto__verify_certificate_hostname(X509 *cert, const char *hostname)
     {
         int i;
         char name[256];

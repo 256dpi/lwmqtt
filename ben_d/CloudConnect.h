@@ -7,20 +7,24 @@
 #if AP
 #include <gsm_schema.h>
 #include <gsm_apps.h>
-
 #include <aruba/libwebsockethelper/WebSocketServer.h>
 #endif // #if AP
-#define TEST_MBED
-#define TEST_OPENSSL
-#undef TEST_MBED
-//#undef TEST_OPENSSL
-#if defined(TEST_MBED)
-#include "MQTTClientMbed.h"
-#elif defined(TEST_OPENSSL)
-#include "MQTTClientOpenSSL.h"
-#else
-#include "MQTTClient1883.h"
-#endif // #ifdef TEST_MBED
+
+        #define TEST_MBED
+        #define TEST_OPENSSL
+        #define TEST_TLS
+        #undef TEST_MBED
+        #undef TEST_OPENSSL
+        //#undef TEST_TLS
+        #if defined(TEST_MBED)
+        #include "MQTTClientMbed.h"
+        #elif defined(TEST_OPENSSL)
+        #include "MQTTClientOpenSSL.h"
+        #elif defined(TEST_TLS)
+        #include "MQTTClientTLS.h"
+        #else
+        #include "MQTTClient1883.h"
+        #endif // #ifdef TEST_MBED
 
 #if AP
 #include "SyslogServer.h"
@@ -86,13 +90,19 @@ class CloudConnect {
         map<string, vector<int>> mWsClients;
 #endif // #if AP
         /** @brief MQTT client instance. */
-        #ifdef TEST_MBED
-        MQTTClientMbed mMQTTClient;
-        #elif defined(TEST_OPENSSL)
-        MQTTClientOpenSSL mMQTTClient;
-        #else // #ifdef TEST_OPEN
-        MQTTClient1883 mMQTTClient;
-        #endif //#ifdef TEST_MBED
+        #if 1
+                #ifdef TEST_MBED
+                MQTTClientMbed mMQTTClient;
+                #elif defined(TEST_OPENSSL)
+                MQTTClientOpenSSL mMQTTClient;
+                #elif defined(TEST_TLS)
+                MQTSClientTLS mMQTTClient;
+                #else // #ifdef TEST_OPEN
+                MQTTClient1883 mMQTTClient;
+                #endif //#ifdef TEST_MBED
+        #else
+                MQTSClientTLS mMQTTClient;
+        #endif 
 
 #if AP
         SyslogServer mSyslogServer;

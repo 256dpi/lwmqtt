@@ -406,6 +406,33 @@ ben_d/MQTTClientOpenSSL.cpp.s:
 	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClientOpenSSL.cpp.s
 .PHONY : ben_d/MQTTClientOpenSSL.cpp.s
 
+ben_d/MQTTClientTLS.o: ben_d/MQTTClientTLS.cpp.o
+
+.PHONY : ben_d/MQTTClientTLS.o
+
+# target to build an object file
+ben_d/MQTTClientTLS.cpp.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClientTLS.cpp.o
+.PHONY : ben_d/MQTTClientTLS.cpp.o
+
+ben_d/MQTTClientTLS.i: ben_d/MQTTClientTLS.cpp.i
+
+.PHONY : ben_d/MQTTClientTLS.i
+
+# target to preprocess a source file
+ben_d/MQTTClientTLS.cpp.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClientTLS.cpp.i
+.PHONY : ben_d/MQTTClientTLS.cpp.i
+
+ben_d/MQTTClientTLS.s: ben_d/MQTTClientTLS.cpp.s
+
+.PHONY : ben_d/MQTTClientTLS.s
+
+# target to generate assembly for a file
+ben_d/MQTTClientTLS.cpp.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/MQTTClientTLS.cpp.s
+.PHONY : ben_d/MQTTClientTLS.cpp.s
+
 ben_d/SSLConnection.o: ben_d/SSLConnection.cpp.o
 
 .PHONY : ben_d/SSLConnection.o
@@ -513,6 +540,60 @@ ben_d/mainAruba.s: ben_d/mainAruba.cpp.s
 ben_d/mainAruba.cpp.s:
 	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/mainAruba.cpp.s
 .PHONY : ben_d/mainAruba.cpp.s
+
+ben_d/net_mosq.o: ben_d/net_mosq.c.o
+
+.PHONY : ben_d/net_mosq.o
+
+# target to build an object file
+ben_d/net_mosq.c.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/net_mosq.c.o
+.PHONY : ben_d/net_mosq.c.o
+
+ben_d/net_mosq.i: ben_d/net_mosq.c.i
+
+.PHONY : ben_d/net_mosq.i
+
+# target to preprocess a source file
+ben_d/net_mosq.c.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/net_mosq.c.i
+.PHONY : ben_d/net_mosq.c.i
+
+ben_d/net_mosq.s: ben_d/net_mosq.c.s
+
+.PHONY : ben_d/net_mosq.s
+
+# target to generate assembly for a file
+ben_d/net_mosq.c.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/net_mosq.c.s
+.PHONY : ben_d/net_mosq.c.s
+
+ben_d/tls_mosq.o: ben_d/tls_mosq.c.o
+
+.PHONY : ben_d/tls_mosq.o
+
+# target to build an object file
+ben_d/tls_mosq.c.o:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/tls_mosq.c.o
+.PHONY : ben_d/tls_mosq.c.o
+
+ben_d/tls_mosq.i: ben_d/tls_mosq.c.i
+
+.PHONY : ben_d/tls_mosq.i
+
+# target to preprocess a source file
+ben_d/tls_mosq.c.i:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/tls_mosq.c.i
+.PHONY : ben_d/tls_mosq.c.i
+
+ben_d/tls_mosq.s: ben_d/tls_mosq.c.s
+
+.PHONY : ben_d/tls_mosq.s
+
+# target to generate assembly for a file
+ben_d/tls_mosq.c.s:
+	$(MAKE) -f CMakeFiles/ben.dir/build.make CMakeFiles/ben.dir/ben_d/tls_mosq.c.s
+.PHONY : ben_d/tls_mosq.c.s
 
 examples/async.o: examples/async.c.o
 
@@ -941,6 +1022,9 @@ help:
 	@echo "... ben_d/MQTTClientOpenSSL.o"
 	@echo "... ben_d/MQTTClientOpenSSL.i"
 	@echo "... ben_d/MQTTClientOpenSSL.s"
+	@echo "... ben_d/MQTTClientTLS.o"
+	@echo "... ben_d/MQTTClientTLS.i"
+	@echo "... ben_d/MQTTClientTLS.s"
 	@echo "... ben_d/SSLConnection.o"
 	@echo "... ben_d/SSLConnection.i"
 	@echo "... ben_d/SSLConnection.s"
@@ -953,6 +1037,12 @@ help:
 	@echo "... ben_d/mainAruba.o"
 	@echo "... ben_d/mainAruba.i"
 	@echo "... ben_d/mainAruba.s"
+	@echo "... ben_d/net_mosq.o"
+	@echo "... ben_d/net_mosq.i"
+	@echo "... ben_d/net_mosq.s"
+	@echo "... ben_d/tls_mosq.o"
+	@echo "... ben_d/tls_mosq.i"
+	@echo "... ben_d/tls_mosq.s"
 	@echo "... examples/async.o"
 	@echo "... examples/async.i"
 	@echo "... examples/async.s"

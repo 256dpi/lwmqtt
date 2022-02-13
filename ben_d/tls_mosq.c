@@ -1,27 +1,43 @@
+/*
+Copyright (c) 2013-2020 Roger Light <roger@atchoo.org>
+
+All rights reserved. This program and the accompanying materials
+are made available under the terms of the Eclipse Public License 2.0
+and Eclipse Distribution License v1.0 which accompany this distribution.
+
+The Eclipse Public License is available at
+   https://www.eclipse.org/legal/epl-2.0/
+and the Eclipse Distribution License is available at
+  http://www.eclipse.org/org/documents/edl-v10.php.
+
+SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+
+Contributors:
+   Roger Light - initial implementation and documentation.
+*/
+
+#include "config.h"
 
 
+#ifdef WIN32
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
+#else
 #  include <arpa/inet.h>
 #  include <sys/socket.h>
 #  include <strings.h>
+#endif
 
 #include <string.h>
 #include <openssl/conf.h>
 #include <openssl/x509v3.h>
 #include <openssl/ssl.h>
-#include <stdbool.h>
-
-/***
- * Benoit 
- * 
- *  On fait quoi avec ça
-#include "mosquitto_internal.h"
-#include "logging_mosq.h"
-#include "tls_mosq.h"
-
-
-**/
 
 #include "mosq.h"
+
+//#include "mosquitto_internal.h"
+//#include "logging_mosq.h"
+#include "tls_mosq.h"
 
 extern int tls_ex_index_mosq;
 
@@ -32,12 +48,13 @@ int mosquitto__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx)
 	struct mosquitto *mosq;
 	SSL *ssl;
 	X509 *cert;
-
+	BTraceIn
 	/* Always reject if preverify_ok has failed. */
 	if(!preverify_ok) return 0;
 
 	ssl = X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
 	mosq = SSL_get_ex_data(ssl, tls_ex_index_mosq);
+	BLog("tls_ex_index_mosq = %d", tls_ex_index_mosq);
 	if(!mosq) return 0;
 
 	if(mosq->tls_insecure == false
@@ -45,6 +62,7 @@ int mosquitto__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx)
 			&& mosq->port != 0 /* no hostname checking for unix sockets */
 #endif
 			){
+				BTraceIn
 		if(X509_STORE_CTX_get_error_depth(ctx) == 0){
 			/* FIXME - use X509_check_host() etc. for sufficiently new openssl (>=1.1.x) */
 			cert = X509_STORE_CTX_get_current_cert(ctx);
@@ -110,8 +128,13 @@ int mosquitto__verify_certificate_hostname(X509 *cert, const char *hostname)
 	int ipv6_ok;
 	int ipv4_ok;
 
+#ifdef WIN32
+	ipv6_ok = InetPton(AF_INET6, hostname, &ipv6_addr);
+	ipv4_ok = InetPton(AF_INET, hostname, &ipv4_addr);
+#else
 	ipv6_ok = inet_pton(AF_INET6, hostname, &ipv6_addr);
 	ipv4_ok = inet_pton(AF_INET, hostname, &ipv4_addr);
+#endif
 
 	san = X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
 	if(san){

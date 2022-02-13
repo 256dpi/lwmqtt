@@ -3,6 +3,10 @@
 
 #include <openssl/ssl.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef int mosq_sock_t;
 
 struct mosquitto {
@@ -11,17 +15,12 @@ struct mosquitto {
 	SSL *ssl;
 	SSL_CTX *ssl_ctx;
 	SSL_CTX *user_ssl_ctx;
-	char *tls_cafile;
-	char *tls_capath;
-	char *tls_certfile;
-	char *tls_keyfile;
+	char tls_cafile[256];
+	char tls_capath[256];
+	char tls_certfile[256];
+	char tls_keyfile[256];
 	int (*tls_pw_callback)(char *buf, int size, int rwflag, void *userdata);
 	char *tls_version;
-	char *tls_ciphers;
-	char *tls_psk;
-	char *tls_psk_identity;
-	char *tls_engine;
-	char *tls_engine_kpass_sha1;
 	char *tls_alpn;
 	int tls_cert_reqs;
 	bool tls_insecure;
@@ -29,13 +28,17 @@ struct mosquitto {
 	bool tls_ocsp_required;
 	bool tls_use_os_certs;
 
-	char *host;
+	char host[256];
 	uint16_t port;
 	char *bind_address;
 	uint8_t max_qos;
 	uint8_t retain_available;
 	bool tcp_nodelay;
+	
+	bool want_connect;
+	bool want_write;
 
+	bool is_connected;
 };
 
 /* Error values */
@@ -88,8 +91,6 @@ enum mosq_err_t {
 #define INVALID_SOCKET -1
 #endif
 
-// Benoit ces lignes viennent de tls_mosh.h  >>>>
-#  define SSL_DATA_PENDING(A) ((A)->ssl && SSL_pending((A)->ssl))
 
 #include <openssl/ssl.h>
 #include <openssl/engine.h>
@@ -97,5 +98,10 @@ enum mosq_err_t {
 //int mosquitto__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx);
 //int mosquitto__verify_certificate_hostname(X509 *cert, const char *hostname);
 // Benoit ces lignes viennent de tls_mosh.h <<<<
+
+#ifdef __cplusplus
+}// extern "C" {
+#endif
+
 
 #endif // #ifndef __mosq_h__

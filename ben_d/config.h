@@ -2,6 +2,9 @@
 #define __config_h__
 
 #if 1
+
+#include <stdbool.h>
+
 // Donne une erreur dans si on utilise la première ligne, la deuxième ligne donne un "Warning", la troisième semble parfaite
 //#define BLog(...) do {printf("Benoit:%s(%d): ", __FILE__, __LINE__);printf(" " ##__VA_ARGS__);printf("\n");} while(0)
 //#define BLog(...) do {printf("Benoit:%s(%d): ", __FILE__, __LINE__);printf(" " __VA_OPT__(,) __VA_ARGS__);printf("\n");} while(0)
@@ -46,6 +49,7 @@ enum DBLogLevel {
 
 #endif // #if 0 
 
+#ifdef __cplusplus
 #include <string>
 
 #define DEFAULT_CA_CERT_PATH "/aruba/conf/AmazonRootCA.pem"
@@ -69,5 +73,6 @@ struct DaemonConfig {
     bool forceMqttConnStart; /**< whether or not MQTT connection should be started immediately */
 };
 
+#endif // #ifdef __cplusplus
 
 #endif // #ifndef __config_h__
