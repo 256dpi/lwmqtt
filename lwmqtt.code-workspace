@@ -2,6 +2,12 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "../../../../vieux_simul/mbedtls"
+		},
+		{
+			"path": "../../../../../work/PuttyLog"
 		}
 	],
 	"settings": {
@@ -64,7 +70,8 @@
 			"streambuf": "cpp",
 			"thread": "cpp",
 			"cinttypes": "cpp",
-			"typeinfo": "cpp"
+			"typeinfo": "cpp",
+			"config.h": "c"
 		}
 	}
 }
