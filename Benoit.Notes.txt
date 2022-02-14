@@ -4,6 +4,7 @@
 1.4 Fonctionne encore avec maisSSL, modif importante pour le AP
 1.5 Fonctionne encore avec maisSSL et avec CloudConnect
 1.6 Trouver une solution, il faut lire le raw socket et le SSL_Peek ou Pending.
+1.7 Mettre a jour LWMQTTClientOpenSSL
 
 2.1 Commits
 
@@ -52,7 +53,6 @@ ne sais pas pourquoi.
 
 mainSSL fonctionne encore.
 
-
 /******************************************************************************
     1.6 Trouver une solution, il faut lire le raw socket et le SSL_Peek ou Pending
  ******************************************************************************/
@@ -62,6 +62,10 @@ si la fonction retourne des octets à lire (un ou plusieurs).
 Ensuite se fier au SSL_pending() pour lire le bon nombre d'octets.
 Le tout fait avec la lib en C basé sur mosquitto.
 
+/******************************************************************************
+    1.7 Mettre a jour LWMQTTClientOpenSSL
+ ******************************************************************************/
+Tester avec AP, ça semble fonctionner.
 
 /******************************************************************************
     2.1 Commits
@@ -108,3 +112,14 @@ Precedes:
     
     Probleme avec le Fetching cloud session sequence... il prend du temps je
     ne sais pas pourquoi.
+
+Ref 1.7
+Author: Benoit Massé <ben.masse@abcdn.qc.ca>  2022-02-13 19:09:22
+Committer: Benoit Massé <ben.masse@abcdn.qc.ca>  2022-02-13 19:09:22
+Parent: e1941db1a0b43d17b60766228a4dc409b2bf0196 (Trouver la solution.)
+Child:  fbf9f4d35966370e5b91ba133655edffe703046c (Supprime ssl_network.c pas necessaire)
+Branch: b/cloudconnect_openssl_ap
+Follows: v0.6.4
+Precedes: 
+
+    Solution implante dans le LWMQTTClientOpenSSL
