@@ -2,6 +2,8 @@
 1.2 Fonctionne encore, avant des changement pour le APs
 1.3 Fonctionne encore, avec mainSSL, mais pas avec la version AP
 1.4 Fonctionne encore avec maisSSL, modif importante pour le AP
+1.5 Fonctionne encore avec maisSSL et avec CloudConnect
+1.6 Trouver une solution, il faut lire le raw socket et le SSL_Peek ou Pending.
 
 2.1 Commits
 
@@ -49,6 +51,17 @@ Probleme avec le Fetching cloud session sequence... il prend du temps je
 ne sais pas pourquoi.
 
 mainSSL fonctionne encore.
+
+
+/******************************************************************************
+    1.6 Trouver une solution, il faut lire le raw socket et le SSL_Peek ou Pending
+ ******************************************************************************/
+J'ai enfin trouvé une solution, mais reste encore un peu nébuleux.
+Il faut lire avec SSL_pending() si rien valider avec FIONREAD (ioctl) et forcé une lecture
+si la fonction retourne des octets à lire (un ou plusieurs).
+Ensuite se fier au SSL_pending() pour lire le bon nombre d'octets.
+Le tout fait avec la lib en C basé sur mosquitto.
+
 
 /******************************************************************************
     2.1 Commits
