@@ -325,7 +325,7 @@ MQTTClient::MQTTClient(string mqttHost,
 
 
 
-    GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
+    GLINFO_MQTTCLIENT("Benoit ------ %s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
 
 }
 
@@ -346,6 +346,7 @@ MQTTClient::~MQTTClient()
 void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
 {
     MQTTConnectionInfo::State origState = mConnectionInfo.mState.mState;
+    GLINFO_MQTTCLIENT("MQTTClient ConnectionSMTimerCallback +++-------------------------------");
 
     /*
      * INACTIVE
@@ -678,7 +679,7 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
             return;
         }
     }
-/*
+
     // Keep connection alive.
     rc = lwmqtt_keep_alive(&mMqttClient, MQTT_COMMAND_TIMEOUT_MSEC);
     if (rc != LWMQTT_SUCCESS) {
@@ -687,10 +688,11 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
         TriggerDisconnect(rc);
         return;
     }
-*/    
+    
     if (!(count++ % 40)) {
         PrintDebugVariable();
     }
+    #if 1
     #define COMMAND_TIMEOUT 5000
     #define MESSAGE_TIMEOUT 1000
 
@@ -719,6 +721,7 @@ void MQTTClient::NetworkTimerCallback(ev::timer &watcher, int revents)
       // reset timer
       lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
     }
+    #endif 
 }
  #if AP
 void MQTTClient::GSMTimerCallback(ev::timer &watcher, int revents)

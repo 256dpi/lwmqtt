@@ -101,7 +101,49 @@ int TLS::HandleSslError(int ret)
 	return ret;
 }
 
+
+#include <unistd.h>
+ #include <sys/ioctl.h>
+
+TLS::TlsMsg_E  GetFionRead(int sock, size_t *available)
+{
+    int iocAvail;
+    int rc = ioctl(sock, FIONREAD, &iocAvail);
+    if (rc < 0) {
+		*available = 0;
+        BLog("LWMQTT_NETWORK_FAILED_READ");
+        return TLS::Msg_Err_Peek;
+    }
+	*available = iocAvail;
+
+    return TLS::Msg_Success;
+}
+
+TLS::TlsMsg_E lwmqtt_network_SSL_pending(SSL *ssl, size_t *available)
+{
+	ssize_t byteToRead;
+	byteToRead = SSL_pending(ssl);
+	if (byteToRead < 0)
+	{
+		*available = 0;
+		return TLS::Msg_Err_Peek;
+	}
+	*available = byteToRead;
+	return TLS::Msg_Success;
+}
+
 TLS::TlsMsg_E TLS::Peek(size_t *available) {
+	TlsMsg_E rc = Msg_Success;
+	rc = lwmqtt_network_SSL_pending(m_ssl, available);
+	if (*available > 0)
+		return rc;
+	rc = GetFionRead(m_tls_data->socket, available);
+	if( rc == Msg_Success) {
+		if(*available)
+			*available = 1;
+	}
+	return rc;
+#if 0
     BTraceIn
     TlsMsg_E err = Msg_Success;
     ssize_t ret;
@@ -121,6 +163,7 @@ TLS::TlsMsg_E TLS::Peek(size_t *available) {
         }
     }
     return err;
+#endif    
 }
 
 int TLS::SSL_Pending() {

@@ -221,7 +221,7 @@ void MQTTClientOpenSSL::Select()
     }
     */
 }
-
+#if 0
 lwmqtt_err_t MQTTClientOpenSSL::NetworkPeek(size_t *available)
 {
 #define USE_PENDING
@@ -243,7 +243,16 @@ lwmqtt_err_t MQTTClientOpenSSL::NetworkPeek(size_t *available)
     return LWMQTT_SUCCESS;
 
 }
-
+#else
+lwmqtt_err_t MQTTClientOpenSSL::NetworkPeek(size_t *available)
+{
+    if (mTls.Peek(available) == TLS::Msg_Success)
+    {
+        return LWMQTT_SUCCESS;
+    }
+    return LWMQTT_NETWORK_FAILED_READ;
+}
+#endif
 lwmqtt_err_t MQTTClientOpenSSL::ReadWrite(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout, bool rdwr )
 {
     //GLINFO_MQTTCLIENT("MQTTClientOpenSSL::ReadWrite +++---------------");
