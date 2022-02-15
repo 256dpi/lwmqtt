@@ -1,16 +1,8 @@
 #include "MQTTClient.h"
 #include "MQTTClientOpenSSL.h"
 
-#include <openssl/ssl.h>
-#include <openssl/conf.h>
-#include <openssl/engine.h>
-#include <openssl/err.h>
-#include <openssl/ui.h>
-#include <openssl/x509v3.h>
+#include <aruba/util/grouplog_cloudconnect.h>
 
-#include <cstring>
-#include "config.h"
-#include <unistd.h>
 
 
 static lwmqtt_err_t lwqtt_read_callback_c_wrapper(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout)
@@ -52,7 +44,7 @@ MQTTClientOpenSSL::MQTTClientOpenSSL(string mqttHost,
                   mTls(&mTlsData)
 
 {
-    GLINFO_MQTTCLIENT("MQTTClientOpenSSL +++-------------------------------");
+    GLINFO_MQTTCLIENT("MQTTClientOpenSSL");
     GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
 
     mLwmqttReadWriteCallbackFunc = std::bind(&MQTTClientOpenSSL::ReadWrite,
@@ -75,16 +67,15 @@ MQTTClientOpenSSL::MQTTClientOpenSSL(string mqttHost,
 
 void MQTTClientOpenSSL::NetworkDisconnect()
 {
-    //lwmqtt_mbedtls_network_disconnect(&mMqttNetworkConnection);
     mTls.Close();
     mSock.Close();
-    GLINFO_MQTTCLIENT("NetworkDisconnect +++-------------------------------");
+    GLINFO_MQTTCLIENT("NetworkDisconnect");
 }
 
 
 bool MQTTClientOpenSSL::NetworkIsConnected()
 {
-    GLINFO_MQTTCLIENT("NetworkIsConnected +++-------------------------------");
+    GLINFO_MQTTCLIENT("NetworkIsConnected");
     return mTlsData.tls_connected;
 }
 
@@ -99,6 +90,7 @@ void MQTTClientOpenSSL::NetworkInit(string mqttHost,
                    string deviceKeyPath,
                    string caCertPath)
 {
+    GLINFO_MQTTCLIENT("NetworkInit");
     // Initialize the MQTT network connection info.
     strncpy(mTlsData.host, mqttHost.c_str(), sizeof(mTlsData.host));
     mTlsData.port = mqttHostPort;
@@ -119,36 +111,41 @@ void MQTTClientOpenSSL::NetworkInit(string mqttHost,
 
     // Configure the MQTT client.
     lwmqtt_set_network(&mMqttClient, &mLwmqttReadWriteCallbackFunc, lwqtt_read_callback_c_wrapper, lwqtt_write_callback_c_wrapper);
-    GLINFO_MQTTCLIENT("NetworkInit +++-------------------------------");
 }
 
 lwmqtt_err_t MQTTClientOpenSSL::ConnectingToBroker(int *fd)
 {
-    lwmqtt_err_t retVal;
+    lwmqtt_err_t retVal = LWMQTT_NETWORK_FAILED_CONNECT;
     int retConnect;
 
     mSock.Init(mTlsData.host, mTlsData.port);
     retConnect = mSock.Connect();
-    if (retConnect == 0)
-    {
-        BLog("Socket connected");
+    if (retConnect == 0) {
+        GLINFO_MQTTCLIENT("Socket connected");
     }
 
-    if (mSock.IsConnected())
-    {
+    if (mSock.IsConnected()) {
         retVal = LWMQTT_SUCCESS;
         mTlsData.socket = *fd = mSock.GetSocket();
+        if (mTls.Init() == TLS::Msg_Success) {
+            GLINFO_MQTTCLIENT("TLS Socket connected");
+            retVal = LWMQTT_SUCCESS;
+        }
+        else {
+            GLINFO_MQTTCLIENT("TLS Socket connection failed");
+            retVal = LWMQTT_NETWORK_FAILED_CONNECT;
+        }
     }
-    else
-    {
+    else {
+        GLINFO_MQTTCLIENT("Error Socket connection failed");
         retVal = LWMQTT_NETWORK_FAILED_CONNECT;
+    }
+
+    if( retVal != LWMQTT_SUCCESS) {
+        mSock.Close();
+        mTls.Close();
         mTlsData.socket = *fd = INVALID_SOCKET;
-    }
-
-    if (mTls.Init() != TLS::Msg_Success) {
-        retVal = LWMQTT_NETWORK_FAILED_CONNECT;
-    }
-
+   }
     return retVal;
 }
 

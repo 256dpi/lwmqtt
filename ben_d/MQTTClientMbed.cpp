@@ -1,6 +1,4 @@
 #include "MQTTClientMbed.h"
-#include "lwmqtt_mbedtls_network.h"
-#include "lwmqtt_unix_timer.h"
 #include <aruba/util/grouplog_cloudconnect.h>
 
 
@@ -25,9 +23,7 @@ MQTTClientMbed::MQTTClientMbed(string mqttHost,
                  onDisconnectCallback,
                  onMessageCallback)
 {
-    GLINFO_MQTTCLIENT("MQTTClientMbed +++-------------------------------");
     GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
-    GLINFO_MQTTCLIENT("MQTTClientMbed +++-------------------------------");
 
     NetworkInit(mqttHost, mqttHostPort, validateMqttHostCert, deviceCertPath, deviceKeyPath, caCertPath);
 
@@ -39,13 +35,13 @@ MQTTClientMbed::MQTTClientMbed(string mqttHost,
 void MQTTClientMbed::NetworkDisconnect()
 {
     lwmqtt_mbedtls_network_disconnect(&mMqttNetworkConnection);
-    GLINFO_MQTTCLIENT("NetworkDisconnect +++-------------------------------");
+    GLINFO_MQTTCLIENT("NetworkDisconnect");
 }
 
 
 bool MQTTClientMbed::NetworkIsConnected()
 {
-    GLINFO_MQTTCLIENT("NetworkIsConnected +++-------------------------------");
+    GLINFO_MQTTCLIENT("NetworkIsConnected");
     return mMqttNetworkConnection.is_connected;
 }
 
@@ -56,7 +52,7 @@ void MQTTClientMbed::NetworkInit(string mqttHost,
                    string deviceKeyPath,
                    string caCertPath)
 {
-    GLINFO_MQTTCLIENT("NetworkInit Start +++-------------------------------");
+    GLINFO_MQTTCLIENT("NetworkInit");
     // Initialize the MQTT network connection info.
     lwmqtt_mbedtls_network_t *network = &mMqttNetworkConnection;
     memset(network, 0, sizeof(*network));
@@ -75,14 +71,13 @@ void MQTTClientMbed::NetworkInit(string mqttHost,
 
     // Configure the MQTT client.
     lwmqtt_set_network(&mMqttClient, network, lwmqtt_mbedtls_network_read, lwmqtt_mbedtls_network_write);
-    GLINFO_MQTTCLIENT("NetworkInit End +++-------------------------------");
 }
 
 lwmqtt_err_t MQTTClientMbed::ConnectingToBroker(int *fd)
 {
+    GLINFO_MQTTCLIENT("ConnectingToBroker");
     lwmqtt_err_t rc = lwmqtt_mbedtls_network_connect(&mMqttNetworkConnection, mMqttNetworkConnection.endpoint, mMqttNetworkConnection.endpoint_port);
     *fd = mMqttNetworkConnection.server_fd.fd;
-    GLINFO_MQTTCLIENT("ConnectingToBroker +++-------------------------------");
     return rc;
 }
 
@@ -92,7 +87,6 @@ lwmqtt_err_t MQTTClientMbed::NetworkPeek(size_t *available)
     lwmqtt_err_t rc;
 
     rc = lwmqtt_mbedtls_network_peek(&mMqttNetworkConnection, available);
-    GLINFO_MQTTCLIENT("lwmqtt_mbedtls_network_peek return error code %d, and available %u", rc, *available);
     return rc;
 }
 

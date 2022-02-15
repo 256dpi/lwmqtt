@@ -1,4 +1,3 @@
-#include "config.h"
 #include "Socket.h"
 #include "SSLConnection.h"
 
@@ -18,21 +17,26 @@
 #include <openssl/x509v3.h>
 
 #include <unistd.h>
+#include <sys/ioctl.h>
 
+#if AP
+#include <aruba/util/grouplog_cloudconnect.h>
+#else
+#include "config.h"
+#endif
 
 void TLS::PrintSslError(int e1)
 {
-    DBTraceIn;
 	char ebuf[256];
 	unsigned long e;
 	int num = 0;
     if(e1 != 0)
-		DBLog(DBLogLevel_INFO, "OpenSSL (e1) Error[%d]: %s", num, ERR_error_string(e1, ebuf));
+		GLERROR_LWMQTT("OpenSSL (e1) Error[%d]: %s", num, ERR_error_string(e1, ebuf));
 
 
 	e = ERR_get_error();
 	while(e){
-		DBLog(DBLogLevel_INFO, "OpenSSL Error[%d]: %s", num, ERR_error_string(e, ebuf));
+		GLERROR_LWMQTT("OpenSSL Error[%d]: %s", num, ERR_error_string(e, ebuf));
 		e = ERR_get_error();
 		num++;
 	}
@@ -64,8 +68,8 @@ int TLS::HandleSslError(int ret)
             break;
         case SSL_ERROR_ZERO_RETURN:
             {
-        		//DBLog(DBLogLevel_SSL_RW, "SSL_ERROR_ZERO_RETURN");
-		        //PrintSslError(err);
+        		GLERROR_LWMQTT("SSL_ERROR_ZERO_RETURN");
+		        PrintSslError(err);
 		        errno = EPROTO;
             }
             break;
@@ -73,16 +77,15 @@ int TLS::HandleSslError(int ret)
             {
                 long val;
                 val = SSL_CTX_sess_get_cache_size(m_ssl_ctx);
-        		DBLog(DBLogLevel_SSL_RW, "CACHE SIZE = %ld", val);
+        		GLERROR_LWMQTT("CACHE SIZE = %ld", val);
 		        PrintSslError(err);
 		        errno = EPROTO;
             }
             break;
 
-		//if (err == SSL_ERROR_SYSCALL) {
         case SSL_ERROR_SYSCALL:
             {
-                DBLog(DBLogLevel_SSL_RW, "SSL_ERROR_SYSCALL, set m_want_connect");
+        		GLERROR_LWMQTT("SSL_ERROR_SYSCALL, set m_want_connect");
 		        PrintSslError(err);
                 m_want_connect = true;
                 ret = 0;
@@ -90,7 +93,7 @@ int TLS::HandleSslError(int ret)
             break;
     	default:
             {
-        		DBLog(DBLogLevel_SSL_RW, "ELSE. err = %d", err);
+        		GLERROR_LWMQTT("Unkown. err = %d", err);
 		        PrintSslError(err);
 		        errno = EPROTO;
             }
@@ -102,8 +105,6 @@ int TLS::HandleSslError(int ret)
 }
 
 
-#include <unistd.h>
- #include <sys/ioctl.h>
 
 TLS::TlsMsg_E  GetFionRead(int sock, size_t *available)
 {
@@ -111,7 +112,7 @@ TLS::TlsMsg_E  GetFionRead(int sock, size_t *available)
     int rc = ioctl(sock, FIONREAD, &iocAvail);
     if (rc < 0) {
 		*available = 0;
-        BLog("LWMQTT_NETWORK_FAILED_READ");
+        GLERROR_LWMQTT("LWMQTT_NETWORK_FAILED_READ");
         return TLS::Msg_Err_Peek;
     }
 	*available = iocAvail;
@@ -143,37 +144,10 @@ TLS::TlsMsg_E TLS::Peek(size_t *available) {
 			*available = 1;
 	}
 	return rc;
-#if 0
-    BTraceIn
-    TlsMsg_E err = Msg_Success;
-    ssize_t ret;
-	ERR_clear_error();
-    if(m_ssl)
-    {
-        ret = SSL_peek(m_ssl, NULL, 0);
-        //BLog("SSL_peek() = %ld", ret);
-        if(ret < 0){
-            err = Msg_Err_Peek;
-            *available = 0;
-            if (!HandleSslError(ret) )
-                err = Msg_Success;
-        }
-        else {
-            *available = (size_t)ret;
-        }
-    }
-    return err;
-#endif    
 }
-
-int TLS::SSL_Pending() {
-    return SSL_pending(m_ssl);
-}
-
 
 TLS::TlsMsg_E TLS::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout)
 {
-//    BTraceIn
     TlsMsg_E err = Msg_Success;
     ssize_t ret;
 	ERR_clear_error();
@@ -188,7 +162,7 @@ TLS::TlsMsg_E TLS::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t time
         }
         else {
             *read = (size_t)ret;
-            BLog("SSL_read() len = %lu, read = %lu, timeout = %u", len, *read, timeout);
+            GLERROR_LWMQTT("SSL_read() len = %u, read = %u, timeout = %u", len, *read, timeout);
         }
     }
     return err;
@@ -196,7 +170,6 @@ TLS::TlsMsg_E TLS::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t time
 
 TLS::TlsMsg_E TLS::Write(uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout)
 {
-//    BTraceIn
     TlsMsg_E err = Msg_Success;
     ssize_t ret;
 	ERR_clear_error();
@@ -210,7 +183,7 @@ TLS::TlsMsg_E TLS::Write(uint8_t *buffer, size_t len, size_t *sent, uint32_t tim
         }
         else {
             *sent = (size_t)ret;
-            BLog("SSL_write() len = %lu, sent = %lu, timeout = %u", len, *sent, timeout);
+            GLERROR_LWMQTT("SSL_write() len = %u, sent = %u, timeout = %u", len, *sent, timeout);
         }
     }
     return err;
@@ -402,35 +375,6 @@ extern "C"
     }
 }
 
-extern "C"
-{
-    /* Functions taken from OpenSSL s_server/s_client */
-    static int ui_open(UI *ui)
-    {
-        BLog("___");
-        return UI_method_get_opener(UI_OpenSSL())(ui);
-    }
-
-    static int ui_read(UI *ui, UI_STRING *uis)
-    {
-        BLog("___");
-        return UI_method_get_reader(UI_OpenSSL())(ui, uis);
-    }
-
-    static int ui_write(UI *ui, UI_STRING *uis)
-    {
-        BLog("___");
-        return UI_method_get_writer(UI_OpenSSL())(ui, uis);
-    }
-
-    static int ui_close(UI *ui)
-    {
-        BLog("___");
-        return UI_method_get_closer(UI_OpenSSL())(ui);
-    }
-
-} // extern "C" {
-
 TLS::TLS(TlsData_S *data)
 {
     m_initialized = false;
@@ -450,24 +394,13 @@ void TLS::Close()
     m_ssl_ctx = nullptr;
 }
 
-void TLS::SetupUiMethod(void)
-{
-    m_ui_method = UI_create_method("OpenSSL application user interface");
-    UI_method_set_opener(m_ui_method, ui_open);
-    UI_method_set_reader(m_ui_method, ui_read);
-    UI_method_set_writer(m_ui_method, ui_write);
-    UI_method_set_closer(m_ui_method, ui_close);
-}
-
 void TLS::InitTlsCryptoVersion(void)
 {
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-    BLog("OUI OPENSSL_VERSION_NUMBER < 0x10100000L");
     SSL_load_error_strings();
     SSL_library_init();
     OpenSSL_add_all_algorithms();
 #else
-    BLog("NON OPENSSL_VERSION_NUMBER < 0x10100000L");
     OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS | OPENSSL_INIT_ADD_ALL_DIGESTS | OPENSSL_INIT_LOAD_CONFIG, NULL);
 #endif
 }
@@ -483,13 +416,12 @@ void TLS::SetOpensslExIndex()
 
 void TLS::InitTlsCrypto(void)
 {
-    BTraceIn if (IsInitialized()) return;
+    if (IsInitialized())
+        return;
 
     InitTlsCryptoVersion();
-    SetupUiMethod();
     SetOpensslExIndex();
     SetInitialized();
-    BTraceOut
 }
 
 void TLS::PrintTlsError(void)
@@ -733,7 +665,6 @@ int TLS::SslConnect()
 int TLS::Init()
 {
     BIO *bio;
-    BTraceIn;
 
     int rc = InitSslCtx();
     if (rc)
@@ -784,124 +715,9 @@ int TLS::Init()
             }
             sleep(1);  // TODO: Benoit Check this sleep, is usefull or not ?
         } while (m_want_connect);
-
+        
     }
-    BTraceOut;
     m_tls_data->tls_connected = true;
     return Msg_Success;
 }
-
-#ifdef WITH_TLS
-static int net__handle_ssl(struct mosquitto* mosq, int ret)
-{
-	int err;
-	BTraceIn
-	err = SSL_get_error(mosq->ssl, ret);
-	if (err == SSL_ERROR_WANT_READ) {
-		BLog("READ");
-		ret = -1;
-		errno = EAGAIN;
-	}
-	else if (err == SSL_ERROR_WANT_WRITE) {
-		BLog("WRITE");
-		ret = -1;
-		mosq->want_write = true;
-		errno = EAGAIN;
-	}
-	else {
-		BLog("ELSE");
-		net__print_ssl_error(mosq);
-		errno = EPROTO;
-	}
-	ERR_clear_error();
-
-	return ret;
-}
-
-ssize_t net__read(struct mosquitto *mosq, void *buf, size_t count)
-{
-	BTraceIn
-	int ret;
-	assert(mosq);
-	errno = 0;
-	if(mosq->ssl){
-		ret = SSL_read(mosq->ssl, buf, (int)count);
-		if(ret <= 0){
-			ret = net__handle_ssl(mosq, ret);
-		}
-		return (ssize_t )ret;
-	}else{
-		/* Call normal read/recv */
-		return read(mosq->sock, buf, count);
-	}
-}
-
-ssize_t net__write(struct mosquitto *mosq, const void *buf, size_t count)
-{
-	int ret;
-	assert(mosq);
-	BTraceIn
-	errno = 0;
-	if(mosq->ssl){
-
-		mosq->want_write = false;
-		ret = SSL_write(mosq->ssl, buf, (int)count);
-		if(ret < 0){
-
-			ret = net__handle_ssl(mosq, ret);
-		}
-		return (ssize_t )ret;
-	}else{
-		/* Call normal write/send */
-		return write(mosq->sock, buf, count);
-	}
-}
-
-
-int net__socket_nonblock(mosq_sock_t *sock)
-{
-	int opt;
-	/* Set non-blocking */
-	BTraceIn
-	opt = fcntl(*sock, F_GETFL, 0);
-	if(opt == -1){
-		COMPAT_CLOSE(*sock);
-		*sock = INVALID_SOCKET;
-		return MOSQ_ERR_ERRNO;
-	}
-	if(fcntl(*sock, F_SETFL, opt | O_NONBLOCK) == -1){
-		/* If either fcntl fails, don't want to allow this client to connect. */
-		COMPAT_CLOSE(*sock);
-		*sock = INVALID_SOCKET;
-		return MOSQ_ERR_ERRNO;
-	}
-	return MOSQ_ERR_SUCCESS;
-}
-
-
-int net__socketpair(mosq_sock_t *pairR, mosq_sock_t *pairW)
-{
-	BTraceIn
-	int sv[2];
-
-	*pairR = INVALID_SOCKET;
-	*pairW = INVALID_SOCKET;
-
-	if(socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1){
-		return MOSQ_ERR_ERRNO;
-	}
-	if(net__socket_nonblock(&sv[0])){
-		COMPAT_CLOSE(sv[1]);
-		return MOSQ_ERR_ERRNO;
-	}
-	if(net__socket_nonblock(&sv[1])){
-		COMPAT_CLOSE(sv[0]);
-		return MOSQ_ERR_ERRNO;
-	}
-	*pairR = sv[0];
-	*pairW = sv[1];
-	return MOSQ_ERR_SUCCESS;
-}
-
-#endif // #ifdef WITH_TLS
 

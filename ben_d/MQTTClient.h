@@ -131,6 +131,7 @@ struct MQTTConnectionInfo
     string mLastDisconnectionErrorStr; /* Description of the error code associated to the last MQTT disconnection. */
     in_addr_t mBrokerIpAddr; /* IP address of the MQTT broker. */
 };
+
 extern void lwmqtt_message_callback_c_wrapper(lwmqtt_client_t *client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg);
 
 /**

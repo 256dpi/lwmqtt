@@ -308,7 +308,7 @@ MQTTClient::MQTTClient(string mqttHost,
     mDevconfTopic = mPublishTopicBase + "devconf";
 
     // Initialize the MQTT client.
-    lwmqtt_init(&mMqttClient,  // Benoit Buffer seulement
+    lwmqtt_init(&mMqttClient,
                 (uint8_t*)malloc(MAX_BUFFER_SIZE),
                 MAX_BUFFER_SIZE,
                 (uint8_t*)malloc(MAX_BUFFER_SIZE),
@@ -341,7 +341,6 @@ MQTTClient::~MQTTClient()
 {
     Stop();
 }
-
 
 void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
 {
@@ -402,7 +401,6 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
                     rc = LWMQTT_NETWORK_FAILED_CONNECT;
                     printf("LWMQTT_NETWORK_FAILED_CONNECT\n");
                 }
-                
                 mCloudSessionSequenceError = "HTTP GET failure: " + r.error.message;
                 GLERROR_MQTTCLIENT("Could not fetch cloud session sequence: %s",
                         r.error.message.c_str());
@@ -459,35 +457,32 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         }
     }
 
-    PrintDebugVariable();
     /*
      * CONNECTING_TO_BROKER
      */
     if (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::CONNECTING_TO_BROKER) {
-        printf("Starting connection to broker...\n");
+        GLDEBUG_MQTTCLIENT("Starting connection to broker...");
 
         lwmqtt_err_t rc;
         int fd;
         rc =  ConnectingToBroker(&fd);
         if (rc == LWMQTT_SUCCESS) {
-            printf("Connection to broker succeeded.\n");
+            GLINFO_MQTTCLIENT("Connection to broker succeeded.");
             UpdateConnectionState(MQTTConnectionInfo::State::CONNECTING_TO_MQTT);
             UpdateBrokerIpAddr(fd);
         }
         else {
-            printf("Connection to broker failed: %s.\n", lwmqtt_strerr(rc));
+            GLERROR_MQTTCLIENT("Connection to broker failed: %s.", lwmqtt_strerr(rc));
             //UpdateConnectionState(mConnectionInfo.mState.mState, &rc);
             TriggerDisconnect(rc);
         }
-        
     }
-    PrintDebugVariable();
 
     /*
      * CONNECTING_TO_MQTT
      */
     if (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::CONNECTING_TO_MQTT) {
-        printf("Sending MQTT connect...\n");
+        GLDEBUG_MQTTCLIENT("Sending MQTT connect...");
 
         lwmqtt_err_t rc;
         lwmqtt_return_code_t return_code;
@@ -527,7 +522,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             TriggerDisconnect(rc);
         }
     }
-    PrintDebugVariable();
+
     /*
      * SUBSCRIBING
      */
@@ -572,7 +567,6 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         }
         }
     }
-    PrintDebugVariable();
 
     /*
      * CONNECTED
@@ -921,9 +915,8 @@ void MQTTClient::GSMTimerCallback(ev::timer &watcher, int revents)
 #endif // #if AP
 void MQTTClient::TriggerDisconnect(lwmqtt_err_t rc)
 {
-    BTraceIn
     bool wasConnected = (mConnectionInfo.mState.mState == MQTTConnectionInfo::State::CONNECTED);
-    
+
     GLINFO_MQTTCLIENT("Triggering MQTT disconnect (%s).", lwmqtt_strerr(rc));
 
     NetworkDisconnect();

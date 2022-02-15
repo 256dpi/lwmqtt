@@ -183,4 +183,5 @@ class CloudConnect {
         void HandleWsClientMessage(int connectionID, const string& protocol, const vector<byte>& message);
 #endif // #if AP
 };
+
 #endif /* __CLOUD_CONNECT_H__ */

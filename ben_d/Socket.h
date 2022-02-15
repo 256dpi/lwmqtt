@@ -17,37 +17,40 @@
 class Socket 
 {
     public:
-        static const int KeepAliveDefaultValue;
         enum State {
-            Unconnected,
+            Unconnected = 0,
             Connected
         };
+        enum Msg {
+            Success = 0,
+            Err_InAddrInfo,
+            Err_ConnectFailed,
+            Err_InvalidSocket
+        };
         Socket();
-        Socket(const char *host, int port, int keepalive = KeepAliveDefaultValue);
-        void Init(const char *host = nullptr, int port = 0, int keepalive = KeepAliveDefaultValue, bool blocking = true, int sock = INVALID_SOCKET);
+        Socket(const char *host, int port);
+        void Init(const char *host = nullptr, int port = 0);
         State GetState() { return mState;};
         void SetState(State state) { mState = state;}
         bool IsConnected() {return (mState == Connected) ? true : false;}
-        int Connect();
+        Msg Connect();
         void Close();
         void Print();
         int GetSocket() {return mSock;}
-        bool ForceBlocking(int sock);
-        bool ForceNonBlocking(int sock);
+        bool ForceBlocking();
+        bool ForceNonBlocking();
 
     private:
         std::string mHost;
         std::string mAddress;
-        uint mKeepAlive;
         int mPort;
-        bool mBlocking;
         int mSock;
         State mState;
         enum BlockingMode_E {
             BlockingMode = 0,
             NonBlockingMode
         };
-        bool SetSocketBlockingMode(int sock, BlockingMode_E mode);
+        bool SetSocketBlockingMode(BlockingMode_E mode);
 
 };
 

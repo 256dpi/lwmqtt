@@ -48,11 +48,13 @@ CloudConnect::CloudConnect(ev::loop_ref loop,
                   std::placeholders::_1,
                   std::placeholders::_2);
     mWebSocketServer.SetOnConnectCallback(wsConnectCallback);
+
     WebSocketServer::OnDisconnectCallbackPtr wsDisconnectCallback =
         std::bind(&CloudConnect::HandleWsClientDisconnect,
                   this,
                   std::placeholders::_1);
     mWebSocketServer.SetOnDisconnectCallback(wsDisconnectCallback);
+
     WebSocketServer::OnMessageCallbackPtr wsMessageCallback =
         std::bind(&CloudConnect::HandleWsClientMessage,
                   this,
@@ -103,7 +105,6 @@ CloudConnect::CloudConnect(ev::loop_ref loop,
     if (mForceMQTTConnStart) {
         mMQTTClient.Start();
     }
-
 }
 
 CloudConnect::~CloudConnect()
@@ -112,7 +113,6 @@ CloudConnect::~CloudConnect()
 
 void CloudConnect::ResetAllConnectionsTimerCallback(ev::timer &watcher, int revents)
 {
-    BTraceIn;
     GLINFO_DEFAULT("Forcing re-establishment of WebSocket and MQTT connections.");
 
     mMQTTClient.Stop();
@@ -128,7 +128,6 @@ void CloudConnect::ResetAllConnectionsTimerCallback(ev::timer &watcher, int reve
 
 void CloudConnect::RequestConnectionsReset()
 {
-    BTraceIn;
     if (!mConnectionsResetRequested) {
         mConnectionsResetRequested = true;
         mResetAllConnectionsTimer.start(0.0, 0.0);
@@ -142,7 +141,6 @@ void CloudConnect::HandleMQTTConnect()
 
 void CloudConnect::HandleMQTTDisconnect()
 {
-    BTraceIn;
     GLINFO_DEFAULT("MQTT connection lost.");
 
     // We lost the MQTT connection.  Re-syncronize everyone by disconnecting
@@ -152,7 +150,6 @@ void CloudConnect::HandleMQTTDisconnect()
 
 void CloudConnect::HandleMQTTMessage(const string& topicName, const vector<byte>& message)
 {
-    BTraceIn;
     string prefix = mMQTTClient.GetSubscribeTopicBase() + "/script/";
     if (topicName.compare(0, prefix.length(), prefix) == 0) {
         GLDEBUG_DEFAULT("Forwarding message of %ld bytes to luad...",

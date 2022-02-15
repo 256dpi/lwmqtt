@@ -1,50 +1,38 @@
 #include "config.h"
 #include "Socket.h"
 
-#include <string.h>
+#include <cstring>
 #include <iostream>
 
-#include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
 
 #include <netdb.h>
-#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <unistd.h>
-
-const int Socket::KeepAliveDefaultValue = 60;
+#if AP
+#include <aruba/util/grouplog_cloudconnect.h>
+#else
+#include <config.h>
+#endif
 
 Socket::Socket()
 {
     Init();
 }
 
-Socket::Socket(const char *host, int port, int keepalive) {
-    Init(host, port, keepalive);
+Socket::Socket(const char *host, int port) {
+    Init(host, port);
 }
         
-void Socket::Init(const char *host, int port, int keepalive, bool blocking, int sock)
+void Socket::Init(const char *host, int port)
 {
-    mState = Unconnected;
+    Close();
     if (host != nullptr)
         mHost = host;
     else
         mHost = "";
     mPort = port;
-    mKeepAlive = keepalive;
-    mSock = sock;
-    mBlocking = blocking;
-}
-
-void Socket::Print()
-{
-    std::cout << "mState      " << mState << std::endl;
-    std::cout << "mHost       " << mHost << std::endl;
-    std::cout << "mPort       " << mPort << std::endl;
-    std::cout << "mKeepAlive  " << mKeepAlive << std::endl;
-    std::cout << "mBlocking   " << mBlocking << std::endl;
-    std::cout << "mSock       " << mSock << std::endl;
 }
 
 void Socket::Close()
@@ -54,93 +42,88 @@ void Socket::Close()
     }
     mSock = INVALID_SOCKET;
     SetState(Unconnected);
-
 }
 
-bool Socket::SetSocketBlockingMode(int sock, BlockingMode_E mode )
+bool Socket::SetSocketBlockingMode(BlockingMode_E mode )
 {
     int opt;
     /* Set non-blocking */
-    opt = fcntl(sock, F_GETFL, 0);
+    opt = fcntl(mSock, F_GETFL, 0);
     if(opt != -1){
         if (mode == BlockingMode )
-            opt = fcntl(sock, F_SETFL, opt & ~O_NONBLOCK);
+            opt = fcntl(mSock, F_SETFL, opt & ~O_NONBLOCK);
         else
-            opt = fcntl(sock, F_SETFL, opt | O_NONBLOCK);
+            opt = fcntl(mSock, F_SETFL, opt | O_NONBLOCK);
     }
     return opt==-1 ? false : true;
 }
-/*
-bool Socket::ForceBlocking(int sock)
+
+bool Socket::ForceBlocking()
 {
-    return SetSocketBlockingMode(sock, BlockingMode_E::BlockingMode);
-}
-*/
-bool Socket::ForceNonBlocking(int sock)
-{
-    return SetSocketBlockingMode(sock, BlockingMode_E::NonBlockingMode);
+    return SetSocketBlockingMode(BlockingMode_E::BlockingMode);
 }
 
-int Socket::Connect()
+bool Socket::ForceNonBlocking()
+{
+    return SetSocketBlockingMode(BlockingMode_E::NonBlockingMode);
+}
+
+/*
+    Connect socket to mHost:mPort
+    Will force socket to blocking mode during the connection then set socket to non-blocking.
+    Return: 
+    Success, connection established,
+    Err_InAddrInfo, error when initialising getaddrinfo struct.
+    Err_ConnectionFailed, error cannot connect to mHost.
+    Err_InvalidSocket, invalid socket.
+*/
+Socket::Msg Socket::Connect()
 {
     struct addrinfo hints;
     struct addrinfo *ainfo, *curainfo;
-    int s, retVal = 0;
+    int result;
+    Socket::Msg retVal = Success;
 
 
     Close();
-    
+
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    BLog("mHost: %s", mHost.c_str());
-    s = getaddrinfo(mHost.c_str(), nullptr, &hints, &ainfo);
-    if (s != 0) {
-        BLog("Erreur: getaddrinfo return ");
-        errno = s;
-        retVal = 1;  // TODO:Benoit  Changer les messages d'erreurs
+    result = getaddrinfo(mHost.c_str(), nullptr, &hints, &ainfo);
+    if (result != 0) {
+        GLERROR_MQTTCLIENT("Error: getaddrinfo return errno %d", result);
+        retVal = Err_InAddrInfo;
     }
     else {
         for( curainfo = ainfo; curainfo != nullptr; curainfo = curainfo->ai_next) {
             mSock = socket(curainfo->ai_family, curainfo->ai_socktype, curainfo->ai_protocol);
             if(mSock == INVALID_SOCKET) {
-                BLog("Connection failed INVALID_SOCKET");
                 continue;
             }
             if(curainfo->ai_family == AF_INET){
                 ((struct sockaddr_in *)curainfo->ai_addr)->sin_port = htons(mPort);
-                BLog("AF_INET");
             } else if(curainfo->ai_family == AF_INET6){
                 ((struct sockaddr_in6 *)curainfo->ai_addr)->sin6_port = htons(mPort);
-                BLog("AF_INET6");
             }else{
-                BLog("else COMPAT_CLOSE");
                 close(mSock);
                 mSock = INVALID_SOCKET;
                 continue;
             }
 
-            if (!mBlocking){
-                if( !ForceNonBlocking(mSock) ) {
-                    mSock = INVALID_SOCKET;
-                }
+            if( !ForceBlocking() ) {
+                mSock = INVALID_SOCKET;
             }
             if (mSock != INVALID_SOCKET) {
-                retVal = connect(mSock, curainfo->ai_addr, curainfo->ai_addrlen);
+                result = connect(mSock, curainfo->ai_addr, curainfo->ai_addrlen);
                         
-                if(retVal == 0 || errno == EINPROGRESS || errno == EWOULDBLOCK){
-                    if(retVal < 0 && (errno == EINPROGRESS || errno == EWOULDBLOCK)){
-                        retVal = 2;  //TODO: Benoit  Changer les messages d'erreurs
+                if(result == 0 || errno == EINPROGRESS || errno == EWOULDBLOCK){
+                    if(result < 0 && (errno == EINPROGRESS || errno == EWOULDBLOCK)){
+                        retVal = Err_ConnectFailed;
                     }
-                    //  TODO:Benoit Que faire ici, on dirait qu'il devrait y avoir un else ou autre chose. retVal == 2 on fait quoi, si ForceNonBlocking ne fonctionne pas ???
-                    if(mBlocking){
-                        /* Set non-blocking */
-                        if( ForceNonBlocking(mSock) ) {
-                            break;
-                        }
-                    }
-                    else {
+                    /* Set non-blocking */
+                    if( ForceNonBlocking() ) {
                         break;
                     }
                 }
@@ -149,11 +132,14 @@ int Socket::Connect()
         }
     }
     if( mSock != INVALID_SOCKET)
+    {
         SetState(Connected);
-    BTraceOut;
+        retVal = Err_InvalidSocket;
+    }        
     return retVal;
 }
 
+//#define UTest
 #ifdef UTest
 int main(int argc, char* argv[])
 {
@@ -161,10 +147,10 @@ int main(int argc, char* argv[])
     for (int i=0; i<1; i++){
         std::cout << (mSock.GetState() == Socket::Connected ? "Socket connected" : "Socket non connected") << std::endl;
         mSock.GetState() == Socket::Connected ? "Socket connected" : "Socket non connected";
-        mSock.Connect();
+        Socket::Msg msg = mSock.Connect();
+        std::cout << "Connect returns " << msg << std::endl;
         std::cout << (mSock.GetState() == Socket::Connected ? "Socket connected" : "Socket non connected") << std::endl;
         std::cout << "Socket number is " << mSock.GetSocket() << std::endl;
-        mSock.Print();
         mSock.Close();
     }
 }
