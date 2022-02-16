@@ -184,22 +184,43 @@ TLS::TlsMsg_E TLS::Write(uint8_t *buffer, size_t len, size_t *sent, uint32_t tim
     }
     return err;
 }
+     
+//extern "C"
+//{
 
-extern "C"
+int g_tls_ex_index_mosq = -1;
+void SetGlobalOpensslExIndex(int index)
 {
+    BLog("___ wwwwwwwwwwwwwwwwwwwwwwwwwwww %d", index);
+    g_tls_ex_index_mosq = index;
+}
+int GetGlobalOpensslExIndex(void)
+{
+    BLog("___ oooooooooooooooooooooooooooooooooooooooooo %d", g_tls_ex_index_mosq );
+    return g_tls_ex_index_mosq;
+}
 
-    int g_tls_ex_index_mosq = -1;
-    void SetGlobalOpensslExIndex(int index)
-    {
-        BLog("___ %d", index);
-        g_tls_ex_index_mosq = index;
-    }
-    int GetGlobalOpensslExIndex(void)
-    {
-        BLog("___  %d", g_tls_ex_index_mosq );
-        return g_tls_ex_index_mosq;
-    }
+int opensll__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx)
+{
+    BTraceIn
+    /* Preverify should have already checked expiry, revocation.
+        * We need to verify the hostname. */
+    SSL *ssl;
+    void *ref;
+BLog("Benoit mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm");
+    /* Always reject if preverify_ok has failed. */
+    if (!preverify_ok)
+        return 0;
 
+    ssl = (SSL *)X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
+    ref = (void *)SSL_get_ex_data(ssl, GetGlobalOpensslExIndex());
+    
+    auto& callback = *reinterpret_cast<serverCertificateVeriryCallbackFunc*>(ref);
+    return callback(preverify_ok, ctx);
+}        
+
+
+#if 0
     static int mosquitto__cmp_hostname_wildcard(char *certname, const char *hostname)
     {
         size_t i;
@@ -234,7 +255,7 @@ extern "C"
             return strcasecmp(certname, hostname);
         }
     }
-
+#endif
     /* This code is based heavily on the example provided in "Secure Programming
      * Cookbook for C and C++".
      */
@@ -254,7 +275,7 @@ extern "C"
         BTraceIn
         ipv6_ok = inet_pton(AF_INET6, hostname, &ipv6_addr);
         ipv4_ok = inet_pton(AF_INET, hostname, &ipv4_addr);
-
+BLog("Benoit ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd");
         san = (STACK_OF(GENERAL_NAME) *)X509_get_ext_d2i(cert, NID_subject_alt_name, NULL, NULL);
         if (san)
         {
@@ -268,7 +289,7 @@ extern "C"
 #else
                     data = ASN1_STRING_get0_data(nval->d.dNSName);
 #endif
-                    if (data && !mosquitto__cmp_hostname_wildcard((char *)data, hostname))
+                    if (data && !strcasecmp((char *)data, hostname))
                     {
                         sk_GENERAL_NAME_pop_free(san, GENERAL_NAME_free);
                         return 1;
@@ -312,63 +333,40 @@ extern "C"
         if (X509_NAME_get_text_by_NID(subj, NID_commonName, name, sizeof(name)) > 0)
         {
             name[sizeof(name) - 1] = '\0';
-            if (!mosquitto__cmp_hostname_wildcard(name, hostname))
+            if (!strcasecmp(name, hostname))
                 return 1;
         }
         return 0;
     }
 
-    int opensll__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx)
+
+//} // extern "C"
+ 
+
+int TLS::ServerCertificateVerifyCallback(int preverify_ok, X509_STORE_CTX *ctx )
+{
+    X509 *cert;
+
     {
-        BTraceIn
-        /* Preverify should have already checked expiry, revocation.
-         * We need to verify the hostname. */
-        SSL *ssl;
-        X509 *cert;
-        TlsData_S *tls_data;
+        BLog("X509_STORE_CTX_ phase 1");
 
-        /* Always reject if preverify_ok has failed. */
-        if (!preverify_ok)
-            return 0;
-
-        ssl = (SSL *)X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
-        tls_data = (TlsData_S *)SSL_get_ex_data(ssl, GetGlobalOpensslExIndex());
-        BLog("mTls.m_ssl ici ssl = %p", (void*)ssl);
-    	BLog("tls_ex_index_mosq = %d", GetGlobalOpensslExIndex());
-        if (!tls_data){
-            BLog("Error tls_data");
-            return 0;
-        }
-
-        if (tls_data->tls_insecure == false
-            && tls_data->port != 0 /* no hostname checking for unix sockets */
-        )
+        if (X509_STORE_CTX_get_error_depth(ctx) == 0)
         {
-            BLog("X509_STORE_CTX_ phase 1");
-
-            if (X509_STORE_CTX_get_error_depth(ctx) == 0)
+            BLog("X509_STORE_CTX_get_error_depth phase 2");
+            cert = X509_STORE_CTX_get_current_cert(ctx);
+            preverify_ok = mosquitto__verify_certificate_hostname(cert, m_tls_data->host);
+            if (preverify_ok != 1)
             {
-                BLog("X509_STORE_CTX_get_error_depth phase 2");
-                /* FIXME - use X509_check_host() etc. for sufficiently new openssl (>=1.1.x) */
-                cert = X509_STORE_CTX_get_current_cert(ctx);
-                /* This is the peer certificate, all others are upwards in the chain. */
-                preverify_ok = mosquitto__verify_certificate_hostname(cert, tls_data->host);
-                if (preverify_ok != 1)
-                {
-                    BLog("Error: host name verification failed.");
-                }
-                return preverify_ok;
+                BLog("Error: host name verification failed.");
             }
-            else
-            {
-                return preverify_ok;
-            }
+            return preverify_ok;
         }
         else
         {
             return preverify_ok;
         }
     }
+    return preverify_ok;
 }
 
 TLS::TLS(TlsData_S *data)
@@ -531,14 +529,6 @@ void TLS::SetSSLCtx()
 #endif
 }
 
-void TLS::DHECiphers()
-{
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    /* Allow use of DHE ciphers */
-    SSL_CTX_set_dh_auto(m_ssl_ctx, 1);
-#endif
-}
-
 void TLS::SetALPN()
 {
     uint8_t tls_alpn_wire[256];
@@ -595,8 +585,6 @@ int TLS::InitSslCtx()
 
             /* Disable compression */
             SSL_CTX_set_options(m_ssl_ctx, SSL_OP_NO_COMPRESSION);
-
-            DHECiphers();
 
             SetALPN();
 
@@ -662,6 +650,13 @@ int TLS::Init()
 {
     BIO *bio;
 
+    // Create a function object encapsulating the message callback.  Pointer
+    // to this object is passed to the c-callback wrapper.
+    mServerCertificateVeriryCallbackFunc = std::bind(&TLS::ServerCertificateVerifyCallback,
+                                           this,
+                                           std::placeholders::_1,
+                                           std::placeholders::_2);
+
     int rc = InitSslCtx();
     if (rc)
     {
@@ -681,7 +676,7 @@ int TLS::Init()
             return Msg_Err_Tls;
         }
 
-        SSL_set_ex_data(m_ssl, m_openssl_ex_index, m_tls_data);
+        SSL_set_ex_data(m_ssl, m_openssl_ex_index, &mServerCertificateVeriryCallbackFunc);
         bio = BIO_new_socket(m_tls_data->socket, BIO_NOCLOSE);
         if (!bio)
         {

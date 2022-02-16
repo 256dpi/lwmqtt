@@ -45,6 +45,7 @@ typedef struct TlsData_s {
 
 } // extern "C" {
 
+typedef std::function<int(int preverify_ok, X509_STORE_CTX *ctx)> serverCertificateVeriryCallbackFunc;
 
 class TLS
 {
@@ -75,21 +76,21 @@ class TLS
 
 
     private:
-        int InitSslCtx(); // net__init_ssl_ctx()
+        int InitSslCtx();
         void ResetInitialized() { m_initialized = false;}
         void SetInitialized() { m_initialized = true;}
-        void InitTlsCrypto(); //net__init_tls();
-        void InitTlsCryptoVersion(); // Init SSL lib and crypto based on the openssl version.
-        int  LoadCA(); //static int net__tls_load_ca(struct mosquitto *mosq)
+        void InitTlsCrypto();
+        void InitTlsCryptoVersion();
+        int  LoadCA();
         void SetSSLCtx(); 
-        void DHECiphers();
         void SetALPN();
         int  Certificats();
         void PrintTlsError();
         void SetOpensslExIndex();
         void SslClose();
-        int SslConnect(); // net__socket_connect_tls(mosq))
-        
+        int SslConnect();
+        int ServerCertificateVerifyCallback(int preverify_ok, X509_STORE_CTX *ctx );
+
         TlsData_S *m_tls_data;
     
         SSL_CTX *m_ssl_ctx;
@@ -101,8 +102,10 @@ class TLS
         // Init or Not
         bool m_initialized; 
 
-        	bool m_want_write;
-	bool m_want_connect;
+        bool m_want_write;
+	    bool m_want_connect;
+
+        serverCertificateVeriryCallbackFunc mServerCertificateVeriryCallbackFunc;
 
 };
 
