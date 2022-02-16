@@ -104,13 +104,13 @@ void MQTTClientOpenSSL::NetworkInit(string mqttHost,
     strncpy(mTlsData.tls_certfile, deviceCertPath.c_str(), sizeof(mTlsData.tls_certfile));
     strncpy(mTlsData.tls_keyfile, deviceKeyPath.c_str(), sizeof(mTlsData.tls_keyfile));
 
-    mTlsData.tls_insecure = validateMqttHostCert ? SSL_VERIFY_PEER : SSL_VERIFY_NONE;
+    mTlsData.tls_cert_reqs = validateMqttHostCert ? SSL_VERIFY_PEER : SSL_VERIFY_NONE;
 
     strncpy(mTlsData.tls_version, "tlsv1.2", sizeof(mTlsData.tls_version));
     strncpy(mTlsData.tls_alpn, "x-amzn-mqtt-ca", sizeof(mTlsData.tls_alpn));
 
     mTlsData.tls_connected = false;
-
+    mTlsData.tls_insecure = false;
     // Configure the MQTT client.
     lwmqtt_set_network(&mMqttClient, &mLwmqttReadWriteCallbackFunc, lwqtt_read_callback_c_wrapper, lwqtt_write_callback_c_wrapper);
 }
