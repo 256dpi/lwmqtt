@@ -35,6 +35,8 @@ enum DBLogLevel {
 #define GLDEBUG_MQTTCLIENT BLog
 #define GLINFO_MQTTCLIENT BLog
 
+#define GLERROR_LWMQTT BLog
+
 #else // #if 0 
 
 #include <aruba/util/grouplog_cloudconnect.h>

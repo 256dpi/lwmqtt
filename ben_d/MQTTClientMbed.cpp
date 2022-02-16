@@ -1,5 +1,10 @@
 #include "MQTTClientMbed.h"
+
+#if AP
 #include <aruba/util/grouplog_cloudconnect.h>
+#else
+#include "config.h"
+#endif
 
 
 MQTTClientMbed::MQTTClientMbed(string mqttHost,

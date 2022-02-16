@@ -1,9 +1,11 @@
 #include "MQTTClient.h"
 #include "MQTTClientOpenSSL.h"
 
+#if AP
 #include <aruba/util/grouplog_cloudconnect.h>
-
-
+#else
+#include "config.h"
+#endif
 
 static lwmqtt_err_t lwqtt_read_callback_c_wrapper(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout)
 {
@@ -252,7 +254,6 @@ lwmqtt_err_t MQTTClientOpenSSL::NetworkPeek(size_t *available)
 #endif
 lwmqtt_err_t MQTTClientOpenSSL::ReadWrite(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout, bool rdwr )
 {
-    //GLINFO_MQTTCLIENT("MQTTClientOpenSSL::ReadWrite +++---------------");
     if (rdwr)
         return Read(buffer, len, read, timeout);
     return Write(buffer, len, read, timeout);
@@ -262,10 +263,6 @@ lwmqtt_err_t MQTTClientOpenSSL::ReadWrite(uint8_t *buffer, size_t len, size_t *r
 lwmqtt_err_t MQTTClientOpenSSL::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout)
 {
     TLS::TlsMsg_E retVal;
-    size_t available = mTls.SSL_Pending();
-    if(available > 0)
-        GLINFO_MQTTCLIENT("MQTTClientOpenSSL:: return *available %lu", available);
-//    GLINFO_MQTTCLIENT("MQTTClientOpenSSL::Read len = %lu, read = %lu, timeout = %u", len, *read, timeout);
     retVal = mTls.Read(buffer, len, read, timeout);
     if (retVal == TLS::Msg_Success)
         return LWMQTT_SUCCESS;
@@ -275,7 +272,6 @@ lwmqtt_err_t MQTTClientOpenSSL::Read(uint8_t *buffer, size_t len, size_t *read, 
 lwmqtt_err_t MQTTClientOpenSSL::Write(uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout)
 {
     TLS::TlsMsg_E retVal;
-    GLINFO_MQTTCLIENT("MQTTClientOpenSSL::Write len = %lu, snet = %lu, timeout = %u", len, *sent, timeout);
     retVal = mTls.Write(buffer, len, sent, timeout);
     if (retVal == TLS::Msg_Success)
         return LWMQTT_SUCCESS;

@@ -13,7 +13,7 @@
 #if AP
 #include <aruba/util/grouplog_cloudconnect.h>
 #else
-#include <config.h>
+#include "config.h"
 #endif
 
 Socket::Socket()

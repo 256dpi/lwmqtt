@@ -14,8 +14,8 @@
         #define TEST_OPENSSL
         #define TEST_TLS
         #undef TEST_MBED
-        #undef TEST_OPENSSL
-        //#undef TEST_TLS
+        //#undef TEST_OPENSSL
+        #undef TEST_TLS
         #if defined(TEST_MBED)
         #include "MQTTClientMbed.h"
         #elif defined(TEST_OPENSSL)

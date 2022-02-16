@@ -71,7 +71,7 @@ DaemonConfig daemonConf_Test001 = {
 int mainAruba(const int argc, char *argv[], char *env[])
 {
    ev::default_loop loop;
-   DaemonConfig *dem = &daemonConf_Test001;
+   DaemonConfig *dem = &daemonConf_Mosq;
     // Create the cloud connect daemon.
     std::unique_ptr<CloudConnect> app;
     try {

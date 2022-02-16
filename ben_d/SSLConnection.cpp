@@ -50,10 +50,6 @@ int TLS::HandleSslError(int ret)
     {
         case SSL_ERROR_WANT_READ:
             {
-                static unsigned count = 0;
-                if(!(count%512))
-                    DBLog(DBLogLevel_SSL_RW, "READ"); // Too many print out
-                count++;
                 ret = 0;
                 errno = EAGAIN;
             }
@@ -162,7 +158,7 @@ TLS::TlsMsg_E TLS::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t time
         }
         else {
             *read = (size_t)ret;
-            GLERROR_LWMQTT("SSL_read() len = %u, read = %u, timeout = %u", len, *read, timeout);
+            GLERROR_LWMQTT("SSL_read() len = %lu, read = %lu, timeout = %u", len, *read, timeout);
         }
     }
     return err;
@@ -183,7 +179,7 @@ TLS::TlsMsg_E TLS::Write(uint8_t *buffer, size_t len, size_t *sent, uint32_t tim
         }
         else {
             *sent = (size_t)ret;
-            GLERROR_LWMQTT("SSL_write() len = %u, sent = %u, timeout = %u", len, *sent, timeout);
+            GLERROR_LWMQTT("SSL_write() len = %lu, sent = %lu, timeout = %u", len, *sent, timeout);
         }
     }
     return err;
@@ -680,7 +676,6 @@ int TLS::Init()
             SSL_free(m_ssl);
         }
         m_ssl = SSL_new(m_ssl_ctx);
-        BLog("m_ssl = %p, &m_ssl = %p, &(m_ssl) = %p", (void*)m_ssl, (void*)&m_ssl, (void*)&(m_ssl));
         if (!m_ssl)
         {
             return Msg_Err_Tls;

@@ -14,8 +14,6 @@
 
 
 typedef std::function<lwmqtt_err_t(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout, bool rdwr)> lwmqttReadWriteCallbackFunc;
-typedef std::function<lwmqtt_err_t(uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout, bool rdwr)> lwmqttWriteCallbackFunc;
-
 
 class MQTTClientOpenSSL : public MQTTClient
 {

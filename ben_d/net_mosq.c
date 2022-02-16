@@ -651,7 +651,6 @@ ssize_t net__write(struct mosquitto *mosq, const void *buf, size_t count)
 {
 	int ret;
 	assert(mosq);
-	BTraceIn
 	errno = 0;
 	if(mosq->ssl){
 		mosq->want_write = false;
