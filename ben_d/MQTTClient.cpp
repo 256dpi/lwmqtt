@@ -452,7 +452,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
         }
         else
         {
-            GLDEBUG_MQTTCLIENT("Benoit Court-circuité - Cloud session sequence fetched successfully: %lu", mCloudSessionSequence);
+            GLDEBUG_MQTTCLIENT("Cloud session sequence fetched successfully: %lu", mCloudSessionSequence);
             UpdateConnectionState(MQTTConnectionInfo::State::CONNECTING_TO_BROKER);
         }
     }

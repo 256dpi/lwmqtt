@@ -70,7 +70,6 @@ class TLS
         TlsMsg_E Read(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout);
         TlsMsg_E Write(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout);
         TlsMsg_E Peek(size_t *available);
-        int SSL_Pending();
         int HandleSslError(int ret);
         void PrintSslError(int err);
 
@@ -90,6 +89,10 @@ class TLS
         void SslClose();
         int SslConnect();
         int ServerCertificateVerifyCallback(int preverify_ok, X509_STORE_CTX *ctx );
+        int CertificateHostNameVeriry(X509 *cert, const char *hostname);
+
+        TlsMsg_E SSL_Pending(size_t *available);
+        TlsMsg_E GetFionRead(size_t *available);
 
         TlsData_S *m_tls_data;
     
