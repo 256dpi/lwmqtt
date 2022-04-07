@@ -74,7 +74,7 @@ lwmqtt_err_t lwmqtt_unix_network_select(lwmqtt_unix_network_t *network, bool *av
  *
  * @see lwmqtt_network_read_t.
  */
-lwmqtt_err_t lwmqtt_unix_network_read(void *ref, uint8_t *buf, size_t len, size_t *read, uint32_t timeout);
+lwmqtt_err_t lwmqtt_unix_network_read(void *ref, uint8_t *buf, size_t len, size_t *received, uint32_t timeout);
 
 /**
  * Callback to write to a UNIX network connection.

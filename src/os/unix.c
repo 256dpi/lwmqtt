@@ -111,6 +111,13 @@ void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *network) {
 }
 
 lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *available) {
+  // check socket validity
+  char ret;
+  int bytes = (int)recv(network->socket, &ret, 1, MSG_PEEK | MSG_DONTWAIT);
+  if (bytes <= 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
+    return LWMQTT_NETWORK_FAILED_READ;
+  }
+
   // get the available bytes on the socket
   int rc = ioctl(network->socket, FIONREAD, available);
   if (rc < 0) {
@@ -123,13 +130,16 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *av
 lwmqtt_err_t lwmqtt_unix_network_select(lwmqtt_unix_network_t *network, bool *available, uint32_t timeout) {
   // prepare set
   fd_set set;
+  fd_set ex_set;
   FD_ZERO(&set);
+  FD_ZERO(&ex_set);
   FD_SET(network->socket, &set);
+  FD_SET(network->socket, &ex_set);
 
   // wait for data
   struct timeval t = {.tv_sec = timeout / 1000, .tv_usec = (timeout % 1000) * 1000};
-  int result = select(network->socket + 1, &set, NULL, NULL, &t);
-  if (result < 0) {
+  int result = select(network->socket + 1, &set, NULL, &ex_set, &t);
+  if (result < 0 || FD_ISSET(network->socket, &ex_set)) {
     return LWMQTT_NETWORK_FAILED_READ;
   }
 
@@ -139,7 +149,7 @@ lwmqtt_err_t lwmqtt_unix_network_select(lwmqtt_unix_network_t *network, bool *av
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_unix_network_read(void *ref, uint8_t *buffer, size_t len, size_t *read, uint32_t timeout) {
+lwmqtt_err_t lwmqtt_unix_network_read(void *ref, uint8_t *buffer, size_t len, size_t *received, uint32_t timeout) {
   // cast network reference
   lwmqtt_unix_network_t *n = (lwmqtt_unix_network_t *)ref;
 
@@ -151,18 +161,17 @@ lwmqtt_err_t lwmqtt_unix_network_read(void *ref, uint8_t *buffer, size_t len, si
   }
 
   // read from socket
-  int bytes = (int)recv(n->socket, buffer, len, 0);
-  if (bytes < 0 && errno != EAGAIN) {
+  int bytes = (int)read(n->socket, buffer, len);
+  if (bytes < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+    return LWMQTT_SUCCESS;
+  } else if (bytes == 0) {
+    return LWMQTT_NETWORK_FAILED_READ;
+  } else if (bytes < 0) {
     return LWMQTT_NETWORK_FAILED_READ;
   }
 
-  // prevent counting down if error is EAGAIN
-  if (bytes < 0) {
-    bytes = 0;
-  }
-
   // increment counter
-  *read += bytes;
+  *received += bytes;
 
   return LWMQTT_SUCCESS;
 }
@@ -180,13 +189,10 @@ lwmqtt_err_t lwmqtt_unix_network_write(void *ref, uint8_t *buffer, size_t len, s
 
   // write to socket
   int bytes = (int)send(n->socket, buffer, len, 0);
-  if (bytes < 0 && errno != EAGAIN) {
+  if (bytes < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+    return LWMQTT_SUCCESS;
+  } else if (bytes < 0) {
     return LWMQTT_NETWORK_FAILED_WRITE;
-  }
-
-  // prevent counting down if error is EAGAIN
-  if (bytes < 0) {
-    bytes = 0;
   }
 
   // increment counter
