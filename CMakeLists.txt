@@ -8,7 +8,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror -Wno-unused-parameter")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wno-unused-parameter")
 
 include_directories(include)
 
@@ -40,7 +40,9 @@ set(TEST_FILES
         tests/helpers.cpp
         tests/packet.cpp
         tests/string.cpp
-        tests/tests.cpp)
+        tests/tests.cpp
+        tests/generated.cpp
+        )
 
 add_executable(tests ${TEST_FILES})
 

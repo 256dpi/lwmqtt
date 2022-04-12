@@ -13,9 +13,41 @@ lwmqtt_unix_timer_t timer1, timer2, timer3;
 
 lwmqtt_client_t client;
 
-static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
+static void prop_byte_printer(void *ref, lwmqtt_prop_t prop, uint8_t value) {
+  printf("  Property %x (byte): 0x%x\n", prop, value);
+}
+
+static void prop_int16_printer(void *ref, lwmqtt_prop_t prop, int16_t value) {
+  printf("  Property %x (int): %d\n", prop, value);
+}
+
+static void prop_int32_printer(void *ref, lwmqtt_prop_t prop, int32_t value) {
+  printf("  Property %x (int32): %d\n", prop, value);
+}
+
+static void prop_str_printer(void *ref, lwmqtt_prop_t prop, lwmqtt_string_t value) {
+  printf("  Property %x (string): %.*s\n", prop, (int)value.len, value.data);
+}
+
+static void prop_user_printer(void *ref, lwmqtt_string_t k, lwmqtt_string_t v) {
+  printf("  User property: k=%.*s, v=%.*s\n", (int)k.len, k.data, (int)v.len, v.data);
+}
+
+static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg,
+                            lwmqtt_serialized_properties_t props) {
   printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload,
          (int)msg.payload_len);
+
+  lwmqtt_property_callbacks_t cb = {
+      .byte_prop = prop_byte_printer,
+      .int16_prop = prop_int16_printer,
+      .int32_prop = prop_int32_printer,
+      .str_prop = prop_str_printer,
+      .user_prop = prop_user_printer,
+  };
+  if (lwmqtt_property_visitor(NULL, props, cb) != LWMQTT_SUCCESS) {
+    exit(1);
+  }
 }
 
 int main() {
@@ -26,12 +58,13 @@ int main() {
   lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
   lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
   lwmqtt_set_callback(&client, NULL, message_arrived);
+  lwmqtt_set_protocol(&client, LWMQTT_MQTT5);
 
   // configure message time
   lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
 
   // connect to broker
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "localhost", 1883);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_unix_network_connect: %d\n", err);
     exit(1);
@@ -56,7 +89,9 @@ int main() {
   printf("connected!\n");
 
   // subscribe to topic
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  lwmqtt_properties_t subprops = lwmqtt_empty_props;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), subopts, subprops, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_subscribe: %d\n", err);
     exit(1);
@@ -91,10 +126,17 @@ int main() {
     // check if message is due
     if (lwmqtt_unix_timer_get(&timer3) <= 0) {
       // prepare message
-      lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = false, .payload = (uint8_t *)("world"), .payload_len = 5};
+      lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = true, .payload = (uint8_t *)("world"), .payload_len = 5};
 
       // publish message
-      err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
+      lwmqtt_property_t proplist[] = {
+          {.prop = LWMQTT_PROP_MESSAGE_EXPIRY_INTERVAL, .value = {.int32 = 30}},
+          {.prop = LWMQTT_PROP_USER_PROPERTY,
+           .value = {.pair = {.k = lwmqtt_string("hello from"), .v = lwmqtt_string("lwmqtt")}}},
+      };
+
+      lwmqtt_properties_t props = {2, (lwmqtt_property_t *)&proplist};
+      err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, props, COMMAND_TIMEOUT);
       if (err != LWMQTT_SUCCESS) {
         printf("failed lwmqtt_keep_alive: %d\n", err);
         exit(1);

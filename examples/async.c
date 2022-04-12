@@ -15,7 +15,8 @@ lwmqtt_client_t client;
 
 pthread_mutex_t mutex;
 
-static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg) {
+static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t topic, lwmqtt_message_t msg,
+                            lwmqtt_serialized_properties_t props) {
   printf("message_arrived: %.*s => %.*s (%d)\n", (int)topic.len, topic.data, (int)msg.payload_len, (char *)msg.payload,
          (int)msg.payload_len);
 }
@@ -102,7 +103,9 @@ int main() {
   printf("connected!\n");
 
   // subscribe to topic
-  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), LWMQTT_QOS0, COMMAND_TIMEOUT);
+  lwmqtt_sub_options_t subopts = lwmqtt_default_sub_options;
+  lwmqtt_properties_t subprops = lwmqtt_empty_props;
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), subopts, subprops, COMMAND_TIMEOUT);
   if (err != LWMQTT_SUCCESS) {
     printf("failed lwmqtt_subscribe: %d\n", err);
     exit(1);
@@ -135,7 +138,8 @@ int main() {
     pthread_mutex_lock(&mutex);
 
     // publish message
-    err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
+    lwmqtt_properties_t props = lwmqtt_empty_props;
+    err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, props, COMMAND_TIMEOUT);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_publish: %d\n", err);
       exit(1);
