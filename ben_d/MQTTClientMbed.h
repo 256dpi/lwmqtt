@@ -4,7 +4,6 @@
 #include "MQTTClient.h"
 
 #include "lwmqtt_mbedtls_network.h"
-#include "lwmqtt_unix_timer.h"
 
 /**
  * @brief Class implementing the MQTT client using Mbedtls (derived from MQTTCLient)
@@ -12,43 +11,40 @@
 
 class MQTTClientMbed : public MQTTClient
 {
-    public:
-
-        MQTTClientMbed(string mqttHost,
+public:
+    MQTTClientMbed(string mqttHost,
                    int mqttHostPort,
                    bool validateMqttHostCert,
                    string deviceCertPath,
                    string deviceKeyPath,
                    string caCertPath,
                    string onboardingCaCertPath,
-                   OnConnectCallbackPtr onConnectCallback=nullptr,
-                   OnDisconnectCallbackPtr onDisconnectCallback=nullptr,
-                   OnMessageCallbackPtr onMessageCallback=nullptr);
+                   OnConnectCallbackPtr onConnectCallback = nullptr,
+                   OnDisconnectCallbackPtr onDisconnectCallback = nullptr,
+                   OnMessageCallbackPtr onMessageCallback = nullptr);
 
-    protected:
+protected:
+private:
+    /** @brief MQTT client object. */
+    lwmqtt_mbedtls_network_t mMqttNetworkConnection;
 
-    private:
-        /** @brief MQTT client object. */
-        lwmqtt_mbedtls_network_t mMqttNetworkConnection;
+    /**
+     *  TODO:Benoit  Initiliaze MQTT Client parameters and Tls/Socket
+     */
+    void NetworkInit(string mqttHost,
+                     int mqttHostPort,
+                     bool validateMqttHostCert,
+                     string deviceCertPath,
+                     string deviceKeyPath,
+                     string caCertPath);
 
-        /**
-         *  TODO:Benoit  Initiliaze MQTT Client parameters and Tls/Socket
-        */            
-        void NetworkInit(string mqttHost,
-                   int mqttHostPort,
-                   bool validateMqttHostCert,
-                   string deviceCertPath,
-                   string deviceKeyPath,
-                   string caCertPath);
+    lwmqtt_err_t ConnectingToBroker(int *fd);
 
-        lwmqtt_err_t ConnectingToBroker(int *fd);
+    void NetworkDisconnect();
 
-        void NetworkDisconnect();
+    bool NetworkIsConnected();
 
-        bool NetworkIsConnected();
-
-        lwmqtt_err_t NetworkPeek(size_t*);
-
+    lwmqtt_err_t NetworkPeek(size_t *);
 };
 
 #endif // #ifndef __MQTTClientMbed_h__

@@ -414,11 +414,11 @@ class MQTTClient {
         virtual lwmqtt_err_t ConnectingToBroker(int *fd) = 0;
 
         virtual void NetworkInit(string mqttHost,
-                   int mqttHostPort,
-                   bool validateMqttHostCert,
-                   string deviceCertPath,
-                   string deviceKeyPath,
-                   string caCertPath)  {};
+            int mqttHostPort,
+            bool validateMqttHostCert,
+            string deviceCertPath,
+            string deviceKeyPath,
+            string caCertPath)  {}
 
         virtual void NetworkDisconnect() = 0;
 

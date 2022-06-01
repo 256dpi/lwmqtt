@@ -21,10 +21,11 @@ Socket::Socket()
     Init();
 }
 
-Socket::Socket(const char *host, int port) {
+Socket::Socket(const char *host, int port)
+{
     Init(host, port);
 }
-        
+
 void Socket::Init(const char *host, int port)
 {
     Close();
@@ -37,25 +38,27 @@ void Socket::Init(const char *host, int port)
 
 void Socket::Close()
 {
-    if (mSock != INVALID_SOCKET) {
+    if (mSock != INVALID_SOCKET)
+    {
         close(mSock);
     }
     mSock = INVALID_SOCKET;
     SetState(Unconnected);
 }
 
-bool Socket::SetSocketBlockingMode(BlockingMode_E mode )
+bool Socket::SetSocketBlockingMode(BlockingMode_E mode)
 {
     int opt;
     /* Set non-blocking */
     opt = fcntl(mSock, F_GETFL, 0);
-    if(opt != -1){
-        if (mode == BlockingMode )
+    if (opt != -1)
+    {
+        if (mode == BlockingMode)
             opt = fcntl(mSock, F_SETFL, opt & ~O_NONBLOCK);
         else
             opt = fcntl(mSock, F_SETFL, opt | O_NONBLOCK);
     }
-    return opt==-1 ? false : true;
+    return opt == -1 ? false : true;
 }
 
 bool Socket::ForceBlocking()
@@ -71,7 +74,7 @@ bool Socket::ForceNonBlocking()
 /*
     Connect socket to mHost:mPort
     Will force socket to blocking mode during the connection then set socket to non-blocking.
-    Return: 
+    Return:
     Success, connection established,
     Err_InAddrInfo, error when initialising getaddrinfo struct.
     Err_ConnectionFailed, error cannot connect to mHost.
@@ -84,7 +87,6 @@ Socket::Msg Socket::Connect()
     int result;
     Socket::Msg retVal = Success;
 
-
     Close();
 
     memset(&hints, 0, sizeof(struct addrinfo));
@@ -92,38 +94,52 @@ Socket::Msg Socket::Connect()
     hints.ai_socktype = SOCK_STREAM;
 
     result = getaddrinfo(mHost.c_str(), nullptr, &hints, &ainfo);
-    if (result != 0) {
+    if (result != 0)
+    {
         GLERROR_MQTTCLIENT("Error: getaddrinfo return errno %d", result);
         retVal = Err_InAddrInfo;
     }
-    else {
-        for( curainfo = ainfo; curainfo != nullptr; curainfo = curainfo->ai_next) {
+    else
+    {
+        for (curainfo = ainfo; curainfo != nullptr; curainfo = curainfo->ai_next)
+        {
             mSock = socket(curainfo->ai_family, curainfo->ai_socktype, curainfo->ai_protocol);
-            if(mSock == INVALID_SOCKET) {
+            if (mSock == INVALID_SOCKET)
+            {
                 continue;
             }
-            if(curainfo->ai_family == AF_INET){
+            if (curainfo->ai_family == AF_INET)
+            {
                 ((struct sockaddr_in *)curainfo->ai_addr)->sin_port = htons(mPort);
-            } else if(curainfo->ai_family == AF_INET6){
+            }
+            else if (curainfo->ai_family == AF_INET6)
+            {
                 ((struct sockaddr_in6 *)curainfo->ai_addr)->sin6_port = htons(mPort);
-            }else{
+            }
+            else
+            {
                 close(mSock);
                 mSock = INVALID_SOCKET;
                 continue;
             }
 
-            if( !ForceBlocking() ) {
+            if (!ForceBlocking())
+            {
                 mSock = INVALID_SOCKET;
             }
-            if (mSock != INVALID_SOCKET) {
+            if (mSock != INVALID_SOCKET)
+            {
                 result = connect(mSock, curainfo->ai_addr, curainfo->ai_addrlen);
-                        
-                if(result == 0 || errno == EINPROGRESS || errno == EWOULDBLOCK){
-                    if(result < 0 && (errno == EINPROGRESS || errno == EWOULDBLOCK)){
+
+                if (result == 0 || errno == EINPROGRESS || errno == EWOULDBLOCK)
+                {
+                    if (result < 0 && (errno == EINPROGRESS || errno == EWOULDBLOCK))
+                    {
                         retVal = Err_ConnectFailed;
                     }
                     /* Set non-blocking */
-                    if( ForceNonBlocking() ) {
+                    if (ForceNonBlocking())
+                    {
                         break;
                     }
                 }
@@ -131,11 +147,11 @@ Socket::Msg Socket::Connect()
             Close();
         }
     }
-    if( mSock != INVALID_SOCKET)
+    if (mSock != INVALID_SOCKET)
     {
         SetState(Connected);
         retVal = Err_InvalidSocket;
-    }        
+    }
     return retVal;
 }
 

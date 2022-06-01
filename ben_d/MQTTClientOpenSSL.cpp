@@ -9,13 +9,13 @@
 
 static lwmqtt_err_t lwqtt_read_callback_c_wrapper(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout)
 {
-    auto& callback = *reinterpret_cast<lwmqttReadWriteCallbackFunc*>(ref);
+    auto &callback = *reinterpret_cast<lwmqttReadWriteCallbackFunc *>(ref);
     return callback(buffer, len, sent, timeout, true);
 }
 
 static lwmqtt_err_t lwqtt_write_callback_c_wrapper(void *ref, uint8_t *buffer, size_t len, size_t *sent, uint32_t timeout)
 {
-    auto& callback = *reinterpret_cast<lwmqttReadWriteCallbackFunc*>(ref);
+    auto &callback = *reinterpret_cast<lwmqttReadWriteCallbackFunc *>(ref);
     return callback(buffer, len, sent, timeout, false);
 }
 
@@ -24,40 +24,38 @@ static lwmqtt_err_t lwqtt_write_callback_c_wrapper(void *ref, uint8_t *buffer, s
  */
 
 MQTTClientOpenSSL::MQTTClientOpenSSL(string mqttHost,
-                       int mqttHostPort,
-                       bool validateMqttHostCert,
-                       std::string deviceCertPath,
-                       std::string deviceKeyPath,
-                       std::string caCertPath,
-                       std::string onboardingCaCertPath,
-                       OnConnectCallbackPtr onConnectCallback,
-                       OnDisconnectCallbackPtr onDisconnectCallback,
-                       OnMessageCallbackPtr onMessageCallback)
-            : MQTTClient(mqttHost,
-                  mqttHostPort,
-                  validateMqttHostCert,
-                  deviceCertPath,
-                  deviceKeyPath,
-                  caCertPath,
-                  onboardingCaCertPath,
-                  onConnectCallback,
-                  onDisconnectCallback,
-                  onMessageCallback),
-                  mTls(&mTlsData)
+                                     int mqttHostPort,
+                                     bool validateMqttHostCert,
+                                     std::string deviceCertPath,
+                                     std::string deviceKeyPath,
+                                     std::string caCertPath,
+                                     std::string onboardingCaCertPath,
+                                     OnConnectCallbackPtr onConnectCallback,
+                                     OnDisconnectCallbackPtr onDisconnectCallback,
+                                     OnMessageCallbackPtr onMessageCallback)
+    : MQTTClient(mqttHost,
+                 mqttHostPort,
+                 validateMqttHostCert,
+                 deviceCertPath,
+                 deviceKeyPath,
+                 caCertPath,
+                 onboardingCaCertPath,
+                 onConnectCallback,
+                 onDisconnectCallback,
+                 onMessageCallback),
+      mTls(&mTlsData)
 
 {
     GLINFO_MQTTCLIENT("MQTTClientOpenSSL");
     GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
 
     mLwmqttReadWriteCallbackFunc = std::bind(&MQTTClientOpenSSL::ReadWrite,
-                                        this,
-                                        std::placeholders::_1,
-                                        std::placeholders::_2,
-                                        std::placeholders::_3,
-                                        std::placeholders::_4,
-                                        std::placeholders::_5
-                                        );
-
+                                             this,
+                                             std::placeholders::_1,
+                                             std::placeholders::_2,
+                                             std::placeholders::_3,
+                                             std::placeholders::_4,
+                                             std::placeholders::_5);
 
     NetworkInit(mqttHost, mqttHostPort, validateMqttHostCert, deviceCertPath, deviceKeyPath, caCertPath);
 
@@ -74,32 +72,28 @@ void MQTTClientOpenSSL::NetworkDisconnect()
     GLINFO_MQTTCLIENT("NetworkDisconnect");
 }
 
-
 bool MQTTClientOpenSSL::NetworkIsConnected()
 {
     GLINFO_MQTTCLIENT("NetworkIsConnected");
     return mTlsData.tls_connected;
 }
 
-
 extern void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
-
 void MQTTClientOpenSSL::NetworkInit(string mqttHost,
-                   int mqttHostPort,
-                   bool validateMqttHostCert,
-                   string deviceCertPath,
-                   string deviceKeyPath,
-                   string caCertPath)
+                                    int mqttHostPort,
+                                    bool validateMqttHostCert,
+                                    string deviceCertPath,
+                                    string deviceKeyPath,
+                                    string caCertPath)
 {
     GLINFO_MQTTCLIENT("NetworkInit");
     // Initialize the MQTT network connection info.
     strncpy(mTlsData.host, mqttHost.c_str(), sizeof(mTlsData.host));
     mTlsData.port = mqttHostPort;
     mTlsData.socket = INVALID_SOCKET;
-    
+
     strncpy(mTlsData.tls_cafile, caCertPath.c_str(), sizeof(mTlsData.tls_cafile));
-    //strncpy(mTlsData.tls_capath, caCertPath.c_str(), sizeof(mTlsData.tls_capath));
 
     strncpy(mTlsData.tls_certfile, deviceCertPath.c_str(), sizeof(mTlsData.tls_certfile));
     strncpy(mTlsData.tls_keyfile, deviceKeyPath.c_str(), sizeof(mTlsData.tls_keyfile));
@@ -122,32 +116,38 @@ lwmqtt_err_t MQTTClientOpenSSL::ConnectingToBroker(int *fd)
 
     mSock.Init(mTlsData.host, mTlsData.port);
     retConnect = mSock.Connect();
-    if (retConnect == 0) {
+    if (retConnect == 0)
+    {
         GLINFO_MQTTCLIENT("Socket connected");
     }
 
-    if (mSock.IsConnected()) {
+    if (mSock.IsConnected())
+    {
         retVal = LWMQTT_SUCCESS;
         mTlsData.socket = *fd = mSock.GetSocket();
-        if (mTls.Init() == TLS::Msg_Success) {
+        if (mTls.Init() == TLS::Msg_Success)
+        {
             GLINFO_MQTTCLIENT("TLS Socket connected");
             retVal = LWMQTT_SUCCESS;
         }
-        else {
+        else
+        {
             GLINFO_MQTTCLIENT("TLS Socket connection failed");
             retVal = LWMQTT_NETWORK_FAILED_CONNECT;
         }
     }
-    else {
+    else
+    {
         GLINFO_MQTTCLIENT("Error Socket connection failed");
         retVal = LWMQTT_NETWORK_FAILED_CONNECT;
     }
 
-    if( retVal != LWMQTT_SUCCESS) {
+    if (retVal != LWMQTT_SUCCESS)
+    {
         mSock.Close();
         mTls.Close();
         mTlsData.socket = *fd = INVALID_SOCKET;
-   }
+    }
     return retVal;
 }
 
@@ -169,7 +169,7 @@ void PrintHex(char *data, size_t len)
     }
     printf("\n");
 }
-
+#if 0
 void MQTTClientOpenSSL::Select()
 {
 	struct timespec local_timeout;
@@ -220,6 +220,7 @@ void MQTTClientOpenSSL::Select()
     }
     */
 }
+#endif 
 #if 0
 lwmqtt_err_t MQTTClientOpenSSL::NetworkPeek(size_t *available)
 {
@@ -252,13 +253,12 @@ lwmqtt_err_t MQTTClientOpenSSL::NetworkPeek(size_t *available)
     return LWMQTT_NETWORK_FAILED_READ;
 }
 #endif
-lwmqtt_err_t MQTTClientOpenSSL::ReadWrite(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout, bool rdwr )
+lwmqtt_err_t MQTTClientOpenSSL::ReadWrite(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout, bool rdwr)
 {
     if (rdwr)
         return Read(buffer, len, read, timeout);
     return Write(buffer, len, read, timeout);
 }
-
 
 lwmqtt_err_t MQTTClientOpenSSL::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout)
 {

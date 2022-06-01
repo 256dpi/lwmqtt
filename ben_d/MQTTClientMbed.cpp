@@ -8,25 +8,24 @@
 
 
 MQTTClientMbed::MQTTClientMbed(string mqttHost,
-                int mqttHostPort,
-                bool validateMqttHostCert,
-                string deviceCertPath,
-                string deviceKeyPath,
-                string caCertPath,
-                string onboardingCaCertPath,
-                OnConnectCallbackPtr onConnectCallback,
-                OnDisconnectCallbackPtr onDisconnectCallback,
-                OnMessageCallbackPtr onMessageCallback) : 
-                MQTTClient(mqttHost,
-                 mqttHostPort,
-                 validateMqttHostCert,
-                 deviceCertPath,
-                 deviceKeyPath,
-                 caCertPath,
-                 onboardingCaCertPath,
-                 onConnectCallback,
-                 onDisconnectCallback,
-                 onMessageCallback)
+                               int mqttHostPort,
+                               bool validateMqttHostCert,
+                               string deviceCertPath,
+                               string deviceKeyPath,
+                               string caCertPath,
+                               string onboardingCaCertPath,
+                               OnConnectCallbackPtr onConnectCallback,
+                               OnDisconnectCallbackPtr onDisconnectCallback,
+                               OnMessageCallbackPtr onMessageCallback) : MQTTClient(mqttHost,
+                                                                                    mqttHostPort,
+                                                                                    validateMqttHostCert,
+                                                                                    deviceCertPath,
+                                                                                    deviceKeyPath,
+                                                                                    caCertPath,
+                                                                                    onboardingCaCertPath,
+                                                                                    onConnectCallback,
+                                                                                    onDisconnectCallback,
+                                                                                    onMessageCallback)
 {
     GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
 
@@ -34,7 +33,6 @@ MQTTClientMbed::MQTTClientMbed(string mqttHost,
 
     InitLWMQTTTClient();
     InitTimer();
-
 }
 
 void MQTTClientMbed::NetworkDisconnect()
@@ -43,7 +41,6 @@ void MQTTClientMbed::NetworkDisconnect()
     GLINFO_MQTTCLIENT("NetworkDisconnect");
 }
 
-
 bool MQTTClientMbed::NetworkIsConnected()
 {
     GLINFO_MQTTCLIENT("NetworkIsConnected");
@@ -51,11 +48,11 @@ bool MQTTClientMbed::NetworkIsConnected()
 }
 
 void MQTTClientMbed::NetworkInit(string mqttHost,
-                   int mqttHostPort,
-                   bool validateMqttHostCert,
-                   string deviceCertPath,
-                   string deviceKeyPath,
-                   string caCertPath)
+                                 int mqttHostPort,
+                                 bool validateMqttHostCert,
+                                 string deviceCertPath,
+                                 string deviceKeyPath,
+                                 string caCertPath)
 {
     GLINFO_MQTTCLIENT("NetworkInit");
     // Initialize the MQTT network connection info.
@@ -72,7 +69,7 @@ void MQTTClientMbed::NetworkInit(string mqttHost,
     network->tls_write_timeout = MQTT_NETWORK_CONNECTION_WRITE_TIMEOUT_MSECS;
     network->alpn_protocol_list[0] = "x-amzn-mqtt-ca";
     GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", network->endpoint, network->endpoint_port, network->server_verification_flag,
-     network->device_cert_location, network->device_private_key_location, network->root_ca_location);
+                      network->device_cert_location, network->device_private_key_location, network->root_ca_location);
 
     // Configure the MQTT client.
     lwmqtt_set_network(&mMqttClient, network, lwmqtt_mbedtls_network_read, lwmqtt_mbedtls_network_write);
@@ -86,7 +83,6 @@ lwmqtt_err_t MQTTClientMbed::ConnectingToBroker(int *fd)
     return rc;
 }
 
-
 lwmqtt_err_t MQTTClientMbed::NetworkPeek(size_t *available)
 {
     lwmqtt_err_t rc;
@@ -94,4 +90,3 @@ lwmqtt_err_t MQTTClientMbed::NetworkPeek(size_t *available)
     rc = lwmqtt_mbedtls_network_peek(&mMqttNetworkConnection, available);
     return rc;
 }
-

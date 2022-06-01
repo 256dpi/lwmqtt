@@ -325,7 +325,7 @@ MQTTClient::MQTTClient(string mqttHost,
 
 
 
-    GLINFO_MQTTCLIENT("Benoit ------ %s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
+    GLINFO_MQTTCLIENT("%s, %d, %d, %s, %s, %s", mqttHost.c_str(), mqttHostPort, validateMqttHostCert, deviceCertPath.c_str(), deviceKeyPath.c_str(), caCertPath.c_str());
 
 }
 
@@ -381,7 +381,7 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             printf("iot.isb.arubanetworks.com -- %s\n", mOnboardingUrl.c_str());
             cpr::Response r = cpr::Get(cpr::Url{mOnboardingUrl},
                                        cpr::Timeout{5000},
-                                       cpr::VerifySsl{false},
+                                       cpr::VerifySsl{true},
                                        sslOpts);
             printf("iot.isb.arubanetworks.com -- %s\n", mOnboardingUrl.c_str());
             if (r.error) {
@@ -509,7 +509,6 @@ void MQTTClient::ConnectionSMTimerCallback(ev::timer &watcher, int revents)
             GLDEBUG_MQTTCLIENT("Mesh Point: increasing MQTT Timeout to %u", MQTT_WIRELESS_DEVICE_KEEPALIVE_INTERVAL_SECS);
         }
 #endif
-    // sleep(2);  // Benoit ?
 
         rc = lwmqtt_connect(&mMqttClient, options, NULL, &return_code, MQTT_COMMAND_TIMEOUT_MSEC);
         if (rc == LWMQTT_SUCCESS) {

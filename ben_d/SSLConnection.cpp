@@ -39,7 +39,7 @@ int GetGlobalOpensslExIndex(void)
 int opensll__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx)
 {
     /* Preverify should have already checked expiry, revocation.
-        * We need to verify the hostname. */
+     * We need to verify the hostname. */
     SSL *ssl;
     void *ref;
     /* Always reject if preverify_ok has failed. */
@@ -48,141 +48,146 @@ int opensll__server_certificate_verify(int preverify_ok, X509_STORE_CTX *ctx)
 
     ssl = (SSL *)X509_STORE_CTX_get_ex_data(ctx, SSL_get_ex_data_X509_STORE_CTX_idx());
     ref = (void *)SSL_get_ex_data(ssl, GetGlobalOpensslExIndex());
-    
-    auto& callback = *reinterpret_cast<serverCertificateVeriryCallbackFunc*>(ref);
+
+    auto &callback = *reinterpret_cast<serverCertificateVeriryCallbackFunc *>(ref);
     return callback(preverify_ok, ctx);
-}        
+}
 
 void TLS::PrintSslError(int e1)
 {
-	char ebuf[256];
-	unsigned long e;
-	int num = 0;
-    if(e1 != 0)
-		GLERROR_MQTTCLIENT("OpenSSL (e1) Error[%d]: %s", num, ERR_error_string(e1, ebuf));
+    char ebuf[256];
+    unsigned long e;
+    int num = 0;
+    if (e1 != 0)
+        GLERROR_MQTTCLIENT("OpenSSL (e1) Error[%d]: %s", num, ERR_error_string(e1, ebuf));
 
-
-	e = ERR_get_error();
-	while(e){
-		GLERROR_MQTTCLIENT("OpenSSL Error[%d]: %s", num, ERR_error_string(e, ebuf));
-		e = ERR_get_error();
-		num++;
-	}
+    e = ERR_get_error();
+    while (e)
+    {
+        GLERROR_MQTTCLIENT("OpenSSL Error[%d]: %s", num, ERR_error_string(e, ebuf));
+        e = ERR_get_error();
+        num++;
+    }
 }
 
 int TLS::HandleSslError(int ret)
 {
-	int err;
-	err = SSL_get_error(m_ssl, ret);
-    switch(err)
+    int err;
+    err = SSL_get_error(m_ssl, ret);
+    switch (err)
     {
-        case SSL_ERROR_WANT_READ:
-            {
-                ret = 0;
-                errno = EAGAIN;
-            }
-            break;
+    case SSL_ERROR_WANT_READ:
+    {
+        ret = 0;
+        errno = EAGAIN;
+    }
+    break;
 
-        case SSL_ERROR_WANT_WRITE:
-            {
-                ret = 0;
-                errno = EAGAIN;
-            }
-            break;
-        case SSL_ERROR_ZERO_RETURN:
-            {
-        		GLERROR_MQTTCLIENT("SSL_ERROR_ZERO_RETURN");
-		        PrintSslError(err);
-		        errno = EPROTO;
-            }
-            break;
-        case SSL_CTRL_SESS_CACHE_FULL:
-            {
-                long val;
-                val = SSL_CTX_sess_get_cache_size(m_ssl_ctx);
-        		GLERROR_MQTTCLIENT("CACHE SIZE = %ld", val);
-		        PrintSslError(err);
-		        errno = EPROTO;
-            }
-            break;
+    case SSL_ERROR_WANT_WRITE:
+    {
+        ret = 0;
+        errno = EAGAIN;
+    }
+    break;
+    case SSL_ERROR_ZERO_RETURN:
+    {
+        GLERROR_MQTTCLIENT("SSL_ERROR_ZERO_RETURN");
+        /// PrintSslError(err);
+        ret = SSL_ERROR_ZERO_RETURN; /// Benoit Tempo
+        errno = EPROTO;
+    }
+    break;
+    case SSL_CTRL_SESS_CACHE_FULL:
+    {
+        long val;
+        val = SSL_CTX_sess_get_cache_size(m_ssl_ctx);
+        GLERROR_MQTTCLIENT("CACHE SIZE = %ld", val);
+        PrintSslError(err);
+        errno = EPROTO;
+    }
+    break;
 
-        case SSL_ERROR_SYSCALL:
-            {
-        		GLERROR_MQTTCLIENT("SSL_ERROR_SYSCALL, set m_want_connect");
-		        PrintSslError(err);
-                m_want_connect = true;
-                ret = 0;
-            }
-            break;
-    	default:
-            {
-        		GLERROR_MQTTCLIENT("Unkown. err = %d", err);
-		        PrintSslError(err);
-		        errno = EPROTO;
-            }
-            break;
-	}
-	ERR_clear_error();
+    case SSL_ERROR_SYSCALL:
+    {
+        GLERROR_MQTTCLIENT("SSL_ERROR_SYSCALL, set m_want_connect");
+        PrintSslError(err);
+        m_want_connect = true;
+        ret = 0;
+    }
+    break;
+    default:
+    {
+        GLERROR_MQTTCLIENT("Unkown. err = %d", err);
+        PrintSslError(err);
+        errno = EPROTO;
+    }
+    break;
+    }
+    ERR_clear_error();
 
-	return ret;
+    return ret;
 }
 
-
-TLS::TlsMsg_E  TLS::GetFionRead(size_t *available)
+TLS::TlsMsg_E TLS::GetFionRead(size_t *available)
 {
     int iocAvail;
     int rc = ioctl(m_tls_data->socket, FIONREAD, &iocAvail);
-    if (rc < 0) {
-		*available = 0;
+    if (rc < 0)
+    {
+        *available = 0;
         GLERROR_MQTTCLIENT("LWMQTT_NETWORK_FAILED_READ");
         return TLS::Msg_Err_Peek;
     }
-	*available = iocAvail;
+    *available = iocAvail;
 
     return TLS::Msg_Success;
 }
 
 TLS::TlsMsg_E TLS::SSL_Pending(size_t *available)
 {
-	ssize_t byteToRead;
-	byteToRead = SSL_pending(m_ssl);
-	if (byteToRead < 0)
-	{
-		*available = 0;
-		return TLS::Msg_Err_Peek;
-	}
-	*available = byteToRead;
-	return TLS::Msg_Success;
+    ssize_t byteToRead;
+    byteToRead = SSL_pending(m_ssl);
+    if (byteToRead < 0)
+    {
+        *available = 0;
+        return TLS::Msg_Err_Peek;
+    }
+    *available = byteToRead;
+    return TLS::Msg_Success;
 }
 
-TLS::TlsMsg_E TLS::Peek(size_t *available) {
-	TlsMsg_E rc = Msg_Success;
-	rc = SSL_Pending(available);
-	if (*available > 0)
-		return rc;
-	rc = GetFionRead(available);
-	if( rc == Msg_Success) {
-		if(*available)
-			*available = 1;
-	}
-	return rc;
+TLS::TlsMsg_E TLS::Peek(size_t *available)
+{
+    TlsMsg_E rc = Msg_Success;
+    rc = SSL_Pending(available);
+    if (*available > 0)
+        return rc;
+    rc = GetFionRead(available);
+    if (rc == Msg_Success)
+    {
+        if (*available)
+            *available = 1;
+    }
+    return rc;
 }
 
 TLS::TlsMsg_E TLS::Read(uint8_t *buffer, size_t len, size_t *read, uint32_t timeout)
 {
     TlsMsg_E err = Msg_Success;
     ssize_t ret;
-	ERR_clear_error();
-    if(m_ssl)
+    ERR_clear_error();
+    if (m_ssl)
     {
         ret = SSL_read(m_ssl, buffer, len);
-        if(ret <= 0){
-             ret = Msg_Err_Read;
+        if (ret <= 0)
+        {
+            ret = Msg_Err_Read;
             *read = 0;
-            if (!HandleSslError(ret) )
+            if (!HandleSslError(ret))
                 err = Msg_Success;
         }
-        else {
+        else
+        {
             *read = (size_t)ret;
             GLINFO_MQTTCLIENT("SSL_read() len = %lu, read = %lu, timeout = %u", len, *read, timeout);
         }
@@ -194,16 +199,18 @@ TLS::TlsMsg_E TLS::Write(uint8_t *buffer, size_t len, size_t *sent, uint32_t tim
 {
     TlsMsg_E err = Msg_Success;
     ssize_t ret;
-	ERR_clear_error();
-    if(m_ssl)
+    ERR_clear_error();
+    if (m_ssl)
     {
         ret = SSL_write(m_ssl, buffer, len);
-        if(ret <= 0){
+        if (ret <= 0)
+        {
             err = Msg_Err_Write;
             *sent = 0;
             HandleSslError(ret);
         }
-        else {
+        else
+        {
             *sent = (size_t)ret;
             GLINFO_MQTTCLIENT("SSL_write() len = %lu, sent = %lu, timeout = %u", len, *sent, timeout);
         }
@@ -211,6 +218,23 @@ TLS::TlsMsg_E TLS::Write(uint8_t *buffer, size_t len, size_t *sent, uint32_t tim
     return err;
 }
 
+bool TLS::WildcardName(char *certname, const char *hostname)
+{
+    if (!certname || !hostname)
+    {
+        return 1;
+    }
+    GLINFO_MQTTCLIENT("certname: %s and hosname %s", certname, hostname);
+    std::string cert(certname);
+    std::string host(hostname);
+    if (certname[0] == '*')
+    {
+        cert.erase(cert.begin());
+        size_t pos = host.find(cert);
+        host.erase(0, pos);
+    }
+    return cert == host;
+}
 
 int TLS::CertificateHostNameVeriry(X509 *cert, const char *hostname)
 {
@@ -241,7 +265,7 @@ int TLS::CertificateHostNameVeriry(X509 *cert, const char *hostname)
 #else
                 data = ASN1_STRING_get0_data(nval->d.dNSName);
 #endif
-                if (data && !strcasecmp((char *)data, hostname))
+                if (data && WildcardName((char *)data, hostname))
                 {
                     sk_GENERAL_NAME_pop_free(san, GENERAL_NAME_free);
                     return 1;
@@ -285,14 +309,13 @@ int TLS::CertificateHostNameVeriry(X509 *cert, const char *hostname)
     if (X509_NAME_get_text_by_NID(subj, NID_commonName, name, sizeof(name)) > 0)
     {
         name[sizeof(name) - 1] = '\0';
-        if (!strcasecmp(name, hostname))
+        if (WildcardName(name, hostname))
             return 1;
     }
     return 0;
 }
 
-
-int TLS::ServerCertificateVerifyCallback(int preverify_ok, X509_STORE_CTX *ctx )
+int TLS::ServerCertificateVerifyCallback(int preverify_ok, X509_STORE_CTX *ctx)
 {
     X509 *cert;
 
@@ -305,7 +328,7 @@ int TLS::ServerCertificateVerifyCallback(int preverify_ok, X509_STORE_CTX *ctx )
             GLERROR_MQTTCLIENT("Error: host name verification failed.");
         }
     }
-    GLINFO_MQTTCLIENT("Server Certificate Verified, preveriry_ok %d,", preverify_ok);
+    GLINFO_MQTTCLIENT("Server Certificate Verified, preveriry_ok %d, 1 successfull, 0 failed", preverify_ok);
     return preverify_ok;
 }
 
@@ -460,7 +483,7 @@ void TLS::SetALPN()
 
 /**
  * @brief Initialize TLSConnection
- * 
+ *
  *
  * @return int
  */
@@ -518,9 +541,10 @@ void TLS::Close()
 {
     m_tls_data->tls_connected = false;
     SslClose();
-	if(m_ssl_ctx){
-		SSL_CTX_free(m_ssl_ctx);
-	}
+    if (m_ssl_ctx)
+    {
+        SSL_CTX_free(m_ssl_ctx);
+    }
     m_initialized = false;
     m_openssl_ex_index = -1;
     m_ssl_ctx = nullptr;
@@ -529,32 +553,41 @@ void TLS::Close()
 
 int TLS::SslConnect()
 {
- 	int ret, err;
+    int ret, err;
 
-	ERR_clear_error();
+    ERR_clear_error();
 
-	ret = SSL_connect(m_ssl);
-	if(ret != 1) {
-		err = SSL_get_error(m_ssl, ret);
-		if (err == SSL_ERROR_SYSCALL) {
-			m_want_connect = true;
-			return Msg_Success;
-		}
-		if(err == SSL_ERROR_WANT_READ){
-			m_want_connect = true;
-			/* We always try to read anyway */
-		}else if(err == SSL_ERROR_WANT_WRITE){
-			m_want_write = true;
-			m_want_connect = true;
-		}else{
-			PrintTlsError();
-			GLERROR_MQTTCLIENT("Error: ssl connect failed.");
-			return Msg_Err_Tls;
-		}
-	}else{
-		m_want_connect = false;
-	}
-	return Msg_Success;
+    ret = SSL_connect(m_ssl);
+    if (ret != 1)
+    {
+        err = SSL_get_error(m_ssl, ret);
+        if (err == SSL_ERROR_SYSCALL)
+        {
+            m_want_connect = true;
+            return Msg_Success;
+        }
+        if (err == SSL_ERROR_WANT_READ)
+        {
+            m_want_connect = true;
+            /* We always try to read anyway */
+        }
+        else if (err == SSL_ERROR_WANT_WRITE)
+        {
+            m_want_write = true;
+            m_want_connect = true;
+        }
+        else
+        {
+            PrintTlsError();
+            GLERROR_MQTTCLIENT("Error: ssl connect failed.");
+            return Msg_Err_Tls;
+        }
+    }
+    else
+    {
+        m_want_connect = false;
+    }
+    return Msg_Success;
 }
 
 int TLS::Init()
@@ -564,15 +597,15 @@ int TLS::Init()
     // Create a function object encapsulating the server certificate verify callback.  Pointer
     // to this object is passed to the c-callback wrapper.
     mServerCertificateVeriryCallbackFunc = std::bind(&TLS::ServerCertificateVerifyCallback,
-                                           this,
-                                           std::placeholders::_1,
-                                           std::placeholders::_2);
+                                                     this,
+                                                     std::placeholders::_1,
+                                                     std::placeholders::_2);
 
     int rc = InitSslCtx();
     if (rc)
     {
         Close();
-        return rc;
+        return Msg_Err_Tls;
     }
 
     if (m_ssl_ctx)
@@ -594,7 +627,7 @@ int TLS::Init()
         {
             Close();
             PrintTlsError();
-            BLog("Msg_Err_Tls");
+            GLERROR_MQTTCLIENT("Msg_Err_Tls");
             return Msg_Err_Tls;
         }
         SSL_set_bio(m_ssl, bio, bio);
@@ -606,7 +639,8 @@ int TLS::Init()
             GLERROR_MQTTCLIENT("Msg_Err_Tls");
             return Msg_Err_Tls;
         }
-        do {
+        do
+        {
             if (SslConnect())
             {
                 Close();
@@ -627,4 +661,3 @@ TLS::TLS(TlsData_S *data)
     m_ssl = nullptr;
     m_tls_data = data;
 }
-
