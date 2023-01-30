@@ -27,6 +27,7 @@ typedef enum {
   LWMQTT_FAILED_SUBSCRIPTION = -11,
   LWMQTT_SUBACK_ARRAY_OVERFLOW = -12,
   LWMQTT_PONG_TIMEOUT = -13,
+  LWMQTT_MISSING_DUP_PACKET_ID = -14,
 } lwmqtt_err_t;
 
 /**
@@ -296,6 +297,26 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t msg, uint32_t timeout);
+
+/**
+ * Will send a publish packet and wait for all acks to complete. If the encoded packet is bigger than the write buffer
+ * the function will return LWMQTT_BUFFER_TOO_SHORT without attempting to send the packet.
+ * If "dup" is set to true, it will mark the message as duplicate and publish it using the packet id passed (pointed by "id").
+ * If "dup" is set to false, it will mark the message as NOT duplicate and publish it with the corresponding next packet id, 
+ * which will be stored in the variable pointed by "id" in case the publishing fails and it has to be republished it as DUP 
+ * (with the same packet id).
+ *
+ * Note: The message callback might be called with incoming messages as part of this call.
+ *
+ * @param client - The client object.
+ * @param topic - The topic.
+ * @param message - The message.
+ * @param timeout - The command timeout.
+ * @param dup - The DUP flag
+ * @param id - The packed ID.
+ * @return An error value.
+ */
+lwmqtt_err_t lwmqtt_publish_dup(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message, uint32_t timeout, bool dup, uint16_t *id);
 
 /**
  * Will send a subscribe packet with multiple topic filters plus QOS levels and wait for the suback to complete.
