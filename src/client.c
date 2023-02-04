@@ -562,7 +562,7 @@ lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t top
 
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message,
                             uint32_t timeout) {
-  lwmqtt_publish_dup(client, topic, message, timeout, false, NULL);
+  return lwmqtt_publish_dup(client, topic, message, timeout, false, NULL);
 }
 
 lwmqtt_err_t lwmqtt_publish_dup(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message,
