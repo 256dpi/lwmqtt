@@ -137,12 +137,13 @@ typedef enum {
  */
 typedef struct {
   uint16_t *dup_id;
+  bool skip_ack;
 } lwmqtt_publish_options_t;
 
 /**
  * The initializer for publish options objects.
  */
-#define lwmqtt_default_publish_options {NULL};
+#define lwmqtt_default_publish_options {NULL, false};
 
 /**
  * Forward declaration of the client object.

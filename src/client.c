@@ -605,6 +605,11 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
     return LWMQTT_SUCCESS;
   }
 
+  // skip if requested
+  if (options->skip_ack) {
+    return LWMQTT_SUCCESS;
+  }
+
   // define ack packet
   lwmqtt_packet_type_t ack_type = LWMQTT_NO_PACKET;
   if (message.qos == LWMQTT_QOS1) {
