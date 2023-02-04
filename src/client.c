@@ -363,7 +363,9 @@ static lwmqtt_err_t lwmqtt_cycle(lwmqtt_client_t *client, size_t *read, lwmqtt_p
     }
 
     // handle all other packets
-    default: { break; }
+    default: {
+      break;
+    }
   }
 
   return LWMQTT_SUCCESS;
@@ -558,21 +560,36 @@ lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t top
   return lwmqtt_unsubscribe(client, 1, &topic_filter, timeout);
 }
 
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message,
-                            uint32_t timeout) {
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message, uint32_t timeout,
+                            lwmqtt_publish_options_t *options) {
+  // ensure default options
+  static lwmqtt_publish_options_t def_options = lwmqtt_default_publish_options;
+  if (options == NULL) {
+    options = &def_options;
+  }
+
   // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // add packet id if at least qos 1
+  bool dup = false;
   uint16_t packet_id = 0;
   if (message.qos == LWMQTT_QOS1 || message.qos == LWMQTT_QOS2) {
-    packet_id = lwmqtt_get_next_packet_id(client);
+    if (options->dup_id != NULL && *options->dup_id > 0) {
+      dup = true;
+      packet_id = *options->dup_id;
+    } else {
+      packet_id = lwmqtt_get_next_packet_id(client);
+      if (options->dup_id != NULL) {
+        *options->dup_id = packet_id;
+      }
+    }
   }
 
   // encode publish packet
   size_t len = 0;
   lwmqtt_err_t err =
-      lwmqtt_encode_publish(client->write_buf, client->write_buf_size, &len, 0, packet_id, topic, message);
+      lwmqtt_encode_publish(client->write_buf, client->write_buf_size, &len, dup, packet_id, topic, message);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -585,6 +602,11 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
 
   // immediately return on qos zero
   if (message.qos == LWMQTT_QOS0) {
+    return LWMQTT_SUCCESS;
+  }
+
+  // skip if requested
+  if (options->skip_ack) {
     return LWMQTT_SUCCESS;
   }
 
@@ -606,7 +628,6 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
   }
 
   // decode ack packet
-  bool dup;
   err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, ack_type, &dup, &packet_id);
   if (err != LWMQTT_SUCCESS) {
     return err;
