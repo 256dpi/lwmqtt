@@ -63,7 +63,12 @@ int lwmqtt_strcmp(lwmqtt_string_t a, const char *b);
 /**
  * The available QOS levels.
  */
-typedef enum { LWMQTT_QOS0 = 0, LWMQTT_QOS1 = 1, LWMQTT_QOS2 = 2, LWMQTT_QOS_FAILURE = 128 } lwmqtt_qos_t;
+typedef enum {
+  LWMQTT_QOS0 = 0,
+  LWMQTT_QOS1 = 1,
+  LWMQTT_QOS2 = 2,
+  LWMQTT_QOS_FAILURE = 128,
+} lwmqtt_qos_t;
 
 /**
  * The message object used to publish and receive messages.
