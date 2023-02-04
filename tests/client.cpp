@@ -100,6 +100,7 @@ TEST(Client, PublishSubscribeQOS0) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
+  ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, PublishSubscribeQOS1) {
@@ -159,6 +160,7 @@ TEST(Client, PublishSubscribeQOS1) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
+  ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, PublishSubscribeQOS2) {
@@ -218,6 +220,7 @@ TEST(Client, PublishSubscribeQOS2) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
+  ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, BufferOverflow) {
@@ -281,6 +284,7 @@ TEST(Client, BufferOverflow) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
+  ASSERT_EQ(counter, 0);
 }
 
 TEST(Client, OverflowDropping) {
@@ -340,10 +344,9 @@ TEST(Client, OverflowDropping) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
+  lwmqtt_unix_network_disconnect(&network);
   ASSERT_EQ(counter, 0);
   ASSERT_EQ(dropped, 2);
-
-  lwmqtt_unix_network_disconnect(&network);
 }
 
 TEST(Client, BigBuffersAndPayload) {
@@ -403,6 +406,7 @@ TEST(Client, BigBuffersAndPayload) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
+  ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, MultipleSubscriptions) {
@@ -465,6 +469,7 @@ TEST(Client, MultipleSubscriptions) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
+  ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, PublishDupQOS1) {
@@ -538,6 +543,7 @@ TEST(Client, PublishDupQOS1) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
+  ASSERT_EQ(counter, 3);
 }
 
 TEST(Client, PublishDupQOS2) {
@@ -611,4 +617,5 @@ TEST(Client, PublishDupQOS2) {
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_unix_network_disconnect(&network);
+  ASSERT_EQ(counter, 2);
 }
