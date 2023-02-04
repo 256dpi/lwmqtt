@@ -83,6 +83,18 @@ typedef struct {
   { LWMQTT_QOS0, false, NULL, 0 }
 
 /**
+ * Additional options for publishing messages.
+ */
+typedef struct {
+  uint16_t *dup_id;
+} lwmqtt_publish_options_t;
+
+/**
+ * The initializer for publish options objects.
+ */
+#define lwmqtt_default_publish_options {NULL};
+
+/**
  * Forward declaration of the client object.
  */
 typedef struct lwmqtt_client_t lwmqtt_client_t;
@@ -288,15 +300,21 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
  * Will send a publish packet and wait for all acks to complete. If the encoded packet is bigger than the write buffer
  * the function will return LWMQTT_BUFFER_TOO_SHORT without attempting to send the packet.
  *
+ * If options.dup_id is present and zero, the client will store the used packet id (QoS >= 1) at the specified location.
+ * If options.dup_id is present and non-zero, the client will use the specified number as the packet id and flag the
+ * message as a duplicate.
+ *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
  * @param client - The client object.
  * @param topic - The topic.
  * @param message - The message.
  * @param timeout - The command timeout.
+ * @param options - The publish options.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t msg, uint32_t timeout);
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t msg, uint32_t timeout,
+                            lwmqtt_publish_options_t *options);
 
 /**
  * Will send a publish packet and wait for all acks to complete. If the encoded packet is bigger than the write buffer

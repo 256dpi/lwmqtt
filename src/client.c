@@ -560,27 +560,28 @@ lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t top
   return lwmqtt_unsubscribe(client, 1, &topic_filter, timeout);
 }
 
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message,
-                            uint32_t timeout) {
-  return lwmqtt_publish_dup(client, topic, message, timeout, false, NULL);
-}
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message, uint32_t timeout,
+                            lwmqtt_publish_options_t *options) {
+  // ensure default options
+  static lwmqtt_publish_options_t def_options = lwmqtt_default_publish_options;
+  if (options == NULL) {
+    options = &def_options;
+  }
 
-lwmqtt_err_t lwmqtt_publish_dup(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message,
-                                uint32_t timeout, bool dup, uint16_t *id) {
   // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // add packet id if at least qos 1
+  bool dup = false;
   uint16_t packet_id = 0;
   if (message.qos == LWMQTT_QOS1 || message.qos == LWMQTT_QOS2) {
-    if (!dup) {
-      packet_id = lwmqtt_get_next_packet_id(client);
-      if (id != NULL) *id = packet_id;
+    if (options->dup_id != NULL && *options->dup_id > 0) {
+      dup = true;
+      packet_id = *options->dup_id;
     } else {
-      if (id != NULL) {
-        packet_id = *id;
-      } else {
-        return LWMQTT_MISSING_DUP_PACKET_ID;
+      packet_id = lwmqtt_get_next_packet_id(client);
+      if (options->dup_id != NULL) {
+        *options->dup_id = packet_id;
       }
     }
   }
@@ -622,7 +623,6 @@ lwmqtt_err_t lwmqtt_publish_dup(lwmqtt_client_t *client, lwmqtt_string_t topic, 
   }
 
   // decode ack packet
-  bool dup;
   err = lwmqtt_decode_ack(client->read_buf, client->read_buf_size, ack_type, &dup, &packet_id);
   if (err != LWMQTT_SUCCESS) {
     return err;
