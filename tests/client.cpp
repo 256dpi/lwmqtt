@@ -539,3 +539,76 @@ TEST(Client, PublishDupQOS1) {
 
   lwmqtt_unix_network_disconnect(&network);
 }
+
+TEST(Client, PublishDupQOS2) {
+  lwmqtt_unix_network_t network;
+  lwmqtt_unix_timer_t timer1, timer2;
+
+  lwmqtt_client_t client;
+
+  lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
+
+  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
+
+  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  lwmqtt_options_t options = lwmqtt_default_options;
+  options.client_id = lwmqtt_string("lwmqtt");
+  options.username = lwmqtt_string("public");
+  options.password = lwmqtt_string("public");
+
+  lwmqtt_return_code_t return_code;
+  err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS1, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  counter = 0;
+
+  lwmqtt_message_t msg = lwmqtt_default_message;
+  msg.qos = LWMQTT_QOS2;
+  msg.payload = payload;
+  msg.payload_len = PAYLOAD_LEN;
+
+  // send message with default options
+  lwmqtt_publish_options_t opts = lwmqtt_default_publish_options;
+  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  // send message and capture id and skip ack
+  uint16_t dup_id;
+  opts.dup_id = &dup_id;
+  opts.skip_ack = true;
+  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+  ASSERT_TRUE(dup_id > 0);
+
+  // send message again with same id
+  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  /* with QoS2 the broker will not send the message again */
+
+  while (counter < 2) {
+    size_t available = 0;
+    err = lwmqtt_unix_network_peek(&network, &available);
+    ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+    if (available > 0) {
+      err = lwmqtt_yield(&client, available, COMMAND_TIMEOUT);
+      ASSERT_EQ(err, LWMQTT_SUCCESS);
+    }
+  }
+
+  err = lwmqtt_unsubscribe_one(&client, lwmqtt_string("lwmqtt"), COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  lwmqtt_unix_network_disconnect(&network);
+}
