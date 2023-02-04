@@ -143,7 +143,8 @@ typedef struct {
 /**
  * The initializer for publish options objects.
  */
-#define lwmqtt_default_publish_options {NULL, false};
+#define lwmqtt_default_publish_options \
+  { NULL, false }
 
 /**
  * Forward declaration of the client object.
