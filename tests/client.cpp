@@ -501,19 +501,24 @@ TEST(Client, PublishDupQOS1) {
   msg.payload = payload;
   msg.payload_len = PAYLOAD_LEN;
 
+  // send message with default options
   lwmqtt_publish_options_t opts = lwmqtt_default_publish_options;
   err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
+  // send message and capture id and skip ack
   uint16_t dup_id;
   opts.dup_id = &dup_id;
+  opts.skip_ack = true;
   err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
   ASSERT_TRUE(dup_id > 0);
 
-  dup_id = 42;
+  // send message again with same id
   err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
+
+  /* with QoS1 the broker will send the message again */
 
   while (counter < 3) {
     size_t available = 0;
