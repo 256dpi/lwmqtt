@@ -86,6 +86,7 @@ int main(void) {
   // set options
   lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
+  options.clean_session = false;
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
   options.keep_alive = 10;
@@ -98,7 +99,7 @@ int main(void) {
   }
 
   // log
-  printf("connected!\n");
+  printf("connected! (session present: %d)\n", options.session_present);
 
   // subscribe to topic
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("hello"), LWMQTT_QOS0, COMMAND_TIMEOUT);
