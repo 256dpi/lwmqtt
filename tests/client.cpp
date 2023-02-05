@@ -63,8 +63,7 @@ TEST(Client, PublishSubscribeQOS0) {
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -123,8 +122,7 @@ TEST(Client, PublishSubscribeQOS1) {
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS1, COMMAND_TIMEOUT);
@@ -183,8 +181,7 @@ TEST(Client, PublishSubscribeQOS2) {
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS2, COMMAND_TIMEOUT);
@@ -243,8 +240,7 @@ TEST(Client, BufferOverflow) {
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -308,8 +304,7 @@ TEST(Client, OverflowDropping) {
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -367,8 +362,7 @@ TEST(Client, BigBuffersAndPayload) {
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
@@ -427,8 +421,7 @@ TEST(Client, MultipleSubscriptions) {
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_string_t topic_filters[2] = {lwmqtt_string("foo"), lwmqtt_string("lwmqtt")};
@@ -490,8 +483,7 @@ TEST(Client, PublishDupQOS1) {
   options1.username = lwmqtt_string("public");
   options1.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options1, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options1, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS1, COMMAND_TIMEOUT);
@@ -564,8 +556,7 @@ TEST(Client, PublishDupQOS2) {
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
 
-  lwmqtt_return_code_t return_code;
-  err = lwmqtt_connect(&client, &options, nullptr, &return_code, COMMAND_TIMEOUT);
+  err = lwmqtt_connect(&client, &options, nullptr, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS1, COMMAND_TIMEOUT);

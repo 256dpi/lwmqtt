@@ -397,7 +397,7 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *client, lwmqtt_packet_ty
 }
 
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t *options, lwmqtt_will_t *will,
-                            lwmqtt_return_code_t *return_code, uint32_t timeout) {
+                            uint32_t timeout) {
   // ensure default options
   static lwmqtt_connect_options_t def_options = lwmqtt_default_connect_options;
   if (options == NULL) {
@@ -417,7 +417,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t *o
   client->pong_pending = false;
 
   // initialize return code
-  *return_code = LWMQTT_UNKNOWN_RETURN_CODE;
+  options->return_code = LWMQTT_UNKNOWN_RETURN_CODE;
 
   // encode connect packet
   size_t len;
@@ -442,13 +442,14 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t *o
   }
 
   // decode connack packet
-  err = lwmqtt_decode_connack(client->read_buf, client->read_buf_size, &options->session_present, return_code);
+  err =
+      lwmqtt_decode_connack(client->read_buf, client->read_buf_size, &options->session_present, &options->return_code);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
 
   // return error if connection was not accepted
-  if (*return_code != LWMQTT_CONNECTION_ACCEPTED) {
+  if (options->return_code != LWMQTT_CONNECTION_ACCEPTED) {
     return LWMQTT_CONNECTION_DENIED;
   }
 

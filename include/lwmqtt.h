@@ -103,24 +103,6 @@ typedef struct {
   { lwmqtt_default_string, LWMQTT_QOS0, false, lwmqtt_default_string }
 
 /**
- * The object containing the connection options.
- */
-typedef struct {
-  lwmqtt_string_t client_id;
-  uint16_t keep_alive;
-  bool clean_session;
-  lwmqtt_string_t username;
-  lwmqtt_string_t password;
-  bool session_present;
-} lwmqtt_connect_options_t;
-
-/**
- * The default initializer for the connect options objects.
- */
-#define lwmqtt_default_connect_options \
-  { lwmqtt_default_string, 60, true, lwmqtt_default_string, lwmqtt_default_string, false }
-
-/**
  * The available return codes transported by the connack packet.
  */
 typedef enum {
@@ -132,6 +114,25 @@ typedef enum {
   LWMQTT_NOT_AUTHORIZED = 5,
   LWMQTT_UNKNOWN_RETURN_CODE = 6
 } lwmqtt_return_code_t;
+
+/**
+ * The object containing the connection options.
+ */
+typedef struct {
+  lwmqtt_string_t client_id;
+  uint16_t keep_alive;
+  bool clean_session;
+  lwmqtt_string_t username;
+  lwmqtt_string_t password;
+  lwmqtt_return_code_t return_code;
+  bool session_present;
+} lwmqtt_connect_options_t;
+
+/**
+ * The default initializer for the connect options objects.
+ */
+#define lwmqtt_default_connect_options \
+  { lwmqtt_default_string, 60, true, lwmqtt_default_string, lwmqtt_default_string, LWMQTT_UNKNOWN_RETURN_CODE, false }
 
 /**
  * The object containing the publish options.
@@ -301,12 +302,11 @@ void lwmqtt_drop_overflow(lwmqtt_client_t *client, bool enabled, uint32_t *count
  * @param client The client object.
  * @param options The optional connect options.
  * @param will The will object.
- * @param return_code The variable that will receive the return code.
  * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t *options, lwmqtt_will_t *will,
-                            lwmqtt_return_code_t *return_code, uint32_t timeout);
+                            uint32_t timeout);
 
 /**
  * Will send a publish packet and wait for all acks to complete. If the encoded packet (without payload) is bigger than
