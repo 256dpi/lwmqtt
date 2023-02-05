@@ -62,32 +62,32 @@ TEST(Packet, EncodeConnect1) {
   uint8_t pkt[60] = {
       LWMQTT_CONNECT_PACKET << 4u,
       58,
-      0,  // Protocol String MSB
-      4,  // Protocol String LSB
+      0,  // protocol string MSB
+      4,  // protocol string LSB
       'M',
       'Q',
       'T',
       'T',
-      4,    // Protocol level 4
-      204,  // Connect Flags
-      0,    // Keep Alive MSB
-      10,   // Keep Alive LSB
-      0,    // Client ID MSB
-      6,    // Client ID LSB
+      4,    // protocol level 4
+      204,  // connect flags
+      0,    // keep alive MSB
+      10,   // keep alive LSB
+      0,    // client ID MSB
+      6,    // client ID LSB
       'l',
       'w',
       'm',
       'q',
       't',
       't',
-      0,  // Will Topic MSB
-      4,  // Will Topic LSB
+      0,  // will topic MSB
+      4,  // will topic LSB
       'w',
       'i',
       'l',
       'l',
-      0,   // Will Message MSB
-      12,  // Will Message LSB
+      0,   // will message MSB
+      12,  // will message LSB
       's',
       'e',
       'n',
@@ -100,16 +100,16 @@ TEST(Packet, EncodeConnect1) {
       'o',
       'm',
       'e',
-      0,  // Username ID MSB
-      6,  // Username ID LSB
+      0,  // username MSB
+      6,  // username LSB
       'l',
       'w',
       'm',
       'q',
       't',
       't',
-      0,   // Password ID MSB
-      10,  // Password ID LSB
+      0,   // password MSB
+      10,  // password LSB
       'v',
       'e',
       'r',
@@ -147,18 +147,18 @@ TEST(Packet, EncodeConnect2) {
   uint8_t pkt[14] = {
       LWMQTT_CONNECT_PACKET << 4u,
       12,
-      0,  // Protocol String MSB
-      4,  // Protocol String LSB
+      0,  // protocol string MSB
+      4,  // protocol string LSB
       'M',
       'Q',
       'T',
       'T',
-      4,   // Protocol level 4
-      2,   // Connect Flags
-      0,   // Keep Alive MSB
-      60,  // Keep Alive LSB
-      0,   // Client ID MSB
-      0,   // Client ID LSB
+      4,   // protocol level 4
+      2,   // connect flags
+      0,   // keep alive MSB
+      60,  // keep alive LSB
+      0,   // client ID MSB
+      0,   // client ID LSB
   };
 
   uint8_t buf[sizeof(pkt)];
@@ -176,32 +176,32 @@ TEST(Packet, EncodeConnect3) {
   uint8_t pkt[50] = {
       LWMQTT_CONNECT_PACKET << 4u,
       48,
-      0,  // Protocol String MSB
-      4,  // Protocol String LSB
+      0,  // protocol string MSB
+      4,  // protocol string LSB
       'M',
       'Q',
       'T',
       'T',
-      4,    // Protocol level 4
-      204,  // Connect Flags
-      0,    // Keep Alive MSB
-      10,   // Keep Alive LSB
-      0,    // Client ID MSB
-      6,    // Client ID LSB
+      4,    // protocol level 4
+      204,  // connect flags
+      0,    // keep alive MSB
+      10,   // keep alive LSB
+      0,    // client ID MSB
+      6,    // client ID LSB
       'l',
       'w',
       'm',
       'q',
       't',
       't',
-      0,  // Will Topic MSB
-      4,  // Will Topic LSB
+      0,  // will topic MSB
+      4,  // will topic LSB
       'w',
       'i',
       'l',
       'l',
-      0,   // Will Message MSB
-      12,  // Will Message LSB
+      0,   // will message MSB
+      12,  // will message LSB
       's',
       'e',
       'n',
@@ -214,10 +214,10 @@ TEST(Packet, EncodeConnect3) {
       'o',
       'm',
       'e',
-      0,  // Username ID MSB
-      0,  // Username ID LSB
-      0,  // Password ID MSB
-      6,  // Password ID LSB
+      0,  // username MSB
+      0,  // username LSB
+      0,  // password MSB
+      6,  // password LSB
       'l',
       'w',
       'm',
@@ -370,7 +370,7 @@ TEST(Packet, EncodeAck) {
   uint8_t buf[4];
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_ack(buf, sizeof(pkt), &len, LWMQTT_PUBACK_PACKET, 0, 7);
+  lwmqtt_err_t err = lwmqtt_encode_ack(buf, sizeof(pkt), &len, LWMQTT_PUBACK_PACKET, false, 7);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -380,7 +380,7 @@ TEST(Packet, EncodeAckError) {
   uint8_t buf[2];  // <- too small buffer
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_ack(buf, sizeof(buf), &len, LWMQTT_PUBACK_PACKET, 0, 7);
+  lwmqtt_err_t err = lwmqtt_encode_ack(buf, sizeof(buf), &len, LWMQTT_PUBACK_PACKET, false, 7);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
