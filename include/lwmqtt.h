@@ -294,7 +294,8 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t c
 void lwmqtt_drop_overflow(lwmqtt_client_t *client, bool enabled, uint32_t *counter);
 
 /**
- * Will send a connect packet and wait for a connack response and set the return code.
+ * Will send a connect packet and wait for a connack response. If options are provided they are used for the
+ * connection attempt and the return code and whether a session was present is stored in it.
  *
  * The network object must already be connected to the server. An error is returned if the broker rejects the
  * connection.
