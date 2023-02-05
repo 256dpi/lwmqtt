@@ -190,7 +190,7 @@ typedef void (*lwmqtt_timer_set_t)(void *ref, uint32_t timeout);
 /**
  * The callback used to get a timers value.
  *
- * @param A custom reference.
+ * @param ref A custom reference.
  * @return The amount of milliseconds until the deadline. May return negative numbers if the deadline has been reached.
  */
 typedef int32_t (*lwmqtt_timer_get_t)(void *ref);
@@ -201,8 +201,13 @@ typedef int32_t (*lwmqtt_timer_get_t)(void *ref);
  * Note: The callback is mostly executed because of a call to lwmqtt_yield() that processes incoming messages. However,
  * it is possible that the callback is also executed during a call to lwmqtt_subscribe(), lwmqtt_publish() or
  * lwmqtt_unsubscribe() if incoming messages are received between the required acknowledgements. It is therefore not
- * recommended to call any further lwmqtt methods in the callback as this might result in weird call stacks. The
+ * recommended to call any further lwmqtt methods in the callback as this might result in deadlocks. Instead, the
  * callback should place the received messages in a queue and dispatch them after the caller has returned.
+ *
+ * @param client The client object.
+ * @param ref A custom reference.
+ * @param str The topic string.
+ * @param msg The received message.
  */
 typedef void (*lwmqtt_callback_t)(lwmqtt_client_t *client, void *ref, lwmqtt_string_t str, lwmqtt_message_t msg);
 
@@ -306,9 +311,9 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
  * Will send a publish packet and wait for all acks to complete. If the encoded packet is bigger than the write buffer
  * the function will return LWMQTT_BUFFER_TOO_SHORT without attempting to send the packet.
  *
- * If options.dup_id is present and zero, the client will store the used packet id (QoS >= 1) at the specified location.
+ * If options.dup_id is present and zero, the client will store the used packet id at the specified location (QoS >= 1).
  * If options.dup_id is present and non-zero, the client will use the specified number as the packet id and flag the
- * message as a duplicate.
+ * message as a duplicate (QoS >= 1).
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
@@ -409,7 +414,7 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, uint32_t ti
  * Will yield control to the client to keep the connection alive.
  *
  * This functions must be called at a rate slightly lower than 25% of the configured keep alive. If keep alive is zero,
- * the function must not be called at all.
+ * the function may not be called at all.
  *
  * @param client The client object.
  * @param timeout The command timeout.

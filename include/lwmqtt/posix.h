@@ -54,7 +54,7 @@ void lwmqtt_posix_network_disconnect(lwmqtt_posix_network_t *network);
  * Function to peek available bytes on a POSIX network connection.
  *
  * @param network The network object.
- * @param available Variables that must be set with the available bytes.
+ * @param available Variable that is set with the available bytes.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_posix_network_peek(lwmqtt_posix_network_t *network, size_t *available);
@@ -63,7 +63,7 @@ lwmqtt_err_t lwmqtt_posix_network_peek(lwmqtt_posix_network_t *network, size_t *
  * Function to wait for a socket until data is available or the timeout has been reached.
  *
  * @param network The network object.
- * @param available Variables that will be set with the status.
+ * @param available Variables that is set with the available bytes.
  * @param timeout The timeout.
  * @return An error value.
  */
