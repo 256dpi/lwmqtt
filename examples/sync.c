@@ -38,7 +38,7 @@ int main(void) {
   }
 
   // prepare options
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -94,7 +94,7 @@ int main(void) {
       lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = false, .payload = (uint8_t *)("world"), .payload_len = 5};
 
       // publish message
-      err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT, NULL);
+      err = lwmqtt_publish(&client, NULL, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
       if (err != LWMQTT_SUCCESS) {
         printf("failed lwmqtt_keep_alive: %d\n", err);
         exit(1);

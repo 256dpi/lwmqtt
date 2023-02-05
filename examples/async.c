@@ -84,7 +84,7 @@ int main(void) {
   }
 
   // set options
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -135,7 +135,7 @@ int main(void) {
     pthread_mutex_lock(&mutex);
 
     // publish message
-    err = lwmqtt_publish(&client, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT, NULL);
+    err = lwmqtt_publish(&client, NULL, lwmqtt_string("hello"), msg, COMMAND_TIMEOUT);
     if (err != LWMQTT_SUCCESS) {
       printf("failed lwmqtt_publish: %d\n", err);
       exit(1);

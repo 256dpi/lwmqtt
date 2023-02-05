@@ -55,7 +55,7 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_options_t options,
+lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_connect_options_t options,
                                    lwmqtt_will_t *will) {
   // prepare pointers
   uint8_t *buf_ptr = buf;

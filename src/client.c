@@ -398,7 +398,7 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *client, lwmqtt_packet_ty
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, lwmqtt_will_t *will,
+lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, uint32_t timeout) {
   // set command timer
   client->timer_set(client->command_timer, timeout);
@@ -452,8 +452,8 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t message, uint32_t timeout,
-                            lwmqtt_publish_options_t *options) {
+lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_publish_options_t *options, lwmqtt_string_t topic,
+                            lwmqtt_message_t msg, uint32_t timeout) {
   // ensure default options
   static lwmqtt_publish_options_t def_options = lwmqtt_default_publish_options;
   if (options == NULL) {
@@ -466,7 +466,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
   // add packet id if at least qos 1
   bool dup = false;
   uint16_t packet_id = 0;
-  if (message.qos == LWMQTT_QOS1 || message.qos == LWMQTT_QOS2) {
+  if (msg.qos == LWMQTT_QOS1 || msg.qos == LWMQTT_QOS2) {
     if (options->dup_id != NULL && *options->dup_id > 0) {
       dup = true;
       packet_id = *options->dup_id;
@@ -480,8 +480,7 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
 
   // encode publish packet
   size_t len = 0;
-  lwmqtt_err_t err =
-      lwmqtt_encode_publish(client->write_buf, client->write_buf_size, &len, dup, packet_id, topic, message);
+  lwmqtt_err_t err = lwmqtt_encode_publish(client->write_buf, client->write_buf_size, &len, dup, packet_id, topic, msg);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -493,15 +492,15 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
   }
 
   // send payload if available
-  if (message.payload_len > 0) {
-    err = lwmqtt_write_to_network(client, message.payload, message.payload_len);
+  if (msg.payload_len > 0) {
+    err = lwmqtt_write_to_network(client, msg.payload, msg.payload_len);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
   }
 
   // immediately return on qos zero
-  if (message.qos == LWMQTT_QOS0) {
+  if (msg.qos == LWMQTT_QOS0) {
     return LWMQTT_SUCCESS;
   }
 
@@ -512,9 +511,9 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
 
   // define ack packet
   lwmqtt_packet_type_t ack_type = LWMQTT_NO_PACKET;
-  if (message.qos == LWMQTT_QOS1) {
+  if (msg.qos == LWMQTT_QOS1) {
     ack_type = LWMQTT_PUBACK_PACKET;
-  } else if (message.qos == LWMQTT_QOS2) {
+  } else if (msg.qos == LWMQTT_QOS2) {
     ack_type = LWMQTT_PUBCOMP_PACKET;
   }
 

@@ -58,7 +58,7 @@ TEST(Client, PublishSubscribeQOS0) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t data = lwmqtt_default_options;
+  lwmqtt_connect_options_t data = lwmqtt_default_options;
   data.client_id = lwmqtt_string("lwmqtt");
   data.username = lwmqtt_string("public");
   data.password = lwmqtt_string("public");
@@ -78,7 +78,7 @@ TEST(Client, PublishSubscribeQOS0) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, nullptr);
+    err = lwmqtt_publish(&client, nullptr, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -118,7 +118,7 @@ TEST(Client, PublishSubscribeQOS1) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -138,7 +138,7 @@ TEST(Client, PublishSubscribeQOS1) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, nullptr);
+    err = lwmqtt_publish(&client, nullptr, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -178,7 +178,7 @@ TEST(Client, PublishSubscribeQOS2) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -198,7 +198,7 @@ TEST(Client, PublishSubscribeQOS2) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, nullptr);
+    err = lwmqtt_publish(&client, nullptr, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -238,7 +238,7 @@ TEST(Client, BufferOverflow) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -253,7 +253,7 @@ TEST(Client, BufferOverflow) {
   lwmqtt_string_t topic = {BIG_PAYLOAD_LEN, (char *)big_payload};
   lwmqtt_message_t msg = lwmqtt_default_message;
 
-  err = lwmqtt_publish(&client, topic, msg, COMMAND_TIMEOUT, nullptr);
+  err = lwmqtt_publish(&client, nullptr, topic, msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 
   counter = 0;
@@ -263,7 +263,7 @@ TEST(Client, BufferOverflow) {
   msg.payload = payload;
   msg.payload_len = PAYLOAD_LEN;
 
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, nullptr);
+  err = lwmqtt_publish(&client, nullptr, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   while (counter < 1) {
@@ -303,7 +303,7 @@ TEST(Client, OverflowDropping) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -322,10 +322,10 @@ TEST(Client, OverflowDropping) {
   msg.payload = payload;
   msg.payload_len = PAYLOAD_LEN;
 
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, nullptr);
+  err = lwmqtt_publish(&client, nullptr, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, nullptr);
+  err = lwmqtt_publish(&client, nullptr, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   while (dropped < 2) {
@@ -362,7 +362,7 @@ TEST(Client, BigBuffersAndPayload) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -382,7 +382,7 @@ TEST(Client, BigBuffersAndPayload) {
     msg.payload = big_payload;
     msg.payload_len = BIG_PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, nullptr);
+    err = lwmqtt_publish(&client, nullptr, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -422,7 +422,7 @@ TEST(Client, MultipleSubscriptions) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -445,7 +445,7 @@ TEST(Client, MultipleSubscriptions) {
     msg.payload = payload;
     msg.payload_len = PAYLOAD_LEN;
 
-    err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, nullptr);
+    err = lwmqtt_publish(&client, nullptr, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
   }
 
@@ -485,7 +485,7 @@ TEST(Client, PublishDupQOS1) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -506,19 +506,19 @@ TEST(Client, PublishDupQOS1) {
 
   // send message with default options
   lwmqtt_publish_options_t opts = lwmqtt_default_publish_options;
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  err = lwmqtt_publish(&client, &opts, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   // send message and capture id and skip ack
   uint16_t dup_id;
   opts.dup_id = &dup_id;
   opts.skip_ack = true;
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  err = lwmqtt_publish(&client, &opts, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
   ASSERT_TRUE(dup_id > 0);
 
   // send message again with same id
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  err = lwmqtt_publish(&client, &opts, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   /* with QoS1 the broker will send the message again */
@@ -559,7 +559,7 @@ TEST(Client, PublishDupQOS2) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -580,19 +580,19 @@ TEST(Client, PublishDupQOS2) {
 
   // send message with default options
   lwmqtt_publish_options_t opts = lwmqtt_default_publish_options;
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  err = lwmqtt_publish(&client, &opts, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   // send message and capture id and skip ack
   uint16_t dup_id;
   opts.dup_id = &dup_id;
   opts.skip_ack = true;
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  err = lwmqtt_publish(&client, &opts, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
   ASSERT_TRUE(dup_id > 0);
 
   // send message again with same id
-  err = lwmqtt_publish(&client, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT, &opts);
+  err = lwmqtt_publish(&client, &opts, lwmqtt_string("lwmqtt"), msg, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   /* with QoS2 the broker will not send the message again */
