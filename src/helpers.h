@@ -46,7 +46,7 @@ lwmqtt_err_t lwmqtt_read_data(uint8_t **buf, const uint8_t *buf_end, uint8_t **d
 lwmqtt_err_t lwmqtt_write_data(uint8_t **buf, const uint8_t *buf_end, uint8_t *data, size_t len);
 
 /**
- * Reads two byte number from the specified buffer. The pointer is incremented by two.
+ * Reads a two byte number from the specified buffer. The pointer is incremented by two.
  *
  * @param buf Pointer to the buffer.
  * @param buf_end Pointer to the end of the buffer.
