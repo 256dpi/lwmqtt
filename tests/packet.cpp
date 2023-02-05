@@ -39,7 +39,7 @@ TEST(DetectRemainingLength, Valid1) {
 TEST(DetectRemainingLength, Valid2) {
   uint8_t h[2] = {255, 60};
   uint32_t rem_len = 0;
-  lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, 2, &rem_len);
+  lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, sizeof(h), &rem_len);
   EXPECT_EQ(rem_len, (uint32_t)7807);
   EXPECT_EQ(err, LWMQTT_SUCCESS);
 }
@@ -54,14 +54,14 @@ TEST(DetectRemainingLength, ToShort) {
 TEST(DetectRemainingLength, Overflow) {
   uint8_t h[5] = {255, 255, 255, 255, 255};
   uint32_t rem_len = 0;
-  lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, 5, &rem_len);
+  lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, sizeof(h), &rem_len);
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_OVERFLOW);
 }
 
 TEST(ConnectTest, Encode1) {
-  uint8_t pkt[62] = {
+  uint8_t pkt[60] = {
       LWMQTT_CONNECT_PACKET << 4u,
-      60,
+      58,
       0,  // Protocol String MSB
       4,  // Protocol String LSB
       'M',
@@ -73,14 +73,13 @@ TEST(ConnectTest, Encode1) {
       0,    // Keep Alive MSB
       10,   // Keep Alive LSB
       0,    // Client ID MSB
-      7,    // Client ID LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,    // Client ID LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       0,  // Will Topic MSB
       4,  // Will Topic LSB
       'w',
@@ -102,14 +101,13 @@ TEST(ConnectTest, Encode1) {
       'm',
       'e',
       0,  // Username ID MSB
-      7,  // Username ID LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,  // Username ID LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       0,   // Password ID MSB
       10,  // Password ID LSB
       'v',
@@ -124,7 +122,7 @@ TEST(ConnectTest, Encode1) {
       't',
   };
 
-  uint8_t buf[62];
+  uint8_t buf[sizeof(pkt)];
 
   lwmqtt_will_t will = lwmqtt_default_will;
   will.topic = lwmqtt_string("will");
@@ -134,12 +132,12 @@ TEST(ConnectTest, Encode1) {
   lwmqtt_options_t opts = lwmqtt_default_options;
   opts.clean_session = false;
   opts.keep_alive = 10;
-  opts.client_id = lwmqtt_string("surgemq");
-  opts.username = lwmqtt_string("surgemq");
+  opts.client_id = lwmqtt_string("lwmqtt");
+  opts.username = lwmqtt_string("lwmqtt");
   opts.password = lwmqtt_string("verysecret");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 62, &len, opts, &will);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, opts, &will);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -163,21 +161,21 @@ TEST(ConnectTest, Encode2) {
       0,   // Client ID LSB
   };
 
-  uint8_t buf[14];
+  uint8_t buf[sizeof(pkt)];
 
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 14, &len, opts, nullptr);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, opts, nullptr);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
 TEST(ConnectTest, Encode3) {
-  uint8_t pkt[52] = {
+  uint8_t pkt[50] = {
       LWMQTT_CONNECT_PACKET << 4u,
-      50,
+      48,
       0,  // Protocol String MSB
       4,  // Protocol String LSB
       'M',
@@ -189,14 +187,13 @@ TEST(ConnectTest, Encode3) {
       0,    // Keep Alive MSB
       10,   // Keep Alive LSB
       0,    // Client ID MSB
-      7,    // Client ID LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,    // Client ID LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       0,  // Will Topic MSB
       4,  // Will Topic LSB
       'w',
@@ -220,17 +217,16 @@ TEST(ConnectTest, Encode3) {
       0,  // Username ID MSB
       0,  // Username ID LSB
       0,  // Password ID MSB
-      7,  // Password ID LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,  // Password ID LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
   };
 
-  uint8_t buf[64];
+  uint8_t buf[sizeof(pkt)];
 
   lwmqtt_will_t will = lwmqtt_default_will;
   will.topic = lwmqtt_string("will");
@@ -240,11 +236,11 @@ TEST(ConnectTest, Encode3) {
   lwmqtt_options_t opts = lwmqtt_default_options;
   opts.clean_session = false;
   opts.keep_alive = 10;
-  opts.client_id = lwmqtt_string("surgemq");
-  opts.password = lwmqtt_string("surgemq");
+  opts.client_id = lwmqtt_string("lwmqtt");
+  opts.password = lwmqtt_string("lwmqtt");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 64, &len, opts, &will);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, opts, &will);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -256,7 +252,7 @@ TEST(ConnectTest, EncodeError1) {
   lwmqtt_options_t opts = lwmqtt_default_options;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, 4, &len, opts, nullptr);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(buf), &len, opts, nullptr);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
@@ -270,7 +266,7 @@ TEST(ConnackTest, Decode1) {
 
   bool session_present;
   lwmqtt_return_code_t return_code;
-  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 4, &session_present, &return_code);
+  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, sizeof(pkt), &session_present, &return_code);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(session_present, false);
@@ -287,7 +283,7 @@ TEST(ConnackTest, DecodeError1) {
 
   bool session_present;
   lwmqtt_return_code_t return_code;
-  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 4, &session_present, &return_code);
+  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, sizeof(pkt), &session_present, &return_code);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
@@ -301,7 +297,7 @@ TEST(ConnackTest, DecodeError2) {
 
   bool session_present;
   lwmqtt_return_code_t return_code;
-  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, 3, &session_present, &return_code);
+  lwmqtt_err_t err = lwmqtt_decode_connack(pkt, sizeof(pkt), &session_present, &return_code);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
@@ -309,10 +305,10 @@ TEST(ConnackTest, DecodeError2) {
 TEST(ZeroTest, Encode1) {
   uint8_t pkt[2] = {LWMQTT_PINGREQ_PACKET << 4u, 0};
 
-  uint8_t buf[2];
+  uint8_t buf[sizeof(pkt)];
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_zero(buf, 2, &len, LWMQTT_PINGREQ_PACKET);
+  lwmqtt_err_t err = lwmqtt_encode_zero(buf, sizeof(pkt), &len, LWMQTT_PINGREQ_PACKET);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -327,7 +323,7 @@ TEST(AckTest, Decode1) {
 
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, sizeof(pkt), LWMQTT_PUBACK_PACKET, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, false);
@@ -344,7 +340,7 @@ TEST(AckTest, DecodeError1) {
 
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, sizeof(pkt), LWMQTT_PUBACK_PACKET, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
@@ -359,7 +355,7 @@ TEST(AckTest, DecodeError2) {
 
   bool dup;
   uint16_t packet_id;
-  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, 4, LWMQTT_PUBACK_PACKET, &dup, &packet_id);
+  lwmqtt_err_t err = lwmqtt_decode_ack(pkt, sizeof(pkt), LWMQTT_PUBACK_PACKET, &dup, &packet_id);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
@@ -374,7 +370,7 @@ TEST(AckTest, Encode1) {
   uint8_t buf[4];
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_ack(buf, 4, &len, LWMQTT_PUBACK_PACKET, 0, 7);
+  lwmqtt_err_t err = lwmqtt_encode_ack(buf, sizeof(pkt), &len, LWMQTT_PUBACK_PACKET, 0, 7);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -384,24 +380,23 @@ TEST(AckTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_ack(buf, 2, &len, LWMQTT_PUBACK_PACKET, 0, 7);
+  lwmqtt_err_t err = lwmqtt_encode_ack(buf, sizeof(buf), &len, LWMQTT_PUBACK_PACKET, 0, 7);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(PublishTest, Decode1) {
-  uint8_t pkt[25] = {
+  uint8_t pkt[24] = {
       LWMQTT_PUBLISH_PACKET << 4u | 11,
-      23,
+      22,
       0,  // topic name MSB
-      7,  // topic name LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,  // topic name LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       0,  // packet ID MSB
       7,  // packet ID LSB
       's',
@@ -422,31 +417,30 @@ TEST(PublishTest, Decode1) {
   uint16_t packet_id;
   lwmqtt_string_t topic;
   lwmqtt_message_t msg;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 25, &dup, &packet_id, &topic, &msg);
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, sizeof(pkt), &dup, &packet_id, &topic, &msg);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, true);
   EXPECT_EQ(msg.qos, 1);
   EXPECT_EQ(msg.retained, true);
   EXPECT_EQ(packet_id, 7);
-  EXPECT_ARRAY_EQ("surgemq", topic.data, 7);
+  EXPECT_ARRAY_EQ("lwmqtt", topic.data, 6);
   EXPECT_EQ(msg.payload_len, (size_t)12);
   EXPECT_ARRAY_EQ("send me home", msg.payload, 12);
 }
 
 TEST(PublishTest, Decode2) {
-  uint8_t pkt[23] = {
+  uint8_t pkt[22] = {
       LWMQTT_PUBLISH_PACKET << 4u,
-      21,
+      20,
       0,  // topic name MSB
-      7,  // topic name LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,  // topic name LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       's',
       'e',
       'n',
@@ -465,14 +459,14 @@ TEST(PublishTest, Decode2) {
   uint16_t packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
   lwmqtt_message_t msg;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 23, &dup, &packet_id, &topic, &msg);
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, sizeof(pkt), &dup, &packet_id, &topic, &msg);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(dup, false);
   EXPECT_EQ(msg.qos, 0);
   EXPECT_EQ(msg.retained, false);
   EXPECT_EQ(packet_id, 0);
-  EXPECT_ARRAY_EQ("surgemq", topic.data, 7);
+  EXPECT_ARRAY_EQ("lwmqtt", topic.data, 6);
   EXPECT_EQ(msg.payload_len, (size_t)12);
   EXPECT_ARRAY_EQ("send me home", msg.payload, 12);
 }
@@ -487,24 +481,23 @@ TEST(PublishTest, DecodeError1) {
   uint16_t packet_id;
   lwmqtt_string_t topic = lwmqtt_default_string;
   lwmqtt_message_t msg;
-  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, 2, &dup, &packet_id, &topic, &msg);
+  lwmqtt_err_t err = lwmqtt_decode_publish(pkt, sizeof(pkt), &dup, &packet_id, &topic, &msg);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(PublishTest, Encode1) {
-  uint8_t pkt[25] = {
+  uint8_t pkt[24] = {
       LWMQTT_PUBLISH_PACKET << 4u | 11,
-      23,
+      22,
       0,  // topic name MSB
-      7,  // topic name LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,  // topic name LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       0,  // packet ID MSB
       7,  // packet ID LSB
       's',
@@ -521,9 +514,9 @@ TEST(PublishTest, Encode1) {
       'e',
   };
 
-  uint8_t buf[25];
+  uint8_t buf[sizeof(pkt)];
 
-  lwmqtt_string_t topic = lwmqtt_string("surgemq");
+  lwmqtt_string_t topic = lwmqtt_string("lwmqtt");
   lwmqtt_message_t msg = lwmqtt_default_message;
   msg.qos = LWMQTT_QOS1;
   msg.payload = (uint8_t*)"send me home";
@@ -531,25 +524,24 @@ TEST(PublishTest, Encode1) {
   msg.retained = true;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 25, &len, true, 7, topic, msg);
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(pkt), &len, true, 7, topic, msg);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
 TEST(PublishTest, Encode2) {
-  uint8_t pkt[23] = {
+  uint8_t pkt[22] = {
       LWMQTT_PUBLISH_PACKET << 4u,
-      21,
+      20,
       0,  // topic name MSB
-      7,  // topic name LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,  // topic name LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       's',
       'e',
       'n',
@@ -564,15 +556,15 @@ TEST(PublishTest, Encode2) {
       'e',
   };
 
-  uint8_t buf[23];
+  uint8_t buf[sizeof(pkt)];
 
-  lwmqtt_string_t topic = lwmqtt_string("surgemq");
+  lwmqtt_string_t topic = lwmqtt_string("lwmqtt");
   lwmqtt_message_t msg = lwmqtt_default_message;
   msg.payload = (uint8_t*)"send me home";
   msg.payload_len = 12;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 23, &len, false, 0, topic, msg);
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(pkt), &len, false, 0, topic, msg);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -581,13 +573,13 @@ TEST(PublishTest, Encode2) {
 TEST(PublishTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
-  lwmqtt_string_t topic = lwmqtt_string("surgemq");
+  lwmqtt_string_t topic = lwmqtt_string("lwmqtt");
   lwmqtt_message_t msg = lwmqtt_default_message;
   msg.payload = (uint8_t*)"send me home";
   msg.payload_len = 12;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_publish(buf, 2, &len, false, 0, topic, msg);
+  lwmqtt_err_t err = lwmqtt_encode_publish(buf, sizeof(buf), &len, false, 0, topic, msg);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
@@ -605,7 +597,7 @@ TEST(SubackTest, Decode1) {
   uint16_t packet_id;
   int count;
   lwmqtt_qos_t granted_qos_levels[2];
-  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, 8, &packet_id, 2, &count, granted_qos_levels);
+  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 2, &count, granted_qos_levels);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(packet_id, 7);
@@ -626,26 +618,25 @@ TEST(SubackTest, DecodeError1) {
   uint16_t packet_id;
   int count;
   lwmqtt_qos_t granted_qos_levels[2];
-  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, 5, &packet_id, 2, &count, granted_qos_levels);
+  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 2, &count, granted_qos_levels);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
 TEST(SubscribeTest, Encode1) {
-  uint8_t pkt[38] = {
+  uint8_t pkt[37] = {
       LWMQTT_SUBSCRIBE_PACKET << 4u | 2,
-      36,
+      35,
       0,  // packet ID MSB
       7,  // packet ID LSB
       0,  // topic name MSB
-      7,  // topic name LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,  // topic name LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       0,  // QOS
       0,  // topic name MSB
       8,  // topic name LSB
@@ -673,17 +664,17 @@ TEST(SubscribeTest, Encode1) {
       2,  // QOS
   };
 
-  uint8_t buf[38];
+  uint8_t buf[sizeof(pkt)];
 
   lwmqtt_string_t topic_filters[3];
-  topic_filters[0] = lwmqtt_string("surgemq");
+  topic_filters[0] = lwmqtt_string("lwmqtt");
   topic_filters[1] = lwmqtt_string("/a/b/#/c");
   topic_filters[2] = lwmqtt_string("/a/b/#/cdd");
 
   lwmqtt_qos_t qos_levels[3] = {LWMQTT_QOS0, LWMQTT_QOS1, LWMQTT_QOS2};
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 38, &len, 7, 3, topic_filters, qos_levels);
+  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, sizeof(pkt), &len, 7, 3, topic_filters, qos_levels);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -693,31 +684,30 @@ TEST(SubscribeTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
   lwmqtt_string_t topic_filters[1];
-  topic_filters[0] = lwmqtt_string("surgemq");
+  topic_filters[0] = lwmqtt_string("lwmqtt");
 
   lwmqtt_qos_t qos_levels[1] = {LWMQTT_QOS0};
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, 2, &len, 7, 1, topic_filters, qos_levels);
+  lwmqtt_err_t err = lwmqtt_encode_subscribe(buf, sizeof(buf), &len, 7, 1, topic_filters, qos_levels);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
 TEST(UnsubscribeTest, Encode1) {
-  uint8_t pkt[35] = {
+  uint8_t pkt[34] = {
       LWMQTT_UNSUBSCRIBE_PACKET << 4u | 2,
-      33,
+      32,
       0,  // packet ID MSB
       7,  // packet ID LSB
       0,  // topic name MSB
-      7,  // topic name LSB
-      's',
-      'u',
-      'r',
-      'g',
-      'e',
+      6,  // topic name LSB
+      'l',
+      'w',
       'm',
       'q',
+      't',
+      't',
       0,  // topic name MSB
       8,  // topic name LSB
       '/',
@@ -742,15 +732,15 @@ TEST(UnsubscribeTest, Encode1) {
       'd',
   };
 
-  uint8_t buf[38];
+  uint8_t buf[sizeof(pkt)];
 
   lwmqtt_string_t topic_filters[3];
-  topic_filters[0] = lwmqtt_string("surgemq");
+  topic_filters[0] = lwmqtt_string("lwmqtt");
   topic_filters[1] = lwmqtt_string("/a/b/#/c");
   topic_filters[2] = lwmqtt_string("/a/b/#/cdd");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 38, &len, 7, 3, topic_filters);
+  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, sizeof(pkt), &len, 7, 3, topic_filters);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -760,10 +750,10 @@ TEST(UnsubscribeTest, EncodeError1) {
   uint8_t buf[2];  // <- too small buffer
 
   lwmqtt_string_t topic_filters[1];
-  topic_filters[0] = lwmqtt_string("surgemq");
+  topic_filters[0] = lwmqtt_string("lwmqtt");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, 2, &len, 7, 1, topic_filters);
+  lwmqtt_err_t err = lwmqtt_encode_unsubscribe(buf, sizeof(buf), &len, 7, 1, topic_filters);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
