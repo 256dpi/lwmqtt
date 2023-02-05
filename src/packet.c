@@ -532,12 +532,6 @@ lwmqtt_err_t lwmqtt_encode_publish(uint8_t *buf, size_t buf_len, size_t *len, bo
     }
   }
 
-  // write payload
-  err = lwmqtt_write_data(&buf_ptr, buf_end, msg.payload, msg.payload_len);
-  if (err != LWMQTT_SUCCESS) {
-    return err;
-  }
-
   // set length
   *len = buf_ptr - buf;
 

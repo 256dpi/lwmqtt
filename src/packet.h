@@ -127,6 +127,9 @@ lwmqtt_err_t lwmqtt_decode_publish(uint8_t *buf, size_t buf_len, bool *dup, uint
 /**
  * Encodes a publish packet into the supplied buffer.
  *
+ * Note: The payload is not written to the buffer and the reported encoded
+ * length does not include the payload size.
+ *
  * @param buf The buffer into which the packet will be encoded.
  * @param buf_len The length of the specified buffer.
  * @param len The encoded length of the packet.

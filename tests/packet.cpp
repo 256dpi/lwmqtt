@@ -487,7 +487,7 @@ TEST(PublishTest, DecodeError1) {
 }
 
 TEST(PublishTest, Encode1) {
-  uint8_t pkt[24] = {
+  uint8_t pkt[12] = {
       LWMQTT_PUBLISH_PACKET << 4u | 11,
       22,
       0,  // topic name MSB
@@ -500,18 +500,6 @@ TEST(PublishTest, Encode1) {
       't',
       0,  // packet ID MSB
       7,  // packet ID LSB
-      's',
-      'e',
-      'n',
-      'd',
-      ' ',
-      'm',
-      'e',
-      ' ',
-      'h',
-      'o',
-      'm',
-      'e',
   };
 
   uint8_t buf[sizeof(pkt)];
@@ -531,7 +519,7 @@ TEST(PublishTest, Encode1) {
 }
 
 TEST(PublishTest, Encode2) {
-  uint8_t pkt[22] = {
+  uint8_t pkt[10] = {
       LWMQTT_PUBLISH_PACKET << 4u,
       20,
       0,  // topic name MSB
@@ -542,18 +530,6 @@ TEST(PublishTest, Encode2) {
       'q',
       't',
       't',
-      's',
-      'e',
-      'n',
-      'd',
-      ' ',
-      'm',
-      'e',
-      ' ',
-      'h',
-      'o',
-      'm',
-      'e',
   };
 
   uint8_t buf[sizeof(pkt)];

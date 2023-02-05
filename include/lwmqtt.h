@@ -308,8 +308,8 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
                             lwmqtt_return_code_t *return_code, uint32_t timeout);
 
 /**
- * Will send a publish packet and wait for all acks to complete. If the encoded packet is bigger than the write buffer
- * the function will return LWMQTT_BUFFER_TOO_SHORT without attempting to send the packet.
+ * Will send a publish packet and wait for all acks to complete. If the encoded packet (without payload) is bigger than
+ * the write buffer the function will return LWMQTT_BUFFER_TOO_SHORT without attempting to send the packet.
  *
  * If options.dup_id is present and zero, the client will store the used packet id at the specified location (QoS >= 1).
  * If options.dup_id is present and non-zero, the client will use the specified number as the packet id and flag the

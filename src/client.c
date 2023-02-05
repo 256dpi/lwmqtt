@@ -129,7 +129,7 @@ static lwmqtt_err_t lwmqtt_drain_network(lwmqtt_client_t *client, size_t amount)
   return LWMQTT_SUCCESS;
 }
 
-static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *client, size_t offset, size_t len) {
+static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *client, uint8_t *buf, size_t len) {
   // prepare counter
   size_t written = 0;
 
@@ -143,8 +143,8 @@ static lwmqtt_err_t lwmqtt_write_to_network(lwmqtt_client_t *client, size_t offs
 
     // write
     size_t partial_write = 0;
-    lwmqtt_err_t err = client->network_write(client->network, client->write_buf + offset + written, len - written,
-                                             &partial_write, (uint32_t)remaining_time);
+    lwmqtt_err_t err = client->network_write(client->network, buf + written, len - written, &partial_write,
+                                             (uint32_t)remaining_time);
     if (err != LWMQTT_SUCCESS) {
       return err;
     }
@@ -235,7 +235,7 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *client, size_t
 
 static lwmqtt_err_t lwmqtt_send_packet_in_buffer(lwmqtt_client_t *client, size_t length) {
   // write to network
-  lwmqtt_err_t err = lwmqtt_write_to_network(client, 0, length);
+  lwmqtt_err_t err = lwmqtt_write_to_network(client, client->write_buf, length);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -594,10 +594,18 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
     return err;
   }
 
-  // send packet
+  // send packet (without payload)
   err = lwmqtt_send_packet_in_buffer(client, len);
   if (err != LWMQTT_SUCCESS) {
     return err;
+  }
+
+  // send payload if available
+  if (message.payload_len > 0) {
+    err = lwmqtt_write_to_network(client, message.payload, message.payload_len);
+    if (err != LWMQTT_SUCCESS) {
+      return err;
+    }
   }
 
   // immediately return on qos zero
