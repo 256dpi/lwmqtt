@@ -137,7 +137,7 @@ TEST(Packet, EncodeConnect1) {
   opts.password = lwmqtt_string("verysecret");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, opts, &will);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, &opts, &will);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -166,7 +166,7 @@ TEST(Packet, EncodeConnect2) {
   lwmqtt_connect_options_t opts = lwmqtt_default_connect_options;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, opts, nullptr);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, &opts, nullptr);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -240,7 +240,7 @@ TEST(Packet, EncodeConnect3) {
   opts.password = lwmqtt_string("lwmqtt");
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, opts, &will);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, &opts, &will);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_ARRAY_EQ(pkt, buf, len);
@@ -252,7 +252,7 @@ TEST(Packet, EncodeConnectError) {
   lwmqtt_connect_options_t opts = lwmqtt_default_connect_options;
 
   size_t len;
-  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(buf), &len, opts, nullptr);
+  lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(buf), &len, &opts, nullptr);
 
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }

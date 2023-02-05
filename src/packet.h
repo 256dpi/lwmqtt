@@ -57,7 +57,7 @@ lwmqtt_err_t lwmqtt_detect_remaining_length(uint8_t *buf, size_t buf_len, uint32
  * @param will The last will and testament.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_connect_options_t options,
+lwmqtt_err_t lwmqtt_encode_connect(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_connect_options_t *options,
                                    lwmqtt_will_t *will);
 
 /**
@@ -104,7 +104,8 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_
  * @param packet_id The packet id.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_packet_type_t packet_type, uint16_t packet_id);
+lwmqtt_err_t lwmqtt_encode_ack(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_packet_type_t packet_type,
+                               uint16_t packet_id);
 
 /**
  * Decodes a publish packet from the supplied buffer.

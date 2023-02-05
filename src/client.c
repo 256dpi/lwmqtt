@@ -396,13 +396,19 @@ static lwmqtt_err_t lwmqtt_cycle_until(lwmqtt_client_t *client, lwmqtt_packet_ty
   return LWMQTT_SUCCESS;
 }
 
-lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t options, lwmqtt_will_t *will,
+lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t *options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, uint32_t timeout) {
+  // ensure default options
+  static lwmqtt_connect_options_t def_options = lwmqtt_default_connect_options;
+  if (options == NULL) {
+    options = &def_options;
+  }
+
   // set command timer
   client->timer_set(client->command_timer, timeout);
 
   // save keep alive interval
-  client->keep_alive_interval = (uint32_t)(options.keep_alive) * 1000;
+  client->keep_alive_interval = (uint32_t)(options->keep_alive) * 1000;
 
   // set keep alive timer
   client->timer_set(client->keep_alive_timer, client->keep_alive_interval);

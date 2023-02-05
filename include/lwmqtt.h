@@ -298,13 +298,13 @@ void lwmqtt_drop_overflow(lwmqtt_client_t *client, bool enabled, uint32_t *count
  * connection.
  *
  * @param client The client object.
- * @param options The required connect options.
+ * @param options The optional connect options.
  * @param will The will object.
  * @param return_code The variable that will receive the return code.
  * @param timeout The command timeout.
  * @return An error value.
  */
-lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t options, lwmqtt_will_t *will,
+lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t *options, lwmqtt_will_t *will,
                             lwmqtt_return_code_t *return_code, uint32_t timeout);
 
 /**
