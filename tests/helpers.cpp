@@ -4,9 +4,8 @@ extern "C" {
 #include "../src/helpers.h"
 }
 
-TEST(VarNum1, Valid) {
-  uint8_t buf[2];
-  memset(buf, 0, 2);
+TEST(Helpers, VarNum1) {
+  uint8_t buf[2] = {0};
 
   for (uint32_t i = 1; i < 128; i++) {
     int len;
@@ -30,9 +29,8 @@ TEST(VarNum1, Valid) {
   }
 }
 
-TEST(VarNum2, Valid) {
-  uint8_t buf[3];
-  memset(buf, 0, 3);
+TEST(Helpers, VarNum2) {
+  uint8_t buf[3] = {0};
 
   for (uint32_t i = 1; i < 128; i++) {
     int len;
@@ -56,9 +54,8 @@ TEST(VarNum2, Valid) {
   }
 }
 
-TEST(VarNum3, Valid) {
-  uint8_t buf[4];
-  memset(buf, 0, 4);
+TEST(Helpers, VarNum3) {
+  uint8_t buf[4] = {0};
 
   for (uint32_t i = 1; i < 128; i++) {
     int len;
@@ -82,9 +79,8 @@ TEST(VarNum3, Valid) {
   }
 }
 
-TEST(VarNum4, Valid) {
-  uint8_t buf[5];
-  memset(buf, 0, 5);
+TEST(Helpers, VarNum4) {
+  uint8_t buf[5] = {0};
 
   for (uint32_t i = 1; i < 128; i++) {
     int len;
@@ -108,7 +104,7 @@ TEST(VarNum4, Valid) {
   }
 }
 
-TEST(VarNumMax, Valid) {
+TEST(Helpers, VarNumMax) {
   uint8_t buf[4] = {0xFF, 0xFF, 0xFF, 0x7F};
 
   uint8_t *ptr = buf;

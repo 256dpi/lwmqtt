@@ -250,7 +250,7 @@ TEST(Client, BufferOverflow) {
   err = lwmqtt_subscribe_one(&client, lwmqtt_string("lwmqtt"), LWMQTT_QOS0, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_string_t topic = {BIG_PAYLOAD_LEN,(char*)big_payload};
+  lwmqtt_string_t topic = {BIG_PAYLOAD_LEN, (char *)big_payload};
   lwmqtt_message_t msg = lwmqtt_default_message;
 
   err = lwmqtt_publish(&client, topic, msg, COMMAND_TIMEOUT, nullptr);

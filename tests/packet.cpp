@@ -12,7 +12,7 @@ extern "C" {
     }                                                                     \
   }
 
-TEST(DetectPacketType, Valid) {
+TEST(Packet, DetectPacketType) {
   uint8_t h = LWMQTT_CONNACK_PACKET << 4u;
   lwmqtt_packet_type_t p;
   lwmqtt_err_t err = lwmqtt_detect_packet_type(&h, 1, &p);
@@ -20,7 +20,7 @@ TEST(DetectPacketType, Valid) {
   EXPECT_EQ(err, LWMQTT_SUCCESS);
 }
 
-TEST(DetectPacketType, Invalid) {
+TEST(Packet, DetectPacketTypeError) {
   uint8_t h = 255;
   lwmqtt_packet_type_t p;
   lwmqtt_err_t err = lwmqtt_detect_packet_type(&h, 1, &p);
@@ -28,7 +28,7 @@ TEST(DetectPacketType, Invalid) {
   EXPECT_EQ(err, LWMQTT_MISSING_OR_WRONG_PACKET);
 }
 
-TEST(DetectRemainingLength, Valid1) {
+TEST(Packet, DetectRemainingLength1) {
   uint8_t h = 60;
   uint32_t rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(&h, 1, &rem_len);
@@ -36,7 +36,7 @@ TEST(DetectRemainingLength, Valid1) {
   EXPECT_EQ(err, LWMQTT_SUCCESS);
 }
 
-TEST(DetectRemainingLength, Valid2) {
+TEST(Packet, DetectRemainingLength2) {
   uint8_t h[2] = {255, 60};
   uint32_t rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, sizeof(h), &rem_len);
@@ -44,21 +44,21 @@ TEST(DetectRemainingLength, Valid2) {
   EXPECT_EQ(err, LWMQTT_SUCCESS);
 }
 
-TEST(DetectRemainingLength, ToShort) {
+TEST(Packet, DetectRemainingLengthError) {
   uint8_t h = 255;
   uint32_t rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(&h, 1, &rem_len);
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
-TEST(DetectRemainingLength, Overflow) {
+TEST(Packet, DetectRemainingLengthOverflow) {
   uint8_t h[5] = {255, 255, 255, 255, 255};
   uint32_t rem_len = 0;
   lwmqtt_err_t err = lwmqtt_detect_remaining_length(h, sizeof(h), &rem_len);
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_OVERFLOW);
 }
 
-TEST(ConnectTest, Encode1) {
+TEST(Packet, EncodeConnect1) {
   uint8_t pkt[60] = {
       LWMQTT_CONNECT_PACKET << 4u,
       58,
@@ -143,7 +143,7 @@ TEST(ConnectTest, Encode1) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(ConnectTest, Encode2) {
+TEST(Packet, EncodeConnect2) {
   uint8_t pkt[14] = {
       LWMQTT_CONNECT_PACKET << 4u,
       12,
@@ -172,7 +172,7 @@ TEST(ConnectTest, Encode2) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(ConnectTest, Encode3) {
+TEST(Packet, EncodeConnect3) {
   uint8_t pkt[50] = {
       LWMQTT_CONNECT_PACKET << 4u,
       48,
@@ -246,7 +246,7 @@ TEST(ConnectTest, Encode3) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(ConnectTest, EncodeError1) {
+TEST(Packet, EncodeConnectError) {
   uint8_t buf[4];  // <- too small buffer
 
   lwmqtt_options_t opts = lwmqtt_default_options;
@@ -257,7 +257,7 @@ TEST(ConnectTest, EncodeError1) {
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
-TEST(ConnackTest, Decode1) {
+TEST(Packet, DecodeConnack) {
   uint8_t pkt[4] = {
       LWMQTT_CONNACK_PACKET << 4u, 2,
       0,  // session not present
@@ -273,7 +273,7 @@ TEST(ConnackTest, Decode1) {
   EXPECT_EQ(return_code, LWMQTT_CONNECTION_ACCEPTED);
 }
 
-TEST(ConnackTest, DecodeError1) {
+TEST(Packet, DecodeConnackError1) {
   uint8_t pkt[4] = {
       LWMQTT_CONNACK_PACKET << 4u,
       3,  // <-- wrong size
@@ -288,7 +288,7 @@ TEST(ConnackTest, DecodeError1) {
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
-TEST(ConnackTest, DecodeError2) {
+TEST(Packet, DecodeConnackError2) {
   uint8_t pkt[3] = {
       LWMQTT_CONNACK_PACKET << 4u, 3,
       0,  // session not present
@@ -302,7 +302,7 @@ TEST(ConnackTest, DecodeError2) {
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
-TEST(ZeroTest, Encode1) {
+TEST(Packet, EncodeZero) {
   uint8_t pkt[2] = {LWMQTT_PINGREQ_PACKET << 4u, 0};
 
   uint8_t buf[sizeof(pkt)];
@@ -314,7 +314,7 @@ TEST(ZeroTest, Encode1) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(AckTest, Decode1) {
+TEST(Packet, DecodeAck) {
   uint8_t pkt[4] = {
       LWMQTT_PUBACK_PACKET << 4u, 2,
       0,  // packet ID MSB
@@ -330,7 +330,7 @@ TEST(AckTest, Decode1) {
   EXPECT_EQ(packet_id, 7);
 }
 
-TEST(AckTest, DecodeError1) {
+TEST(Packet, DecodeAckError1) {
   uint8_t pkt[4] = {
       LWMQTT_PUBACK_PACKET << 4u,
       1,  // <-- wrong remaining length
@@ -345,7 +345,7 @@ TEST(AckTest, DecodeError1) {
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
-TEST(AckTest, DecodeError2) {
+TEST(Packet, DecodeAckError2) {
   uint8_t pkt[3] = {
       LWMQTT_PUBACK_PACKET << 4u,
       1,  // <-- wrong remaining length
@@ -360,7 +360,7 @@ TEST(AckTest, DecodeError2) {
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
-TEST(AckTest, Encode1) {
+TEST(Packet, EncodeAck) {
   uint8_t pkt[4] = {
       LWMQTT_PUBACK_PACKET << 4u, 2,
       0,  // packet ID MSB
@@ -376,7 +376,7 @@ TEST(AckTest, Encode1) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(AckTest, EncodeError1) {
+TEST(Packet, EncodeAckError) {
   uint8_t buf[2];  // <- too small buffer
 
   size_t len;
@@ -385,7 +385,7 @@ TEST(AckTest, EncodeError1) {
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
-TEST(PublishTest, Decode1) {
+TEST(Packet, DecodePublish1) {
   uint8_t pkt[24] = {
       LWMQTT_PUBLISH_PACKET << 4u | 11,
       22,
@@ -429,7 +429,7 @@ TEST(PublishTest, Decode1) {
   EXPECT_ARRAY_EQ("send me home", msg.payload, 12);
 }
 
-TEST(PublishTest, Decode2) {
+TEST(Packet, DecodePublish2) {
   uint8_t pkt[22] = {
       LWMQTT_PUBLISH_PACKET << 4u,
       20,
@@ -471,7 +471,7 @@ TEST(PublishTest, Decode2) {
   EXPECT_ARRAY_EQ("send me home", msg.payload, 12);
 }
 
-TEST(PublishTest, DecodeError1) {
+TEST(Packet, DecodePublishError) {
   uint8_t pkt[2] = {
       LWMQTT_PUBLISH_PACKET << 4u,
       2,  // <-- too much
@@ -486,7 +486,7 @@ TEST(PublishTest, DecodeError1) {
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
-TEST(PublishTest, Encode1) {
+TEST(Packet, EncodePublish1) {
   uint8_t pkt[12] = {
       LWMQTT_PUBLISH_PACKET << 4u | 11,
       22,
@@ -518,7 +518,7 @@ TEST(PublishTest, Encode1) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(PublishTest, Encode2) {
+TEST(Packet, EncodePublish2) {
   uint8_t pkt[10] = {
       LWMQTT_PUBLISH_PACKET << 4u,
       20,
@@ -546,7 +546,7 @@ TEST(PublishTest, Encode2) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(PublishTest, EncodeError1) {
+TEST(Packet, EncodePublishError) {
   uint8_t buf[2];  // <- too small buffer
 
   lwmqtt_string_t topic = lwmqtt_string("lwmqtt");
@@ -560,7 +560,7 @@ TEST(PublishTest, EncodeError1) {
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
-TEST(SubackTest, Decode1) {
+TEST(Packet, DecodeSuback) {
   uint8_t pkt[8] = {
       LWMQTT_SUBACK_PACKET << 4u,
       4,
@@ -582,7 +582,7 @@ TEST(SubackTest, Decode1) {
   EXPECT_EQ(granted_qos_levels[1], 1);
 }
 
-TEST(SubackTest, DecodeError1) {
+TEST(Packet, DecodeSubackError) {
   uint8_t pkt[5] = {
       LWMQTT_SUBACK_PACKET << 4u,
       1,  // <- wrong remaining length
@@ -599,7 +599,7 @@ TEST(SubackTest, DecodeError1) {
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
 
-TEST(SubscribeTest, Encode1) {
+TEST(Packet, EncodeSubscribe) {
   uint8_t pkt[37] = {
       LWMQTT_SUBSCRIBE_PACKET << 4u | 2,
       35,
@@ -656,7 +656,7 @@ TEST(SubscribeTest, Encode1) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(SubscribeTest, EncodeError1) {
+TEST(Packet, EncodeSubscribeError) {
   uint8_t buf[2];  // <- too small buffer
 
   lwmqtt_string_t topic_filters[1];
@@ -670,7 +670,7 @@ TEST(SubscribeTest, EncodeError1) {
   EXPECT_EQ(err, LWMQTT_BUFFER_TOO_SHORT);
 }
 
-TEST(UnsubscribeTest, Encode1) {
+TEST(Packet, EncodeUnsubscribe) {
   uint8_t pkt[34] = {
       LWMQTT_UNSUBSCRIBE_PACKET << 4u | 2,
       32,
@@ -722,7 +722,7 @@ TEST(UnsubscribeTest, Encode1) {
   EXPECT_ARRAY_EQ(pkt, buf, len);
 }
 
-TEST(UnsubscribeTest, EncodeError1) {
+TEST(Packet, EncodeUnsubscribeError) {
   uint8_t buf[2];  // <- too small buffer
 
   lwmqtt_string_t topic_filters[1];

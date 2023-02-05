@@ -4,7 +4,7 @@ extern "C" {
 #include <lwmqtt.h>
 }
 
-TEST(StringConstructor, Valid) {
+TEST(String, Constructor) {
   lwmqtt_string_t null_str = lwmqtt_string(nullptr);
   EXPECT_EQ(null_str.len, 0);
   EXPECT_TRUE(null_str.data == nullptr);
@@ -18,7 +18,7 @@ TEST(StringConstructor, Valid) {
   EXPECT_TRUE(hello_str.data != nullptr);
 }
 
-TEST(StringCompare, Valid) {
+TEST(String, Compare) {
   lwmqtt_string_t null_str = lwmqtt_string(nullptr);
   EXPECT_TRUE(lwmqtt_strcmp(null_str, nullptr) == 0);
   EXPECT_TRUE(lwmqtt_strcmp(null_str, "") == 0);
