@@ -84,7 +84,7 @@ int main(void) {
   }
 
   // set options
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");

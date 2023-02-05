@@ -129,7 +129,7 @@ TEST(Packet, EncodeConnect1) {
   will.payload = lwmqtt_string("send me home");
   will.qos = LWMQTT_QOS1;
 
-  lwmqtt_connect_options_t opts = lwmqtt_default_options;
+  lwmqtt_connect_options_t opts = lwmqtt_default_connect_options;
   opts.clean_session = false;
   opts.keep_alive = 10;
   opts.client_id = lwmqtt_string("lwmqtt");
@@ -163,7 +163,7 @@ TEST(Packet, EncodeConnect2) {
 
   uint8_t buf[sizeof(pkt)];
 
-  lwmqtt_connect_options_t opts = lwmqtt_default_options;
+  lwmqtt_connect_options_t opts = lwmqtt_default_connect_options;
 
   size_t len;
   lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(pkt), &len, opts, nullptr);
@@ -233,7 +233,7 @@ TEST(Packet, EncodeConnect3) {
   will.payload = lwmqtt_string("send me home");
   will.qos = LWMQTT_QOS1;
 
-  lwmqtt_connect_options_t opts = lwmqtt_default_options;
+  lwmqtt_connect_options_t opts = lwmqtt_default_connect_options;
   opts.clean_session = false;
   opts.keep_alive = 10;
   opts.client_id = lwmqtt_string("lwmqtt");
@@ -249,7 +249,7 @@ TEST(Packet, EncodeConnect3) {
 TEST(Packet, EncodeConnectError) {
   uint8_t buf[4];  // <- too small buffer
 
-  lwmqtt_connect_options_t opts = lwmqtt_default_options;
+  lwmqtt_connect_options_t opts = lwmqtt_default_connect_options;
 
   size_t len;
   lwmqtt_err_t err = lwmqtt_encode_connect(buf, sizeof(buf), &len, opts, nullptr);

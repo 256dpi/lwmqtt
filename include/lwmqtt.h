@@ -116,7 +116,7 @@ typedef struct {
 /**
  * The default initializer for the connect options objects.
  */
-#define lwmqtt_default_options \
+#define lwmqtt_default_connect_options \
   { lwmqtt_default_string, 60, true, lwmqtt_default_string, lwmqtt_default_string }
 
 /**

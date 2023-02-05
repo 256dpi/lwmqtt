@@ -58,10 +58,10 @@ TEST(Client, PublishSubscribeQOS0) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t data = lwmqtt_default_options;
   data.client_id = lwmqtt_string("lwmqtt");
   data.username = lwmqtt_string("public");
   data.password = lwmqtt_string("public");
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, data, nullptr, &return_code, COMMAND_TIMEOUT);
@@ -118,7 +118,7 @@ TEST(Client, PublishSubscribeQOS1) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -178,7 +178,7 @@ TEST(Client, PublishSubscribeQOS2) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -238,7 +238,7 @@ TEST(Client, BufferOverflow) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -303,7 +303,7 @@ TEST(Client, OverflowDropping) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -362,7 +362,7 @@ TEST(Client, BigBuffersAndPayload) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -422,7 +422,7 @@ TEST(Client, MultipleSubscriptions) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
@@ -485,10 +485,10 @@ TEST(Client, PublishDupQOS1) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
+  lwmqtt_connect_options_t options1 = lwmqtt_default_connect_options;
 
   lwmqtt_return_code_t return_code;
   err = lwmqtt_connect(&client, options, nullptr, &return_code, COMMAND_TIMEOUT);
@@ -559,7 +559,7 @@ TEST(Client, PublishDupQOS2) {
   lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_connect_options_t options = lwmqtt_default_options;
+  lwmqtt_connect_options_t options = lwmqtt_default_connect_options;
   options.client_id = lwmqtt_string("lwmqtt");
   options.username = lwmqtt_string("public");
   options.password = lwmqtt_string("public");
