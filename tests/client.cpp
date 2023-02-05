@@ -2,7 +2,7 @@
 
 extern "C" {
 #include <lwmqtt.h>
-#include <lwmqtt/unix.h>
+#include <lwmqtt/posix.h>
 }
 
 #define COMMAND_TIMEOUT 5000
@@ -44,18 +44,18 @@ static void big_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t
 }
 
 TEST(Client, PublishSubscribeQOS0) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t data = lwmqtt_default_options;
@@ -84,7 +84,7 @@ TEST(Client, PublishSubscribeQOS0) {
 
   while (counter < 5) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -99,23 +99,23 @@ TEST(Client, PublishSubscribeQOS0) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, PublishSubscribeQOS1) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
@@ -144,7 +144,7 @@ TEST(Client, PublishSubscribeQOS1) {
 
   while (counter < 5) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -159,23 +159,23 @@ TEST(Client, PublishSubscribeQOS1) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, PublishSubscribeQOS2) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
@@ -204,7 +204,7 @@ TEST(Client, PublishSubscribeQOS2) {
 
   while (counter < 5) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -219,23 +219,23 @@ TEST(Client, PublishSubscribeQOS2) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, BufferOverflow) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 256);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
@@ -270,7 +270,7 @@ TEST(Client, BufferOverflow) {
 
   while (counter < 1) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -283,26 +283,26 @@ TEST(Client, BufferOverflow) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 0);
 }
 
 TEST(Client, OverflowDropping) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 256);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
   uint32_t dropped = 0;
   lwmqtt_drop_overflow(&client, true, &dropped);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
@@ -332,7 +332,7 @@ TEST(Client, OverflowDropping) {
 
   while (dropped < 2) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -344,24 +344,24 @@ TEST(Client, OverflowDropping) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 0);
   ASSERT_EQ(dropped, 2);
 }
 
 TEST(Client, BigBuffersAndPayload) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(10000), 10000, (uint8_t *)malloc(10000), 10000);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, big_message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
@@ -390,7 +390,7 @@ TEST(Client, BigBuffersAndPayload) {
 
   while (counter < 5) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -405,23 +405,23 @@ TEST(Client, BigBuffersAndPayload) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, MultipleSubscriptions) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
@@ -453,7 +453,7 @@ TEST(Client, MultipleSubscriptions) {
 
   while (counter < 5) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -468,23 +468,23 @@ TEST(Client, MultipleSubscriptions) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 5);
 }
 
 TEST(Client, PublishDupQOS1) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
@@ -527,7 +527,7 @@ TEST(Client, PublishDupQOS1) {
 
   while (counter < 3) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -542,23 +542,23 @@ TEST(Client, PublishDupQOS1) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 3);
 }
 
 TEST(Client, PublishDupQOS2) {
-  lwmqtt_unix_network_t network;
-  lwmqtt_unix_timer_t timer1, timer2;
+  lwmqtt_posix_network_t network;
+  lwmqtt_posix_timer_t timer1, timer2;
 
   lwmqtt_client_t client;
 
   lwmqtt_init(&client, (uint8_t *)malloc(512), 512, (uint8_t *)malloc(512), 512);
 
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, (void *)custom_ref, message_arrived);
 
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, (char *)"public.cloud.shiftr.io", 1883);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
   lwmqtt_options_t options = lwmqtt_default_options;
@@ -601,7 +601,7 @@ TEST(Client, PublishDupQOS2) {
 
   while (counter < 2) {
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     ASSERT_EQ(err, LWMQTT_SUCCESS);
 
     if (available > 0) {
@@ -616,6 +616,6 @@ TEST(Client, PublishDupQOS2) {
   err = lwmqtt_disconnect(&client, COMMAND_TIMEOUT);
   ASSERT_EQ(err, LWMQTT_SUCCESS);
 
-  lwmqtt_unix_network_disconnect(&network);
+  lwmqtt_posix_network_disconnect(&network);
   ASSERT_EQ(counter, 2);
 }

@@ -19,14 +19,14 @@ include_directories(include)
 
 set(SOURCE_FILES
         include/lwmqtt.h
-        include/lwmqtt/unix.h
+        include/lwmqtt/posix.h
         src/client.c
         src/helpers.c
         src/helpers.h
         src/packet.c
         src/packet.h
         src/string.c
-        src/os/unix.c)
+        src/os/posix.c)
 
 add_library(lwmqtt ${SOURCE_FILES})
 

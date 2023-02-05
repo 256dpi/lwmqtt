@@ -2,14 +2,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <lwmqtt/unix.h>
+#include <lwmqtt/posix.h>
 
 #define COMMAND_TIMEOUT 5000
 #define MESSAGE_TIMEOUT 1000
 
-lwmqtt_unix_network_t network = {0};
+lwmqtt_posix_network_t network = {0};
 
-lwmqtt_unix_timer_t timer1, timer2, timer3;
+lwmqtt_posix_timer_t timer1, timer2, timer3;
 
 lwmqtt_client_t client;
 
@@ -18,22 +18,22 @@ static void message_arrived(lwmqtt_client_t *_client, void *ref, lwmqtt_string_t
          (int)msg.payload_len);
 }
 
-int main() {
+int main(void) {
   // initialize client
   lwmqtt_init(&client, malloc(512), 512, malloc(512), 512);
 
   // configure client
-  lwmqtt_set_network(&client, &network, lwmqtt_unix_network_read, lwmqtt_unix_network_write);
-  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_unix_timer_set, lwmqtt_unix_timer_get);
+  lwmqtt_set_network(&client, &network, lwmqtt_posix_network_read, lwmqtt_posix_network_write);
+  lwmqtt_set_timers(&client, &timer1, &timer2, lwmqtt_posix_timer_set, lwmqtt_posix_timer_get);
   lwmqtt_set_callback(&client, NULL, message_arrived);
 
   // configure message time
-  lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
+  lwmqtt_posix_timer_set(&timer3, MESSAGE_TIMEOUT);
 
   // connect to broker
-  lwmqtt_err_t err = lwmqtt_unix_network_connect(&network, "public.cloud.shiftr.io", 1883);
+  lwmqtt_err_t err = lwmqtt_posix_network_connect(&network, "public.cloud.shiftr.io", 1883);
   if (err != LWMQTT_SUCCESS) {
-    printf("failed lwmqtt_unix_network_connect: %d\n", err);
+    printf("failed lwmqtt_posix_network_connect: %d\n", err);
     exit(1);
   }
 
@@ -66,9 +66,9 @@ int main() {
   for (;;) {
     // check if data is available
     size_t available = 0;
-    err = lwmqtt_unix_network_peek(&network, &available);
+    err = lwmqtt_posix_network_peek(&network, &available);
     if (err != LWMQTT_SUCCESS) {
-      printf("failed lwmqtt_unix_network_peek: %d\n", err);
+      printf("failed lwmqtt_posix_network_peek: %d\n", err);
       exit(1);
     }
 
@@ -89,7 +89,7 @@ int main() {
     }
 
     // check if message is due
-    if (lwmqtt_unix_timer_get(&timer3) <= 0) {
+    if (lwmqtt_posix_timer_get(&timer3) <= 0) {
       // prepare message
       lwmqtt_message_t msg = {.qos = LWMQTT_QOS0, .retained = false, .payload = (uint8_t *)("world"), .payload_len = 5};
 
@@ -101,7 +101,7 @@ int main() {
       }
 
       // reset timer
-      lwmqtt_unix_timer_set(&timer3, MESSAGE_TIMEOUT);
+      lwmqtt_posix_timer_set(&timer3, MESSAGE_TIMEOUT);
     }
 
     // sleep for 100ms
