@@ -111,13 +111,14 @@ typedef struct {
   bool clean_session;
   lwmqtt_string_t username;
   lwmqtt_string_t password;
+  bool session_present;
 } lwmqtt_connect_options_t;
 
 /**
  * The default initializer for the connect options objects.
  */
 #define lwmqtt_default_connect_options \
-  { lwmqtt_default_string, 60, true, lwmqtt_default_string, lwmqtt_default_string }
+  { lwmqtt_default_string, 60, true, lwmqtt_default_string, lwmqtt_default_string, false }
 
 /**
  * The available return codes transported by the connack packet.

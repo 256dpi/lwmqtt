@@ -442,8 +442,7 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t *o
   }
 
   // decode connack packet
-  bool session_present;
-  err = lwmqtt_decode_connack(client->read_buf, client->read_buf_size, &session_present, return_code);
+  err = lwmqtt_decode_connack(client->read_buf, client->read_buf_size, &options->session_present, return_code);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
