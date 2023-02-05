@@ -46,7 +46,7 @@ typedef struct {
 /**
  * Returns a string object for the passed C string.
  *
- * @param str - The C string.
+ * @param str The C string.
  * @return A string object.
  */
 lwmqtt_string_t lwmqtt_string(const char *str);
@@ -54,8 +54,8 @@ lwmqtt_string_t lwmqtt_string(const char *str);
 /**
  * Compares a string object to a C string.
  *
- * @param a - The string object to compare.
- * @param b - The C string to compare.
+ * @param a The string object to compare.
+ * @param b The C string to compare.
  * @return Similarity e.g. strcmp().
  */
 int lwmqtt_strcmp(lwmqtt_string_t a, const char *b);
@@ -157,11 +157,11 @@ typedef struct lwmqtt_client_t lwmqtt_client_t;
  * The callbacks is expected to read up to the amount of bytes in to the passed buffer. It should block the specified
  * timeout and wait for more incoming data.
  *
- * @param ref - A custom reference.
- * @param buf - The buffer.
- * @param len - The length of the buffer.
- * @param read - Variable that must be set with the amount of read bytes.
- * @param timeout - The timeout in milliseconds for the operation.
+ * @param ref A custom reference.
+ * @param buf The buffer.
+ * @param len The length of the buffer.
+ * @param read Variable that must be set with the amount of read bytes.
+ * @param timeout The timeout in milliseconds for the operation.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_read_t)(void *ref, uint8_t *buf, size_t len, size_t *read, uint32_t timeout);
 
@@ -171,26 +171,26 @@ typedef lwmqtt_err_t (*lwmqtt_network_read_t)(void *ref, uint8_t *buf, size_t le
  * The callback is expected to write up to the amount of bytes from the passed buffer. It should wait up to the
  * specified timeout to write the specified data to the network.
  *
- * @param ref - A custom reference.
- * @param buf - The buffer.
- * @param len - The length of the buffer.
- * @param sent - Variable that must be set with the amount of written bytes.
- * @param timeout - The timeout in milliseconds for the operation.
+ * @param ref A custom reference.
+ * @param buf The buffer.
+ * @param len The length of the buffer.
+ * @param sent Variable that must be set with the amount of written bytes.
+ * @param timeout The timeout in milliseconds for the operation.
  */
 typedef lwmqtt_err_t (*lwmqtt_network_write_t)(void *ref, uint8_t *buf, size_t len, size_t *sent, uint32_t timeout);
 
 /**
  * The callback used to set a timer.
  *
- * @param ref - A custom reference.
- * @param timeout - The amount of milliseconds until the deadline.
+ * @param ref A custom reference.
+ * @param timeout The amount of milliseconds until the deadline.
  */
 typedef void (*lwmqtt_timer_set_t)(void *ref, uint32_t timeout);
 
 /**
  * The callback used to get a timers value.
  *
- * @param - A custom reference.
+ * @param A custom reference.
  * @return The amount of milliseconds until the deadline. May return negative numbers if the deadline has been reached.
  */
 typedef int32_t (*lwmqtt_timer_get_t)(void *ref);
@@ -236,11 +236,11 @@ struct lwmqtt_client_t {
 /**
  * Will initialize the specified client object.
  *
- * @param client - The client object.
- * @param write_buf - The write buffer.
- * @param write_buf_size - The write buffer size.
- * @param read_buf - The read buffer.
- * @param read_buf_size - The read buffer size.
+ * @param client The client object.
+ * @param write_buf The write buffer.
+ * @param write_buf_size The write buffer size.
+ * @param read_buf The read buffer.
+ * @param read_buf_size The read buffer size.
  */
 void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_size, uint8_t *read_buf,
                  size_t read_buf_size);
@@ -248,21 +248,21 @@ void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_s
 /**
  * Will set the network reference and callbacks for this client object.
  *
- * @param client - The client object.
- * @param ref - The reference to the network object.
- * @param read - The read callback.
- * @param write - The write callback.
+ * @param client The client object.
+ * @param ref The reference to the network object.
+ * @param read The read callback.
+ * @param write The write callback.
  */
 void lwmqtt_set_network(lwmqtt_client_t *client, void *ref, lwmqtt_network_read_t read, lwmqtt_network_write_t write);
 
 /**
  * Will set the timer references and callbacks for this client object.
  *
- * @param client - The client object.
- * @param keep_alive_timer - The reference to the keep alive timer.
- * @param command_timer - The reference to the command timer.
- * @param set - The set callback.
- * @param get - The get callback.
+ * @param client The client object.
+ * @param keep_alive_timer The reference to the keep alive timer.
+ * @param command_timer The reference to the command timer.
+ * @param set The set callback.
+ * @param get The get callback.
  */
 void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *command_timer, lwmqtt_timer_set_t set,
                        lwmqtt_timer_get_t get);
@@ -270,9 +270,9 @@ void lwmqtt_set_timers(lwmqtt_client_t *client, void *keep_alive_timer, void *co
 /**
  * Will set the callback used to receive incoming messages.
  *
- * @param client - The client object.
- * @param ref - A custom reference that will passed to the callback.
- * @param cb - The callback to be called.
+ * @param client The client object.
+ * @param ref A custom reference that will passed to the callback.
+ * @param cb The callback to be called.
  */
 void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t cb);
 
@@ -280,9 +280,9 @@ void lwmqtt_set_callback(lwmqtt_client_t *client, void *ref, lwmqtt_callback_t c
  * Will configure the client to drop packets that overflow the read buffer. If a counter is provided it will be
  * incremented with each dropped packet.
  *
- * @param client - The client.
- * @param enabled - Whether dropping is enabled.
- * @param counter - The dropped packet counter.
+ * @param client The client.
+ * @param enabled Whether dropping is enabled.
+ * @param counter The dropped packet counter.
  */
 void lwmqtt_drop_overflow(lwmqtt_client_t *client, bool enabled, uint32_t *counter);
 
@@ -292,11 +292,11 @@ void lwmqtt_drop_overflow(lwmqtt_client_t *client, bool enabled, uint32_t *count
  * The network object must already be connected to the server. An error is returned if the broker rejects the
  * connection.
  *
- * @param client - The client object.
- * @param options - The options object.
- * @param will - The will object.
- * @param return_code - The variable that will receive the return code.
- * @param timeout - The command timeout.
+ * @param client The client object.
+ * @param options The options object.
+ * @param will The will object.
+ * @param return_code The variable that will receive the return code.
+ * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, lwmqtt_will_t *will,
@@ -312,11 +312,11 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_options_t options, l
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
- * @param client - The client object.
- * @param topic - The topic.
- * @param message - The message.
- * @param timeout - The command timeout.
- * @param options - The publish options.
+ * @param client The client object.
+ * @param topic The topic.
+ * @param message The message.
+ * @param timeout The command timeout.
+ * @param options The publish options.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmqtt_message_t msg, uint32_t timeout,
@@ -327,11 +327,11 @@ lwmqtt_err_t lwmqtt_publish(lwmqtt_client_t *client, lwmqtt_string_t topic, lwmq
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
- * @param client - The client object.
- * @param count - The number of topic filters and QOS levels.
- * @param topic_filter - The list of topic filters.
- * @param qos - The list of QOS levels.
- * @param timeout - The command timeout.
+ * @param client The client object.
+ * @param count The number of topic filters and QOS levels.
+ * @param topic_filter The list of topic filters.
+ * @param qos The list of QOS levels.
+ * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, lwmqtt_qos_t *qos,
@@ -342,10 +342,10 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
- * @param client - The client object.
- * @param topic_filter - The topic filter.
- * @param qos - The QOS level.
- * @param timeout - The command timeout.
+ * @param client The client object.
+ * @param topic_filter The topic filter.
+ * @param qos The QOS level.
+ * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, lwmqtt_qos_t qos,
@@ -356,10 +356,10 @@ lwmqtt_err_t lwmqtt_subscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
- * @param client - The client object.
- * @param count - The number of topic filters.
- * @param topic_filter - The topic filter.
- * @param timeout - The command timeout.
+ * @param client The client object.
+ * @param count The number of topic filters.
+ * @param topic_filter The topic filter.
+ * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_string_t *topic_filter, uint32_t timeout);
@@ -369,9 +369,9 @@ lwmqtt_err_t lwmqtt_unsubscribe(lwmqtt_client_t *client, int count, lwmqtt_strin
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
- * @param client - The client object.
- * @param topic_filter - The topic filter.
- * @param timeout - The command timeout.
+ * @param client The client object.
+ * @param topic_filter The topic filter.
+ * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t topic_filter, uint32_t timeout);
@@ -379,8 +379,8 @@ lwmqtt_err_t lwmqtt_unsubscribe_one(lwmqtt_client_t *client, lwmqtt_string_t top
 /**
  * Will send a disconnect packet and finish the client.
  *
- * @param client - The client object.
- * @param timeout - The command timeout.
+ * @param client The client object.
+ * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, uint32_t timeout);
@@ -398,9 +398,9 @@ lwmqtt_err_t lwmqtt_disconnect(lwmqtt_client_t *client, uint32_t timeout);
  *
  * Note: The message callback might be called with incoming messages as part of this call.
  *
- * @param client - The client object.
- * @param available - The available bytes to read.
- * @param timeout - The command timeout.
+ * @param client The client object.
+ * @param available The available bytes to read.
+ * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, uint32_t timeout);
@@ -411,8 +411,8 @@ lwmqtt_err_t lwmqtt_yield(lwmqtt_client_t *client, size_t available, uint32_t ti
  * This functions must be called at a rate slightly lower than 25% of the configured keep alive. If keep alive is zero,
  * the function must not be called at all.
  *
- * @param client - The client object.
- * @param timeout - The command timeout.
+ * @param client The client object.
+ * @param timeout The command timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_keep_alive(lwmqtt_client_t *client, uint32_t timeout);

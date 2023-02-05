@@ -36,9 +36,9 @@ typedef struct {
 /**
  * Function to establish a UNIX network connection.
  *
- * @param network - The network object.
- * @param host - The host.
- * @param port - The port.
+ * @param network The network object.
+ * @param host The host.
+ * @param port The port.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *host, int port);
@@ -46,15 +46,15 @@ lwmqtt_err_t lwmqtt_unix_network_connect(lwmqtt_unix_network_t *network, char *h
 /**
  * Function to disconnect a UNIX network connection.
  *
- * @param network - The network object.
+ * @param network The network object.
  */
 void lwmqtt_unix_network_disconnect(lwmqtt_unix_network_t *network);
 
 /**
  * Function to peek available bytes on a UNIX network connection.
  *
- * @param network - The network object.
- * @param available - Variables that must be set with the available bytes.
+ * @param network The network object.
+ * @param available Variables that must be set with the available bytes.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *available);
@@ -62,9 +62,9 @@ lwmqtt_err_t lwmqtt_unix_network_peek(lwmqtt_unix_network_t *network, size_t *av
 /**
  * Function to wait for a socket until data is available or the timeout has been reached.
  *
- * @param network - The network object.
- * @param available  Variables that will be set with the status.
- * @param timeout - The timeout.
+ * @param network The network object.
+ * @param available Variables that will be set with the status.
+ * @param timeout The timeout.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_unix_network_select(lwmqtt_unix_network_t *network, bool *available, uint32_t timeout);
