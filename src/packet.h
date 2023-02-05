@@ -78,7 +78,7 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_p
  * @param buf The buffer into which the packet will be encoded.
  * @param buf_len The length of the specified buffer.
  * @param len The encoded length of the packet.
- * @param packet_type The packets type.
+ * @param packet_type The packet type.
  * @return An error value.
  */
 lwmqtt_err_t lwmqtt_encode_zero(uint8_t *buf, size_t buf_len, size_t *len, lwmqtt_packet_type_t packet_type);
@@ -100,7 +100,7 @@ lwmqtt_err_t lwmqtt_decode_ack(uint8_t *buf, size_t buf_len, lwmqtt_packet_type_
  * @param buf The buffer into which the packet will be encoded.
  * @param buf_len The length of the specified buffer.
  * @param len The encoded length of the packet.
- * @param packet_type The packets type.
+ * @param packet_type The packet type.
  * @param packet_id The packet id.
  * @return An error value.
  */
