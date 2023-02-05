@@ -416,8 +416,9 @@ lwmqtt_err_t lwmqtt_connect(lwmqtt_client_t *client, lwmqtt_connect_options_t *o
   // reset pong pending flag
   client->pong_pending = false;
 
-  // initialize return code
+  // reset return code and session present
   options->return_code = LWMQTT_UNKNOWN_RETURN_CODE;
+  options->session_present = false;
 
   // encode connect packet
   size_t len;
