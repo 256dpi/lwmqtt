@@ -246,7 +246,7 @@ lwmqtt_err_t lwmqtt_decode_connack(uint8_t *buf, size_t buf_len, bool *session_p
   }
 
   // get session present
-  *session_present = lwmqtt_read_bits(flags, 7, 1) == 1;
+  *session_present = lwmqtt_read_bits(flags, 0, 1) == 1;
 
   // get return code
   switch (raw_return_code) {
