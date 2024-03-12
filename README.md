@@ -7,7 +7,7 @@ The "**L**ight **W**eight **MQTT**" library implements a MQTT 3.1.1 client that 
 
 ## Installation
 
-The library is available on [PlatformIO](https://platformio.org/lib/show/617/MQTT). You can install it by running: `pio lib install "LWMQTT"`. 
+The library is available on [PlatformIO](https://registry.platformio.org/libraries/256dpi/LWMQTT). You can install it by running: `pio lib install "256dpi/LWMQTT"`. 
 
 ## Release Management
 
