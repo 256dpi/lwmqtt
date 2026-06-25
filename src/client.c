@@ -1,5 +1,7 @@
 #include "packet.h"
 
+#include <stdlib.h>  // malloc/free for the granted_qos VLA workaround (MSVC)
+
 void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_size, uint8_t *read_buf,
                  size_t read_buf_size) {
   client->last_packet_id = 0;
@@ -169,6 +171,14 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *client, size_t
   } else if (err != LWMQTT_SUCCESS) {
     return err;
   }
+
+  // FIX: header byte is consumed. From here we are committed to reading
+  // the rest of this packet — bailing with NETWORK_TIMEOUT would lose the
+  // already-drained header byte (and any rem_len bytes), desyncing the
+  // stream parser on the next call. Give the rest of the packet a generous
+  // grace timeout so a tight outer yield slice doesn't truncate mid-packet.
+  // 5000ms is enough for any sane TCP delivery without blocking shutdown.
+  client->timer_set(client->command_timer, 5000);
 
   // detect packet type
   err = lwmqtt_detect_packet_type(client->read_buf, 1, packet_type);
@@ -582,23 +592,32 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
 
   // decode packet
   int suback_count = 0;
-  lwmqtt_qos_t granted_qos[count];
+  // `granted_qos[count]` is a C99 VLA, which MSVC's C compiler rejects
+  // (C2057/C2466). Heap-allocate instead so the lib builds on Windows too.
+  lwmqtt_qos_t *granted_qos = (lwmqtt_qos_t *)malloc((size_t)(count < 1 ? 1 : count) * sizeof(lwmqtt_qos_t));
+  if (granted_qos == NULL) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  }
   uint16_t packet_id;
   err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, count, &suback_count, granted_qos);
   if (err != LWMQTT_SUCCESS) {
+    free(granted_qos);
     return err;
   }
   if (packet_id != expected_packet_id) {
+    free(granted_qos);
     return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // check suback codes
   for (int i = 0; i < suback_count; i++) {
     if (granted_qos[i] == LWMQTT_QOS_FAILURE) {
+      free(granted_qos);
       return LWMQTT_FAILED_SUBSCRIPTION;
     }
   }
 
+  free(granted_qos);
   return LWMQTT_SUCCESS;
 }
 
