@@ -1,5 +1,7 @@
 #include "packet.h"
 
+#include <stdlib.h>  // malloc/free for the granted_qos VLA workaround (MSVC)
+
 void lwmqtt_init(lwmqtt_client_t *client, uint8_t *write_buf, size_t write_buf_size, uint8_t *read_buf,
                  size_t read_buf_size) {
   client->last_packet_id = 0;
@@ -582,23 +584,32 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
 
   // decode packet
   int suback_count = 0;
-  lwmqtt_qos_t granted_qos[count];
+  // `granted_qos[count]` is a C99 VLA, which MSVC's C compiler rejects
+  // (C2057/C2466). Heap-allocate instead so the lib builds on Windows too.
+  lwmqtt_qos_t *granted_qos = (lwmqtt_qos_t *)malloc((size_t)(count < 1 ? 1 : count) * sizeof(lwmqtt_qos_t));
+  if (granted_qos == NULL) {
+    return LWMQTT_BUFFER_TOO_SHORT;
+  }
   uint16_t packet_id;
   err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, count, &suback_count, granted_qos);
   if (err != LWMQTT_SUCCESS) {
+    free(granted_qos);
     return err;
   }
   if (packet_id != expected_packet_id) {
+    free(granted_qos);
     return LWMQTT_MISSING_OR_WRONG_PACKET;
   }
 
   // check suback codes
   for (int i = 0; i < suback_count; i++) {
     if (granted_qos[i] == LWMQTT_QOS_FAILURE) {
+      free(granted_qos);
       return LWMQTT_FAILED_SUBSCRIPTION;
     }
   }
 
+  free(granted_qos);
   return LWMQTT_SUCCESS;
 }
 
