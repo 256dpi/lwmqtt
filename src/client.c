@@ -172,6 +172,14 @@ static lwmqtt_err_t lwmqtt_read_packet_in_buffer(lwmqtt_client_t *client, size_t
     return err;
   }
 
+  // FIX: header byte is consumed. From here we are committed to reading
+  // the rest of this packet — bailing with NETWORK_TIMEOUT would lose the
+  // already-drained header byte (and any rem_len bytes), desyncing the
+  // stream parser on the next call. Give the rest of the packet a generous
+  // grace timeout so a tight outer yield slice doesn't truncate mid-packet.
+  // 5000ms is enough for any sane TCP delivery without blocking shutdown.
+  client->timer_set(client->command_timer, 5000);
+
   // detect packet type
   err = lwmqtt_detect_packet_type(client->read_buf, 1, packet_type);
   if (err != LWMQTT_SUCCESS) {
