@@ -4,6 +4,43 @@ extern "C" {
 #include "../src/helpers.h"
 }
 
+TEST(Helpers, ReadConnackPacketType) {
+  EXPECT_EQ(lwmqtt_read_bits(0x20, 4, 4), 2);
+}
+
+TEST(Helpers, ReadAllValidBitFields) {
+  for (int pos = 0; pos < 8; pos++) {
+    for (int num = 1; num <= 8 - pos; num++) {
+      const unsigned divisor = 1u << pos;
+      const unsigned range = 1u << num;
+      for (unsigned byte = 0; byte <= 0xFF; byte++) {
+        const unsigned expected = (byte / divisor) % range;
+        ASSERT_EQ(lwmqtt_read_bits(static_cast<uint8_t>(byte), pos, num), expected)
+            << "byte=" << byte << " pos=" << pos << " num=" << num;
+      }
+    }
+  }
+}
+
+TEST(Helpers, WriteAllValidBitFields) {
+  for (int pos = 0; pos < 8; pos++) {
+    for (int num = 1; num <= 8 - pos; num++) {
+      for (unsigned original = 0; original <= 0xFF; original++) {
+        for (unsigned value = 0; value <= 0xFF; value++) {
+          uint8_t expected = static_cast<uint8_t>(original);
+          for (int bit = 0; bit < num; bit++) {
+            const unsigned bit_mask = 1u << (pos + bit);
+            expected = static_cast<uint8_t>((expected & ~bit_mask) | (((value >> bit) & 1u) << (pos + bit)));
+          }
+          uint8_t actual = static_cast<uint8_t>(original);
+          lwmqtt_write_bits(&actual, static_cast<uint8_t>(value), pos, num);
+          ASSERT_EQ(actual, expected) << "original=" << original << " value=" << value << " pos=" << pos << " num=" << num;
+        }
+      }
+    }
+  }
+}
+
 TEST(Helpers, VarNum1) {
   uint8_t buf[2] = {0};
 
