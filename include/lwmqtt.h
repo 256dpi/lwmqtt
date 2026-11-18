@@ -11,7 +11,8 @@
  * If a function that operates on a connected client (e.g. publish, yield, keep_alive, etc.) returns an error, the
  * caller must switch into a disconnected state, close and cleanup the current connection and start over by creating a
  * new connection. After an error, a packet may have been read or written only partially and the connection is out of
- * sync.
+ * sync. The only exception is LWMQTT_FAILED_SUBSCRIPTION, which is returned after the broker rejected a subscription
+ * and leaves the connection intact.
  */
 typedef enum {
   LWMQTT_SUCCESS = 0,
