@@ -685,13 +685,40 @@ TEST(Packet, DecodeSuback) {
   uint16_t packet_id;
   int count;
   lwmqtt_qos_t granted_qos_levels[2];
-  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 2, &count, granted_qos_levels);
+  bool failed;
+  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 2, &count, granted_qos_levels, &failed);
 
   EXPECT_EQ(err, LWMQTT_SUCCESS);
   EXPECT_EQ(packet_id, 7);
   EXPECT_EQ(count, 2);
   EXPECT_EQ(granted_qos_levels[0], 0);
   EXPECT_EQ(granted_qos_levels[1], 1);
+  EXPECT_FALSE(failed);
+}
+
+TEST(Packet, DecodeSubackFailure) {
+  uint8_t pkt[6] = {
+      LWMQTT_SUBACK_PACKET << 4u, 4, 0, 7, 2, 0x80,
+  };
+
+  uint16_t packet_id;
+  int count;
+  lwmqtt_qos_t granted_qos_levels[2];
+  bool failed;
+  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 2, &count, granted_qos_levels, &failed);
+
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_EQ(count, 2);
+  EXPECT_EQ(granted_qos_levels[0], LWMQTT_QOS2);
+  EXPECT_EQ(granted_qos_levels[1], LWMQTT_QOS_FAILURE);
+  EXPECT_TRUE(failed);
+
+  // without levels
+  err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 2, &count, NULL, &failed);
+  EXPECT_EQ(err, LWMQTT_SUCCESS);
+  EXPECT_EQ(packet_id, 7);
+  EXPECT_EQ(count, 2);
+  EXPECT_TRUE(failed);
 }
 
 TEST(Packet, DecodeSubackError) {
@@ -706,7 +733,8 @@ TEST(Packet, DecodeSubackError) {
   uint16_t packet_id;
   int count;
   lwmqtt_qos_t granted_qos_levels[2];
-  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 2, &count, granted_qos_levels);
+  bool failed;
+  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 2, &count, granted_qos_levels, &failed);
 
   EXPECT_EQ(err, LWMQTT_REMAINING_LENGTH_MISMATCH);
 }
@@ -719,7 +747,8 @@ TEST(Packet, DecodeSubackOverflow) {
   uint16_t packet_id;
   int count = 0;
   lwmqtt_qos_t granted_qos_levels[1];
-  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 1, &count, granted_qos_levels);
+  bool failed;
+  lwmqtt_err_t err = lwmqtt_decode_suback(pkt, sizeof(pkt), &packet_id, 1, &count, granted_qos_levels, &failed);
 
   EXPECT_EQ(err, LWMQTT_SUBACK_ARRAY_OVERFLOW);
 }

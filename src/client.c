@@ -582,9 +582,9 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
 
   // decode packet
   int suback_count = 0;
-  lwmqtt_qos_t granted_qos[count];
+  bool failed = false;
   uint16_t packet_id;
-  err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, count, &suback_count, granted_qos);
+  err = lwmqtt_decode_suback(client->read_buf, client->read_buf_size, &packet_id, count, &suback_count, NULL, &failed);
   if (err != LWMQTT_SUCCESS) {
     return err;
   }
@@ -593,10 +593,8 @@ lwmqtt_err_t lwmqtt_subscribe(lwmqtt_client_t *client, int count, lwmqtt_string_
   }
 
   // check suback codes
-  for (int i = 0; i < suback_count; i++) {
-    if (granted_qos[i] == LWMQTT_QOS_FAILURE) {
-      return LWMQTT_FAILED_SUBSCRIPTION;
-    }
+  if (failed) {
+    return LWMQTT_FAILED_SUBSCRIPTION;
   }
 
   return LWMQTT_SUCCESS;

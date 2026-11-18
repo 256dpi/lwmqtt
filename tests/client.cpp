@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <algorithm>
+#include <vector>
+
 extern "C" {
 #include <lwmqtt.h>
 #include <lwmqtt/posix.h>
@@ -608,4 +611,126 @@ TEST(Client, PublishDupQOS2) {
 
   lwmqtt_posix_network_disconnect(&network);
   ASSERT_TRUE(counter == 2 || counter == 3);
+}
+
+// A scripted network on a fake clock: the first `split` incoming bytes arrive at `first`, the rest at `second` (never
+// if negative). Instead of blocking, reads advance the clock to the next arrival or by their timeout.
+struct fake_network_t {
+  int32_t now;
+  uint8_t in[64];
+  size_t in_len, in_pos, split;
+  int32_t first, second;
+  uint32_t last_timeout;
+  uint8_t out[64];
+  size_t out_len;
+};
+
+struct fake_timer_t {
+  fake_network_t *network;
+  int32_t deadline;
+};
+
+struct fake_t {
+  fake_network_t network;
+  fake_timer_t timer1, timer2;
+  uint8_t write_buf[64], read_buf[64];
+  lwmqtt_client_t client;
+  int messages;
+};
+
+static size_t fake_arrived(fake_network_t *n, int32_t time) {
+  size_t arrived = 0;
+  if (n->first >= 0 && n->first <= time) {
+    arrived = n->split;
+  }
+  if (n->second >= 0 && n->second <= time) {
+    arrived = n->in_len;
+  }
+  return arrived;
+}
+
+static lwmqtt_err_t fake_network_read(void *ref, uint8_t *buf, size_t len, size_t *read, uint32_t timeout) {
+  auto n = (fake_network_t *)ref;
+  *read = 0;
+  n->last_timeout = timeout;
+
+  // a zero timeout blocks forever on posix
+  EXPECT_GT(timeout, 0u);
+
+  // wait for the next arrival or the timeout
+  if (fake_arrived(n, n->now) == n->in_pos) {
+    int32_t next = n->in_pos < n->split ? n->first : n->second;
+    if (next < 0 || next > n->now + (int32_t)timeout) {
+      n->now += (int32_t)timeout;
+      return LWMQTT_SUCCESS;
+    }
+    n->now = next;
+  }
+
+  // read arrived data
+  size_t count = std::min(len, fake_arrived(n, n->now) - n->in_pos);
+  memcpy(buf, n->in + n->in_pos, count);
+  n->in_pos += count;
+  *read = count;
+
+  return LWMQTT_SUCCESS;
+}
+
+static lwmqtt_err_t fake_network_write(void *ref, uint8_t *buf, size_t len, size_t *sent, uint32_t timeout) {
+  auto n = (fake_network_t *)ref;
+  EXPECT_GT(timeout, 0u);
+  if (n->out_len + len > sizeof(n->out)) {
+    ADD_FAILURE() << "fake network output overflow";
+    return LWMQTT_NETWORK_FAILED_WRITE;
+  }
+  memcpy(n->out + n->out_len, buf, len);
+  n->out_len += len;
+  *sent = len;
+  return LWMQTT_SUCCESS;
+}
+
+static void fake_timer_set(void *ref, uint32_t timeout) {
+  auto t = (fake_timer_t *)ref;
+  t->deadline = t->network->now + (int32_t)timeout;
+}
+
+static int32_t fake_timer_get(void *ref) {
+  auto t = (fake_timer_t *)ref;
+  return t->deadline - t->network->now;
+}
+
+static void fake_message_arrived(lwmqtt_client_t *c, void *ref, lwmqtt_string_t t, lwmqtt_message_t m) {
+  ((fake_t *)ref)->messages++;
+}
+
+static void fake_init(fake_t *f, const std::vector<uint8_t> &in, size_t split, int32_t first, int32_t second) {
+  ASSERT_LE(in.size(), sizeof(f->network.in));
+  memset(f, 0, sizeof(fake_t));
+  memcpy(f->network.in, in.data(), in.size());
+  f->network.in_len = in.size();
+  f->network.split = split;
+  f->network.first = first;
+  f->network.second = second;
+  f->timer1.network = &f->network;
+  f->timer2.network = &f->network;
+  lwmqtt_init(&f->client, f->write_buf, sizeof(f->write_buf), f->read_buf, sizeof(f->read_buf));
+  lwmqtt_set_network(&f->client, &f->network, fake_network_read, fake_network_write);
+  lwmqtt_set_timers(&f->client, &f->timer1, &f->timer2, fake_timer_set, fake_timer_get);
+  lwmqtt_set_callback(&f->client, f, fake_message_arrived);
+}
+
+TEST(Client, SubscribeFailure) {
+  lwmqtt_string_t topics[2] = {lwmqtt_string("a"), lwmqtt_string("b")};
+  lwmqtt_qos_t qos[2] = {LWMQTT_QOS1, LWMQTT_QOS1};
+
+  // one subscription failed
+  fake_t f;
+  fake_init(&f, {0x90, 0x04, 0x00, 0x01, 0x01, 0x80}, 6, 0, -1);
+  lwmqtt_err_t err = lwmqtt_subscribe(&f.client, 2, topics, qos, 100);
+  ASSERT_EQ(err, LWMQTT_FAILED_SUBSCRIPTION);
+
+  // all subscriptions succeeded
+  fake_init(&f, {0x90, 0x04, 0x00, 0x01, 0x01, 0x01}, 6, 0, -1);
+  err = lwmqtt_subscribe(&f.client, 2, topics, qos, 100);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
 }
