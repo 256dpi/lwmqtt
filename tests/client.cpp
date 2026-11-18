@@ -719,6 +719,43 @@ static void fake_init(fake_t *f, const std::vector<uint8_t> &in, size_t split, i
   lwmqtt_set_callback(&f->client, f, fake_message_arrived);
 }
 
+// QoS 0 publish to "a" with payload "hi"
+static const std::vector<uint8_t> fake_publish0 = {0x30, 0x05, 0x00, 0x01, 'a', 'h', 'i'};
+
+TEST(Client, DeadlineMidPacket) {
+  // two packets, the first byte arrives at the deadline and the rest right after it
+  std::vector<uint8_t> in = fake_publish0;
+  in.insert(in.end(), fake_publish0.begin(), fake_publish0.end());
+  fake_t f;
+  fake_init(&f, in, 1, 100, 101);
+
+  // the started packet is completed, but the deadline is not moved for the next one
+  lwmqtt_err_t err = lwmqtt_yield(&f.client, in.size(), 100);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+  ASSERT_EQ(f.messages, 1);
+  ASSERT_EQ(f.network.in_pos, fake_publish0.size());
+  ASSERT_LT(fake_timer_get(&f.timer2), 0);
+
+  // the stream is still in sync
+  err = lwmqtt_yield(&f.client, fake_publish0.size(), 100);
+  ASSERT_EQ(err, LWMQTT_SUCCESS);
+  ASSERT_EQ(f.messages, 2);
+  ASSERT_EQ(f.network.in_pos, in.size());
+}
+
+TEST(Client, DeadlineLatePacket) {
+  // the first byte arrives at the deadline and the rest only much later
+  fake_t f;
+  fake_init(&f, fake_publish0, 1, 100, 200);
+
+  // the started packet is given up after one more attempt without waiting for the late data
+  lwmqtt_err_t err = lwmqtt_yield(&f.client, 0, 100);
+  ASSERT_EQ(err, LWMQTT_NETWORK_TIMEOUT);
+  ASSERT_EQ(f.messages, 0);
+  ASSERT_EQ(f.network.now, 100 + (int32_t)f.network.last_timeout);
+  ASSERT_LT(f.network.now, 200);
+}
+
 TEST(Client, SubscribeFailure) {
   lwmqtt_string_t topics[2] = {lwmqtt_string("a"), lwmqtt_string("b")};
   lwmqtt_qos_t qos[2] = {LWMQTT_QOS1, LWMQTT_QOS1};
