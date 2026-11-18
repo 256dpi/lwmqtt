@@ -4,9 +4,7 @@ extern "C" {
 #include "../src/helpers.h"
 }
 
-TEST(Helpers, ReadConnackPacketType) {
-  EXPECT_EQ(lwmqtt_read_bits(0x20, 4, 4), 2);
-}
+TEST(Helpers, ReadConnackPacketType) { EXPECT_EQ(lwmqtt_read_bits(0x20, 4, 4), 2); }
 
 TEST(Helpers, ReadAllValidBitFields) {
   for (int pos = 0; pos < 8; pos++) {
@@ -34,7 +32,8 @@ TEST(Helpers, WriteAllValidBitFields) {
           }
           uint8_t actual = static_cast<uint8_t>(original);
           lwmqtt_write_bits(&actual, static_cast<uint8_t>(value), pos, num);
-          ASSERT_EQ(actual, expected) << "original=" << original << " value=" << value << " pos=" << pos << " num=" << num;
+          ASSERT_EQ(actual, expected) << "original=" << original << " value=" << value << " pos=" << pos
+                                      << " num=" << num;
         }
       }
     }
