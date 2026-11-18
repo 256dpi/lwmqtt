@@ -1,30 +1,15 @@
-#include <assert.h>
 #include <string.h>
 
 #include "helpers.h"
 
 uint8_t lwmqtt_read_bits(uint8_t byte, int pos, int num) {
-    assert(pos >= 0 && pos < 8);
-    assert(num > 0 && num <= 8 - pos);
-
-    const uint32_t mask = (1u << num) - 1u;
-
-    return (uint8_t)((byte >> pos) & mask);
+  unsigned mask = (1u << num) - 1u;
+  return (uint8_t)((byte >> pos) & mask);
 }
 
 void lwmqtt_write_bits(uint8_t *byte, uint8_t value, int pos, int num) {
-    assert(byte != NULL);
-    assert(pos >= 0 && pos < 8);
-    assert(num > 0 && num <= 8 - pos);
-
-    const uint32_t value_mask = (1u << num) - 1u;
-    const uint32_t field_mask = value_mask << pos;
-
-    const uint32_t result =
-        ((uint32_t)*byte & ~field_mask) |
-        (((uint32_t)value & value_mask) << pos);
-
-    *byte = (uint8_t)result;
+  unsigned mask = ((1u << num) - 1u) << pos;
+  *byte = (uint8_t)((*byte & ~mask) | (((unsigned)value << pos) & mask));
 }
 
 lwmqtt_err_t lwmqtt_read_data(uint8_t **buf, const uint8_t *buf_end, uint8_t **data, size_t len) {
